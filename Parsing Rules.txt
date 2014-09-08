@@ -1,0 +1,59 @@
+Cix Parsing Stages:
+
+Stage 1: Character Level Parsing:
+	Contexts:
+		- Root: No context has been set yet.
+		- Whitespace: The last character was a whitespace or line terminator.
+		- Comment: A // or /* sequence not inside a string literal was found and no line terminator or */ sequence has been reached yet.
+		- Word: The last charater was a character in a word or identifier not inside a string literal.
+		- Directive: A # character not inside a string literal was found, and no whitespace has been reached yet.
+		- Operator: The last character was an operator character.
+		- NumericLiteral: A number after whitespace not inside a string literal was found, and no . character, {u l f d} character, or whitespace has been reached yet.
+		- NumericLiteralFraction. A . character was found during a NumericLiteral context, and no {u l f d} character or whitespace has been reached yet.
+		- NumericLiteralSuffix: A {u l f d} character was found during a NumericLiteral or NumericLiteralFraction context, and no whitespace has been reached yet.
+		- StringLiteral: An unescaped " character not inside a string literal was found, and no matching unescaped " character has been reached yet.
+	
+	Found a Whitespace or Line Terminator:
+		- Root: Ignore.
+		- Whitespace: Ignore.
+		- Comment: Ignore.
+		- Word: Yield the builder.
+		- Directive: Yield the builder.
+		- Operator: Yield the builder.
+		- NumericLiteral: Yield the builder.
+		- NumericLiteralFraction: Yield the builder.
+		- NumericLiteralSuffix: Yield the builder.
+		- StringLiteral: Append "\r\n" to the builder.
+	
+	Found a Brace, Bracket, or Parentheses:
+		- Root: INVALID. These cannot appear as the first character. Throw.
+		- Whitespace: Yield the character.
+		- Comment: Ignore.
+		- Word: Yield the word, and then the character.
+		- Directive: INVALID. These do not appear in a preprocessor directive. Throw.
+		- Operator: INVALID. These do not succeed operators. Throw.
+		- NumericLiteral: 
+		
+	Found a Letter or Underscore:
+		- In Root: Starts an identifier. Switch to Word and append to builder.
+		- In Whitespace: Starts an identifier. Switch to Word and append to builder.
+		- In Comment: Ignore.
+		- In Word: Append to builder.
+		- In Directive: Is it not an underscore? Append to builder. No? INVALID. Underscores do not appear in preprocessor directives. Throw.
+		- In Operator: INVALID. No letters appear within operators. Throw.
+		- In NumericLiteral: Is it {u l f d}? Switch to NumericLiteralSuffix and append to builder. No? INVALID. No other letters appear within numeric literals. Throw.
+		- In NumericLiteralFraction: Same as in NumericLiteral.
+		- In NumericLiteralSuffix: Is it l and the last letter u? Append to builder and yield. No? INVALID. No other character appears after u and no other character is used as a second character. Throw
+		- In StringLiteral: Append to builder.
+	
+	Found a Number:
+		- In Root: Starts a NumericLiteral. Switch context and append to builder.
+		- In Whitespace: Same as in Root.
+		- In Comment: Ignore.
+		- In Word: Append to builder.
+		- In Directive: INVALID. Numbers do not appear in preprocessor directives. Throw.
+		- In Operator: INVALID. Numbers do not appear within operators. Throw.
+		- In NumericLiteral: Append to builder.
+		- In NumericLiteralFraction: Append to builder.
+		- In NumericLiteralSuffix: INVALID. Numbers do not appear within the suffix. Throw.
+		- In StringLiteral. Append to builder.

@@ -1,0 +1,40 @@
+Operator kinds:
+	Unary prefix: + - ! ~ ++ -- (typecast) * & sizeof(type)
+	Unary postfix: () [] -> . ++ --
+	Infix: * / % + - << >> < <= > >= == != & ^ | && || ?:  = += -= *= /= %= >>= <<= &= |= ^=
+	
+	Single Character Operators: + - ! ~ * & . / % < > ^ = ? :
+	Double Chararacter Operators: ++ -- -> << >> <= >= == != && || += -= *= /= %= &= |= ^=
+	Triple Character Operators: <<= >>=
+	Ambiguous Operators: + (++ +=) - (-- -=) ! (!=) * (*=) / (/=) ^ (^=) % (%=) < (<= << <<=) > (>= >> >>=) ^ (^=) = (==)
+	Non-ambiguous Operators: ~ . ? :
+	
+	+x
+	-x
+	!x
+	~x
+	++x
+	--x
+	(int)x
+	*xp
+	&x
+	sizeof(int)
+	func(a, b, c)
+	array[5]
+	x->y
+	x.z
+	x++
+	x--
+	x * y	x & y	x &= y
+	x / y	x | y	x |= y
+	x % y	x && y	x ^= y
+	x + y	x || y
+	x - y	x ? y : z
+	x << y	x = y
+	x >> y	x += y
+	x < y	x -= y
+	x > y	x *= y
+	x <= y	x /= y
+	x >= y	x %= y
+	x == y	x <<= y
+	x != y	x >>= y
