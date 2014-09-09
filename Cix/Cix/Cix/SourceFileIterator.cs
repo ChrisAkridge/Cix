@@ -207,6 +207,12 @@ namespace Cix
 			}
 		}
 
+		private static bool IsOneOfCharacter(char check, params char[] values)
+		{
+			HashSet<char> hash = new HashSet<char>(values);
+			return hash.Contains(check);
+		}
+
 		/// <summary>
 		/// A list of all the different things the word enumerator's loop might be in the middle of.
 		/// </summary>
