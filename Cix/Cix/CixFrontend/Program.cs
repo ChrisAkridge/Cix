@@ -33,9 +33,16 @@ namespace CixFrontend
 			}
 
 			SourceFileIterator iterator = new SourceFileIterator(filePath);
-			foreach (string word in iterator.EnumerateWords())
+			try
 			{
-				Console.WriteLine(word);
+				foreach (string word in iterator.EnumerateWords())
+				{
+					Console.WriteLine(word);
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("{0}: {1} ({2})", ex.GetType().Name, ex.Message, ((ParseException)ex).ErrorLocation);
 			}
 			Console.ReadKey();
 		}

@@ -101,7 +101,7 @@ Stage 1: Character Level Parsing:
 		- In Root: INVALID. Throw.
 		- In Whitespace: Append to builder and change context to Operator.
 		- In Comment: Ignore.
-		- In Word: INVALID. Throw.
+		- In Word: Is the next character =? If yes, yield the builder, switch context to Operator, and append to builder. If not, throw.
 		- In Directive: INVALID. Throw.
 		- In Operator: INVALID. Throw.
 		- In NumericLiteral: Yield and clear the builder. Append to builder and change context to Operator.
@@ -113,12 +113,12 @@ Stage 1: Character Level Parsing:
 		- In Root: INVALID. Throw.
 		- In Whitespace: Append to builder and change context to Operator.
 		- In Comment: Ignore.
-		- In Word: INVALID. Throw.
+		- In Word: Is the next character =? If yes, yield the builder, switch context to Operator, and append to builder. If not, throw.
 		- In Directive: INVALID. Throw.
 		- In Operator: INVALID. Throw.
-		- In NumericLiteral: Yield and clear the builder. Append to builder and change context to Operator.
-		- In NumericLiteralFraction: Same as in NumericLiteral.
-		- In NumericLiteralSuffix: Same as in NumericLiteral.
+		- In NumericLiteral: Same as in Word.
+		- In NumericLiteralFraction: Same as in Word.
+		- In NumericLiteralSuffix: Same as in Word.
 		- In StringLiteral: Append to builder.
 	
 	Found a *:
@@ -265,7 +265,31 @@ Stage 1: Character Level Parsing:
 		- In NumericLiteralSuffix: Yield and clear the builder. Append to builder and change context to Operator.
 		- In StringLiteral: Append to builder.
 	
-	Found a Any Other Character:
+	Found a \:
+		- In Root: INVALID. Throw.
+		- In Whitespace: INVALID. Throw.
+		- In Comment: Ignore.
+		- In Word: INVALID. Throw.
+		- In Directive: INVALID. Throw.
+		- In Operator: INVALID. Throw.
+		- In NumericLiteral: INVALID. Throw.
+		- In NumericLiteralFraction: INVALID. Throw.
+		- In NumericLiteralSuffix: INVALID. Throw.
+		- In StringLiteral: Append to builder.
+	
+	Found a ;:
+		- In Root: Append to builder and change context to Whitespace.
+		- In Whitespace: Same as in Root.
+		- In Comment: Ignore.
+		- In Word: Same as in Root.
+		- In Directive: INVALID. Throw.
+		- In Operator: Same as in Root.
+		- In NumericLiteral: Same as in Root.
+		- In NumericLiteralFraction: Same as in Root.
+		- In NumericLiteralSuffix: Same as in Root.
+		- In StringLiteral: Append to builder.
+	
+	Found Any Other Character:
 		- In Root: INVALID. Throw.
 		- In Whitespace: INVALID. Throw.
 		- In Comment: Ignore.
