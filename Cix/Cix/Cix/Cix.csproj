@@ -39,9 +39,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CharExtensions.cs" />
     <Compile Include="ParseException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SourceFileIterator.cs" />
+    <Compile Include="ByCharacterParser.cs" />
+    <Compile Include="TokenException.cs" />
+    <Compile Include="Tokenizer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Tokenization\" />

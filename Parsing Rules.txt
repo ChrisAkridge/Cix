@@ -1,6 +1,4 @@
-Cix Parsing Stages:
-
-Stage 1: Character Level Parsing:
+Cix Stage 1 Processing: Character-by-Character Parsing:
 	Contexts:
 		- Root: No context has been set yet.
 		- Whitespace: The last character was a whitespace or line terminator.

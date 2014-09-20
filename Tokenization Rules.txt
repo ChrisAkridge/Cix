@@ -1,0 +1,60 @@
+Cix Stage 2 Processing: Tokenization:
+	- To take a sequence of words and assign a meaning to each word. -
+
+Reserved Keywords:
+	break case char const continue do double else float for goto if int long return short sizeof struct void while
+	
+Tokenization Contexts:
+	- Root
+	- Directive
+	- StructDeclaration
+	- StructDefinition
+	- FunctionDeclaration
+	- FunctionDefinition
+	- Expression
+
+Tokenization Sequence:
+	1. Create a List<Tuple<string, {tokentype}>> or something to hold each word and each token.
+	2. In the first pass, mark each word consisting of a letter/underscore followed by zero or more letters/numbers/underscores with the IDENTIFIER token type.
+	3. Also, mark each word beginning with # and followed by a valid directive with the DIRECTIVE token type.
+	4. Mark all semicolons with the SEMICOLON token type.
+	5. Mark all { as OPENSCOPE and } as CLOSESCOPE.
+	6. Mark all ( as OPENPAREN and ) as CLOSEPAREN.
+	7. Mark all [ as OPENBRACKET and ] as CLOSEBRACKET.
+	
+	Now we tokenize the operators, expressions, and the rest of the structures.
+	Rules for operators:
+		- Expressions containing operators (with the exclusion of function calls) only follow after any assignment operator or function call (IDENTIFIER then LEFTPAREN).
+		  Thus, a tokenization context of Expression will be set upon finding any assignment operator/function call. FunctionDefinition is set at any SEMICOLON.
+		- An asterisk denotes a pointer type (i.e. char**) if:
+			- It is preceded by IDENTIFIER.
+			- It is succeeded by one or more asterisks (always)
+			- In FunctionDefinition context, the next token after the asterisk(s) is IDENTIFIER, and that is followed by SEMICOLON or OP_ASSIGNMENT
+			- It is succeeded by CLOSEPAREN (i.e. (int*) or sizeof(int*)).
+		- A plus sign indicates a unary identity operator if:
+			- It is not preceded by IDENTIFIER or a unary postfix operator { CLOSEPAREN CLOSEBRACKET ++ -- }. If it is, it is an addition operator.
+			- It is succeeded by IDENTIFIER or one of { + - ~ ! ++ -- * & OPENPAREN }.
+			- It is preceded by SEMICOLON or a binary or ternary operator.
+		- A minus sign indicates a unary inverse operator if:
+			- It is not preceded by IDENTIFIER or a unary postfix operator { CLOSEPAREN CLOSEBRACKET ++ -- }. If it is, it is a subtraction operator.
+			- It is succeeded by IDENTIFIER or one of { + - ~ ! ++ -- * & OPENPAREN }.
+			- It is preceded by SEMICOLON or a binary or ternary operator.
+		- An exclamation mark indicates a logical NOT if:
+			- It is not preceded by IDENTIFIER or a unary postfix operator { CLOSEPAREN CLOSEBRACKET ++ -- }. If it is, throw.
+			- It is succeeded by IDENTIFIER or one of { + - ~ ! ++ -- * & OPENPAREN }.
+			- It is preceded by SEMICOLON or a binary or ternary operator.
+		- A tilde indicates a bitwise NOT if:
+			- It is not preceded by IDENTIFIER or a unary postfix operator { CLOSEPAREN CLOSEBRACKET ++ -- }. If it is, throw.
+			- It is succeeded by IDENTIFIER or one of { + - ~ ! ++ -- * & OPENPAREN }.
+			- It is preceded by SEMICOLON or a binary or ternary operator.
+		- Two plus signs indicates a unary preincrement/postincrement if:
+			- It is not preceded by one of { CLOSEPAREN CLOSEBRACKET }. If it is, throw. In the event of ++ --, that is appended to the current token as a preincrement/decrement if that token is valid.
+			- It is succeeded by IDENTIFIER or one of { + - ~ ! ++ -- * OPENPAREN }.
+			- It is preceded by SEMICOLON, IDENTIFIER or a binary or ternary operator.
+		- Two minus signs indicates a unary 
+Token Types:
+	PreprocessorDirective: One of { #define #undefine #ifdef #ifndef #else #endif #include }
+	PreprocessorGlobalInclude: A less-than sign, a sequence containing one or more of {ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789:\/|*}, and then a greater-than sign.
+	PreprocessLocalInclude: Same as PreprocessorGlobalInclude, but with a quotation mark in place of the less-than and greater-than signs.
+	Identifier: A sequence of characters beginning with a letter or underscore and followed by zero or more letters or underscores, followed by zero or more asterisks.
+	Operator:

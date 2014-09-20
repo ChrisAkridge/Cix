@@ -1,0 +1,36 @@
+- Found an directive (# followed by one of { define undefine ifdef ifndef else endif include }):
+	- Add it to the token list as Directive.
+	- Set the withinDirective flag as true.
+- Found a newline ("\r\n"):
+	- If the withinDirective flag is set, clear it and add a DirectiveEnd to the token list.
+- Found a reserved word:
+	- See the "Reserved Word Rules" section below.
+- Found a word or numeric literal:
+	- Add it to the token list as Identifier.
+- Found a { or }
+	- Add it to the token list as OpenScope or CloseScope.
+- Found a ( or )
+	- Add it to the token list as OpenParen or CloseParen.
+- Found a [ or ]
+	- Add it to the token list as OpenBracket or CloseBracket.
+- Found a ;
+	- Add it to the token list as Semicolon.
+- Found an operator:
+	- See the "Operator Rules" section below.
+
+Operator Rules:
+	- Found a + (unary prefix identity, addition):
+		- If it's preceded by an identifier, unary postfix operator, or one of { ) ] }, add it to the token list as OperatorAddition.
+		- If it's preceded by a semicolon, closescope, binary/ternary operator, one of { - ! ~ ++ -- * & }, or newline, and succeeded by an identifier or one of { - -- ! ~ * & ( } , add it to the token list as OperatorIdentity.
+	- Found a - (unary prefix inverse, subtraction):	
+		- If it's preceded by an identifier, unary postfix operator, or one of { ) ] }, add it to the token list as OperatorAddition.
+		- If it's preceded by a semicolon, closescope, binary/ternary operator, one of { + ! ~ ++ -- * & }, or newline, and succeeded by an identifier or one of { + ++ ! ~ * & ( } , add it to the token list as OperatorIdentity.
+	- Found a ! (unary prefix logical NOT):
+		- If it's preceded by an identifier, unary postfix operator, or one of { ) ] }, throw.
+		- If it's preceded by a semicolon, closescope, binary/ternary operator, one of { + - ! ~ ++ -- * & }, or newline, and succeeded by an identifier or one of { + - ++ -- ! ~ * & ( }, add it to the token list as OperatorLogicalNot.
+	- Found a ~ (unary prefix bitwise NOT):
+		- If it's preceded by an identifier, unary postfix operator, or one of { ) ] }, throw.
+		- If it's preceded by a semicolon, closescope, binary/ternary operator, one of { + - ! ~ ++ -- * & }, or newline, and succeeded by an identifier or one of { + - ++ -- ! ~ * & ( }, add it to the token list as OperatorBitwiseNot.
+	- Found a ++ (unary preincrement/postincrement):
+		- If it's succeeded by an identifier, and preceded by a semicolon, closescope, binary/ternary operator, one of { + - ! ~ ++ -- }, or newline
+		- If it's preceded by an identifier, unary postfix operator, or one of { ) ] } and succeeded by a binary/ternary operator, semicolon, one of { } ) ] }, semicolon, or directive, add it to the token list as OperatorPostincrement.

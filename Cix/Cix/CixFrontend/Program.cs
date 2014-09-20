@@ -32,17 +32,51 @@ namespace CixFrontend
 				return;
 			}
 
-			SourceFileIterator iterator = new SourceFileIterator(filePath);
-			try
+			Console.Write("By character (B)/Tokenized (T)");
+			char option = char.ToLower((char)Console.Read());
+
+			if (option == 'b')
 			{
-				foreach (string word in iterator.EnumerateWords())
+				ByCharacterParser iterator = new ByCharacterParser(filePath);
+				try
 				{
-					Console.WriteLine(word);
+					foreach (string word in iterator.EnumerateWords())
+					{
+						Console.WriteLine(word);
+					}
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine("{0}: {1} ({2})", ex.GetType().Name, ex.Message, ((ParseException)ex).ErrorLocation);
 				}
 			}
-			catch (Exception ex)
+			else if (option == 't')
 			{
-				Console.WriteLine("{0}: {1} ({2})", ex.GetType().Name, ex.Message, ((ParseException)ex).ErrorLocation);
+				try
+				{
+					Tokenizer tokenizer = new Tokenizer();
+					var tokenList = tokenizer.Tokenize(new ByCharacterParser(filePath).EnumerateWords());
+
+					foreach (var token in tokenList)
+					{
+						Console.WriteLine("{0}: {1}", token.Type, token.Word);
+					}
+				}
+				catch (Exception ex)
+				{
+					if (ex is ParseException)
+					{
+						Console.WriteLine("Parse exception: {0} ({1})", ex.Message, ((ParseException)ex).ErrorLocation);
+					}
+					else if (ex is TokenException)
+					{
+						Console.WriteLine("Token exception: {0}", ex.Message);
+					}
+					else
+					{
+						Console.Write("{0}: {1}", ex.GetType().Name, ex.Message);
+					}
+				}
 			}
 			Console.ReadKey();
 		}

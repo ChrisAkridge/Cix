@@ -10,7 +10,7 @@ namespace Cix
 	/// <summary>
 	/// Iterates through a source file by returning each word or operator in the code.
 	/// </summary>
-	public sealed class SourceFileIterator
+	public sealed class ByCharacterParser
 	{
 		private string file;
 		private StringBuilder builder;
@@ -19,10 +19,11 @@ namespace Cix
 		private List<string> wordList;
 		private int lineNumber;
 		private int charNumber;
+		private bool withinDirective;
 
 		public string FilePath { get; private set; }
 
-		public SourceFileIterator(string filePath)
+		public ByCharacterParser(string filePath)
 		{
 			if (!File.Exists(filePath))
 			{
@@ -67,7 +68,7 @@ namespace Cix
 				{
 					this.ProcessWhitespace(current, last, next);
 				}
-				else if (IsOneOfCharacter(current, '{', '}', '[', ']', '(', ')'))
+				else if (current.IsOneOfCharacter('{', '}', '[', ']', '(', ')'))
 				{
 					this.ProcessBraceBracketOrParentheses(current, last, next);
 				}
@@ -185,12 +186,20 @@ namespace Cix
 
 		private void ProcessWhitespace(char current, char last, char next)
 		{
-			bool isLineTerminator = IsOneOfCharacter(current, '\r', '\n');
+			bool isLineTerminator = current.IsOneOfCharacter('\r', '\n');
 
 			if (isLineTerminator && last != '\r')
 			{
 				this.lineNumber++;
 				this.charNumber = 0;
+
+				if (this.withinDirective)
+				{
+					this.withinDirective = false;
+					if (this.builder.Length > 0) { this.AddWordToList(); }
+					this.builder.Append("\\r\\n"); // This newline helps the tokenizer to figure out where directives end
+					this.AddWordToList();
+				}
 			}
 
 			switch (this.context)
@@ -211,7 +220,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					this.AddWordToList();
+					if (this.builder.Length > 0) { this.AddWordToList(); }
 					this.context = ParsingContext.Whitespace;
 					break;
 				case ParsingContext.StringLiteral:
@@ -235,9 +244,6 @@ namespace Cix
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Directive:
-				case ParsingContext.NumericLiteral:
-				case ParsingContext.NumericLiteralFraction:
-				case ParsingContext.NumericLiteralSuffix:
 					throw new ParseException("Invalid bracket, brace, or parentheses", this.file, this.lineNumber, this.charNumber);
 				case ParsingContext.Whitespace:
 					builder.Append(current);
@@ -245,6 +251,9 @@ namespace Cix
 					this.context = ParsingContext.Whitespace;
 					break;
 				case ParsingContext.Word:
+				case ParsingContext.NumericLiteral:
+				case ParsingContext.NumericLiteralFraction:
+				case ParsingContext.NumericLiteralSuffix:
 					this.AddWordToList();
 					this.context = ParsingContext.Whitespace;
 					this.builder.Append(current);
@@ -293,7 +302,7 @@ namespace Cix
 					break;
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
-					if (IsOneOfCharacter(char.ToLower(current), 'u', 'l', 'f', 'd'))
+					if (char.ToLower(current).IsOneOfCharacter('u', 'l', 'f', 'd'))
 					{
 						this.context = ParsingContext.NumericLiteralSuffix;
 						this.builder.Append(current);
@@ -569,7 +578,7 @@ namespace Cix
 				case ParsingContext.Operator:
 					throw new ParseException("Invalid forward slash in root context, directive, or operator.", this.file, this.lineNumber, this.charNumber);
 				case ParsingContext.Whitespace:
-					if (IsOneOfCharacter(next, '/', '*'))
+					if (next.IsOneOfCharacter('/', '*'))
 					{
 						this.context = ParsingContext.Comment;
 						this.commentKind = (next == '/') ? CommentKind.SingleLine : CommentKind.MultipleLines;
@@ -685,7 +694,7 @@ namespace Cix
 				case ParsingContext.Comment:
 					break;
 				case ParsingContext.Operator:
-					if (IsOneOfCharacter(last, '-', '>'))
+					if (last.IsOneOfCharacter('-', '>'))
 					{
 						this.builder.Append('>');
 					}
@@ -923,7 +932,7 @@ namespace Cix
 				case ParsingContext.Comment:
 					break;
 				case ParsingContext.Operator:
-					if (IsOneOfCharacter(last, '<', '>', '+', '-', '*', '/', '%', '&', '|', '^', '!', '='))
+					if (last.IsOneOfCharacter('<', '>', '+', '-', '*', '/', '%', '&', '|', '^', '!', '='))
 					{
 						builder.Append('=');
 						this.context = ParsingContext.Whitespace;
@@ -1039,6 +1048,7 @@ namespace Cix
 				case ParsingContext.Whitespace:
 					this.builder.Append('#');
 					this.context = ParsingContext.Directive;
+					this.withinDirective = true;
 					break;
 				case ParsingContext.Comment:
 					break;
@@ -1091,12 +1101,6 @@ namespace Cix
 		{
 			this.wordList.Add(this.builder.ToString());
 			this.builder.Clear();
-		}
-
-		private static bool IsOneOfCharacter(char check, params char[] values)
-		{
-			HashSet<char> hash = new HashSet<char>(values);
-			return hash.Contains(check);
 		}
 
 		/// <summary>
