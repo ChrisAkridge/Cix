@@ -19,18 +19,14 @@
 	- See the "Operator Rules" section below.
 
 Operator Rules:
-	- Found a + (unary prefix identity, addition):
-		- If it's preceded by an identifier, unary postfix operator, or one of { ) ] }, add it to the token list as OperatorAddition.
-		- If it's preceded by a semicolon, closescope, binary/ternary operator, one of { - ! ~ ++ -- * & }, or newline, and succeeded by an identifier or one of { - -- ! ~ * & ( } , add it to the token list as OperatorIdentity.
-	- Found a - (unary prefix inverse, subtraction):	
-		- If it's preceded by an identifier, unary postfix operator, or one of { ) ] }, add it to the token list as OperatorAddition.
-		- If it's preceded by a semicolon, closescope, binary/ternary operator, one of { + ! ~ ++ -- * & }, or newline, and succeeded by an identifier or one of { + ++ ! ~ * & ( } , add it to the token list as OperatorIdentity.
-	- Found a ! (unary prefix logical NOT):
-		- If it's preceded by an identifier, unary postfix operator, or one of { ) ] }, throw.
-		- If it's preceded by a semicolon, closescope, binary/ternary operator, one of { + - ! ~ ++ -- * & }, or newline, and succeeded by an identifier or one of { + - ++ -- ! ~ * & ( }, add it to the token list as OperatorLogicalNot.
-	- Found a ~ (unary prefix bitwise NOT):
-		- If it's preceded by an identifier, unary postfix operator, or one of { ) ] }, throw.
-		- If it's preceded by a semicolon, closescope, binary/ternary operator, one of { + - ! ~ ++ -- * & }, or newline, and succeeded by an identifier or one of { + - ++ -- ! ~ * & ( }, add it to the token list as OperatorBitwiseNot.
-	- Found a ++ (unary preincrement/postincrement):
-		- If it's succeeded by an identifier, and preceded by a semicolon, closescope, binary/ternary operator, one of { + - ! ~ ++ -- }, or newline
-		- If it's preceded by an identifier, unary postfix operator, or one of { ) ] } and succeeded by a binary/ternary operator, semicolon, one of { } ) ] }, semicolon, or directive, add it to the token list as OperatorPostincrement.
+	- OpIdentity (+) requires: Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { - ! ~ }. Succeeding identifier, or one of { - ! ~ * & }.
+	- OpInverse (-) requires: Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { + ! ~ }. Succeeding identifier, or one of { + ! ~ * & }.
+	- OpLogicalNOT (!) requires: Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { + - ! ~ }. Succeeding identifier, or one of { + - ! ~ * & }.
+	- OpBitwiseNOT (~) requires: Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { + - ! ~ }. Succeeding identifier, or one of { + - ! ~ * & }.
+	- OpPreincrement (++) requires: Preceding semicolon, closescope, openparen, comma, or binary/ternary operator. Succeeding identifier.
+	- OpPostincrement (++) requires: Preceding identifier or closebracket. Succeeding binary/ternary operator or semicolon.
+	- OpPredecrement (--): Preceding semicolon, closescope, openparen, comma, or binary/ternary operator. Succeeding identifier.
+	- OpPostIncrement: Preceding identifier or closebracket. Succeeding binary/ternary operator or semicolon.
+	- OpPointerDerefence (*): Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { + - ! ~ & }. Succeeding identifier.
+	- OpVariableDerefence (&): Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { + - ! ~ & }. Succeeding identifier.
+	- OpMemberAccess (.): Preceding identifier, closeparen, closebracket. Succeeding identifier.
