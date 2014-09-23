@@ -18,6 +18,18 @@
 - Found an operator:
 	- See the "Operator Rules" section below.
 
+Tokenizer Context:
+	- Root: Outside the scope of any structure or function definitions or declarations.
+		Set by default, and upon exiting any Struct or Function context.
+	- Struct: Inside of a structure definition.
+		Set by the struct keyword and cleared by a closescope.
+	- Function: Inside of a function definition.
+		Set by any identifier or type keyword (char, short, int, long, float, double, void) in a Root context. 
+		Contains a nesting level variable that increases every time an openscope is found and decreases every time a closescope is found. 
+		Cleared when this variable is zero.
+	- SwitchBlock: Inside of a switch block.
+		Set by the switch keyword in a Function context. Cleared when the scope variable is equal to what it was when the context was set as such.
+
 Operator Rules:
 	- OpIdentity (+) requires: Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { - ! ~ }. Succeeding identifier, or one of { - ! ~ * & }.
 	- OpInverse (-) requires: Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { + ! ~ }. Succeeding identifier, or one of { + ! ~ * & }.
@@ -30,3 +42,34 @@ Operator Rules:
 	- OpPointerDerefence (*): Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { + - ! ~ & }. Succeeding identifier.
 	- OpVariableDerefence (&): Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { + - ! ~ & }. Succeeding identifier.
 	- OpMemberAccess (.): Preceding identifier, closeparen, closebracket. Succeeding identifier.
+	- OpPointerAccess (->): Preceding identifier, closeparen, closebracket. Succeeding identifier.
+	- OpAdd (+): Preceding identifier, closeparen, closebracket, one of { ++ -- }. Succeeding identifier, one of { - ! ~ -- & * }.
+	- OpSubtract (-): Preceding identifier, closeparen, closebracket, one of { ++ -- }. Succeeding identifier, one of { + ! ~ ++ & * }.
+	- OpBitwiseAnd (&): Preceding identifier, closeparen, closebracket, one of { ++ -- }. Succeeding identifier, one of { + - ! ~ ++ -- * }.
+	- All Other Binary Operators and the Ternary Aftercondition (?): Preceding identifier, closeparen, closebracket, one of { ++ -- }. Succeeding identifier, one of { + - ! ~ ++ -- & * }.
+	- Tenary Aftertrue Operator (:): In a Function context, same as above. In a Struct context, preceded by and succeeded by an identifier.
+	
+	OpMultiply and PointerDataType are indistinguishable at this point and any single asterisk will be assigned a token type of Indeterminate.
+	Any word of more than one asterisk is quite simply a pointer type declaration and should be appended to the previous token.
+
+Keyword Rules:
+	- Break: Succeeded by a semicolon.
+	- Case: Succeeded by an identifier.
+	- Char: No rules.
+	- Const: No rules.
+	- Continue: Succeeded by a semicolon.
+	- Default: Succeeded by a colon.
+	- Do: Succeeded by an openscope.
+	- Else: Succeeded by an openscope or the IF keyword.
+	- Float: No rules.
+	- For: Succeeded by an openparen.
+	- If: Succeeded by an openparen.
+	- Int: No rules.
+	- Long: No rules.
+	- Return: Succeeded by an identifier or semicolon.
+	- Short: No rules.
+	- Sizeof: Succeeded by an openparen.
+	- Struct: In a Root context, succeeded by an identifier.
+	- Switch: Succeeded by an openparen.
+	- Void: No rules.
+	- While: Succeeded by an openparen.

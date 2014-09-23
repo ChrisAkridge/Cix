@@ -6,8 +6,10 @@ Operator kinds:
 	Single Character Operators: + - ! ~ * & . / % < > ^ = ? :
 	Double Chararacter Operators: ++ -- -> << >> <= >= == != && || += -= *= /= %= &= |= ^=
 	Triple Character Operators: <<= >>=
-	Ambiguous Operators: + (++ +=) - (-- -= ->) ! (!=) * (*=) / (/=) ^ (^=) % (%=) < (<= << <<=) > (>= >> >>=) ^ (^=) = (==)
+	Ambiguous Operator Characters: + (++ +=) - (-- -= ->) ! (!=) * (*=) / (/=) ^ (^=) % (%=) < (<= << <<=) > (>= >> >>=) ^ (^=) = (==)
 	Non-ambiguous Operators: ~ . ? :
+	
+	Ambiguous Operators: + (idn/add), - (inv/sub), * (pdr/mul/pty), & (vdr/and)
 	
 	Operator Characters: + - ! ~ * & . / % < > ^ = ? :
 	

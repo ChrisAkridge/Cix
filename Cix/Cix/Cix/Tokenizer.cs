@@ -206,7 +206,8 @@ namespace Cix
 		KeyStruct,
 		KeySwitch,
 		KeyVoid,
-		KeyWhile
+		KeyWhile,
+		IndeterminateAsterisk
 	}
 
 	public sealed class Token
