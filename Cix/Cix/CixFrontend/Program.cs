@@ -37,7 +37,7 @@ namespace CixFrontend
 
 			if (option == 'b')
 			{
-				ByCharacterParser iterator = new ByCharacterParser(filePath);
+				Lexer iterator = new Lexer(filePath);
 				try
 				{
 					foreach (string word in iterator.EnumerateWords())
@@ -55,7 +55,7 @@ namespace CixFrontend
 				try
 				{
 					Tokenizer tokenizer = new Tokenizer();
-					var tokenList = tokenizer.Tokenize(new ByCharacterParser(filePath).EnumerateWords());
+					var tokenList = tokenizer.Tokenize(new Lexer(filePath).EnumerateWords());
 
 					foreach (var token in tokenList)
 					{

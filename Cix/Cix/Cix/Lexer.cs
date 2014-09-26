@@ -8,22 +8,29 @@ using System.Threading.Tasks;
 namespace Cix
 {
 	/// <summary>
-	/// Iterates through a source file by returning each word or operator in the code.
+	/// Divides a source file into individual words by scanning each character.
 	/// </summary>
-	public sealed class ByCharacterParser
+	public sealed class Lexer
 	{
-		private string file;
-		private StringBuilder builder;
-		private ParsingContext context;
-		private CommentKind commentKind;
-		private List<string> wordList;
-		private int lineNumber;
-		private int charNumber;
-		private bool withinDirective;
+		private string file;				// The actual text of the file.
+		private StringBuilder builder;		// A builder holding the current word.
+		private ParsingContext context;		// The context of the lexing; roughly, what the last scanned character was part of
+		private CommentKind commentKind;	// If within a comment, is it a single-line comment (\\) or a multiline comment? (\* *\)
+		private List<string> wordList;		// A list of lexed words.
+		private int lineNumber;				// The current line number where the scanning is. Used to make ParseExceptions.
+		private int charNumber;				// The current character number where the scanning is. Used to make ParseExceptions.
+		private bool withinDirective;		// Set when the lexer finds a # character in Root context and cleared when it then finds a newline.
 
+		/// <summary>
+		/// Gets the path to the file being lexed.
+		/// </summary>
 		public string FilePath { get; private set; }
 
-		public ByCharacterParser(string filePath)
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Lexer"/> class.
+		/// </summary>
+		/// <param name="filePath">The path to the file to be lexed.</param>
+		public Lexer(string filePath)
 		{
 			if (!File.Exists(filePath))
 			{
@@ -33,6 +40,10 @@ namespace Cix
 			this.file = File.ReadAllText(filePath);
 		}
 
+		/// <summary>
+		/// Lexes the source file and returns its words.
+		/// </summary>
+		/// <returns>A list containing each word of the source file.</returns>
 		public List<string> EnumerateWords()
 		{
 			if (string.IsNullOrEmpty(this.file))
@@ -281,6 +292,7 @@ namespace Cix
 				case ParsingContext.Root:
 				case ParsingContext.Whitespace:
 					this.context = ParsingContext.Word;
+					if (this.builder.Length > 0) { this.AddWordToList(); }
 					this.builder.Append(current);
 					break;
 				case ParsingContext.Comment:
@@ -728,6 +740,7 @@ namespace Cix
 				case ParsingContext.Directive:
 					throw new ParseException("Invalid ampersand in root context or operator.", this.file, this.lineNumber, this.charNumber);
 				case ParsingContext.Whitespace:
+					if (this.builder.Length > 0) { this.AddWordToList(); }
 					this.builder.Append('&');
 					this.context = ParsingContext.Operator;
 					break;
