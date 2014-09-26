@@ -33,6 +33,36 @@ namespace Cix
 		  "return", "schar", "short", "sizeof", "struct", "switch", "uint", 
 		  "ulong", "ushort", "void", "while" };
 
+		private Dictionary<string, TokenType> unambiguousBinaryOperatorTokens = new Dictionary<string,TokenType>()
+		{
+				{"/", TokenType.OpDivide},
+				{"%", TokenType.OpModulusDivide},
+  				{"<<", TokenType.OpShiftLeft},
+				{">>", TokenType.OpShiftRight},
+				{"<", TokenType.OpLessThan},
+				{"<=", TokenType.OpLessThanOrEqualTo},
+				{">", TokenType.OpGreaterThan},
+				{">=", TokenType.OpGreaterThanOrEqualTo},
+				{"==", TokenType.OpEqualTo},
+				{"!=", TokenType.OpNotEqualTo},
+				{"|", TokenType.OpBitwiseOR},
+				{"^", TokenType.OpBitwiseXOR},
+				{"&&", TokenType.OpLogicalAND},
+				{"||", TokenType.OpLogicalOR},
+				{"=", TokenType.OpAssign},
+				{"+=", TokenType.OpAddAssign},
+				{"-=", TokenType.OpSubtractAssign},
+				{"*=", TokenType.OpMultiplyAssign},
+				{"/=", TokenType.OpDivideAssign},
+				{"%=", TokenType.OpModulusDivideAssign},
+				{">>=", TokenType.OpShiftRightAssign},
+				{"<<=", TokenType.OpShiftLeftAssign},
+				{"&=", TokenType.OpBitwiseANDAssign},
+				{"|=", TokenType.OpBitwiseORAssign},
+				{"^=", TokenType.OpBitwiseXORAssign},
+				{"?", TokenType.OpTernaryAfterCondition}
+			};
+
 		private List<Token> tokenList = new List<Token>();
 
 		public List<Token> Tokenize(List<string> words)
@@ -52,6 +82,7 @@ namespace Cix
 				else if (current == ")") { this.AddToken(TokenType.CloseParen, ")"); }
 				else if (current == "[") { this.AddToken(TokenType.OpenBracket, "["); }
 				else if (current == "]") { this.AddToken(TokenType.CloseBracket, "]"); }
+				else if (current == ",") { this.AddToken(TokenType.Comma, ","); }
 				else if (reservedKeywords.Contains(current.ToLower()))
 				{
 					this.ProcessReservedWord(current);
@@ -90,23 +121,24 @@ namespace Cix
 				}
 				else if (current == ".")
 				{
-
+					this.ProcessDot(last, next);
 				}
 				else if (current == "->")
 				{
-
+					this.ProcessArrow(last, next);
 				}
-				else if (current.IsOneOfString("/", "%", "<<", ">>", "<", "<=", ">=", "==", "!=", "|", "^", "&&", "||", "=", "+=", "-=", "*=", "/=", "%=", ">>=", "<<=", "&=", "|=", "^=", "?"))
-				{ 
-				
-				}
-				else if (current.Count<char>(c => c == '*') == current.Length)
+				else if (current.IsOneOfString("/", "%", "<<", ">>", "<", "<=", ">", ">=", "==", "!=", "|", "^", "&&", "||", "=", "+=", "-=", "*=", "/=", "%=", ">>=", "<<=", "&=", "|=", "^=", "?"))
 				{
-
+					this.ProcessOperator(current, last, next);
+				}
+				else if (current.Count(c => c == '*') == current.Length && current.Length > 1)
+				{
+					// Two or more asterisks, but only asterisks
+					this.ProcessMultipleAsterisks(current, last, next);
 				}
 				else
 				{
-					this.AddToken(TokenType.Invalid, current);
+					throw new TokenException(current, string.Format("Unidentifiable word {0}.", current));
 				}
 			}
 
@@ -383,17 +415,94 @@ namespace Cix
 
 		private void ProcessDot(string last, string next)
 		{
+			// A dot by itself indicates a member access operator.
+			// OpMemberAccess (.): Preceding identifier, closeparen, closebracket. 
+			//	Succeeding identifier.
 
+			if (IsIdentifier(last) || last.IsOneOfString(")", "]"))
+			{
+				if (IsIdentifier(next))
+				{
+					this.AddToken(TokenType.OpMemberAccess, ".");
+				}
+				else
+				{
+					throw new TokenException(".", string.Format("Invalid member access operator. Preceded by {0}, succeeded by {1}.", last, next));
+				}
+			}
+			else
+			{
+				throw new TokenException(".", string.Format("Invalid dot token. Preceded by {0}, succeeded by {1}.", last, next));
+			}
 		}
 
 		private void ProcessArrow(string last, string next)
 		{
+			// An arrow is a pointer access operator.
+			// OpPointerAccess (->): Preceding identifier, closeparen, closebracket. 
+			//	Succeeding identifier.
 
+			if (IsIdentifier(last) || last.IsOneOfString(")", "]"))
+			{
+				if (IsIdentifier(next))
+				{
+					this.AddToken(TokenType.OpPointerMemberAccess, "->");
+				}
+				else
+				{
+					throw new TokenException("->", string.Format("Invalid pointer member access operator. Preceded by {0}, succeeded by {1}.", last, next));
+				}
+			}
+			else
+			{
+				throw new TokenException("->", string.Format("Invalid arrow token. Preceded by {0}, succeeded by {1}.", last, next));
+			}
 		}
 
-		private void ProcessOperator(string last, string next)
+		private void ProcessOperator(string current, string last, string next)
 		{
+			// All Other Binary Operators and the Ternary Aftercondition (?): 
+			//	Preceding identifier, closeparen, closebracket, one of { ++ -- }. 
+			//	Succeeding identifier, one of { + - ! ~ ++ -- & * }.
 
+			if (IsIdentifier(last) || last.IsOneOfString(")", "]", "++", "--"))
+			{
+				if (IsIdentifier(next) || next.IsOneOfString("+", "-", "!", "~", "++", "--", "&", "*"))
+				{
+					this.AddToken(this.unambiguousBinaryOperatorTokens[current], current);
+				}
+				else
+				{
+					throw new TokenException(current, string.Format("Invalid operator {0}. Preceded by {1}, succeeded by {2}.", current, last, next));
+				}
+			}
+			else
+			{
+				throw new TokenException(current, string.Format("Invalid token {0}. Preceded by {1}, succeeded by {2}.", current, last, next));
+			}
+		}
+
+		private void ProcessMultipleAsterisks(string current, string last, string next)
+		{
+			// Two or more asterisks forming a single word denote a pointer type.
+			// Preceded by: Identifier.
+			// Succeeded by: Identifier, closeparen.
+
+			if (IsIdentifier(last))
+			{
+				if (IsIdentifier(next) || next == ")")
+				{
+					this.AppendToken(current);
+				}
+				else
+				{
+					throw new TokenException(current, string.Format("Invalid pointer type declaration. Preceded by {0}, succeeded by {1}.", last, next));
+				}
+			}
+			else
+			{
+				throw new TokenException(current, string.Format("Invalid sequence of asterisks. Preceded by {0}, succeeded by {1}.", last, next));
+			}
 		}
 
 		private void AddToken(TokenType type, string word)
@@ -401,9 +510,11 @@ namespace Cix
 			this.tokenList.Add(new Token(type, word));
 		}
 
-		private void AppendToken(TokenType type, string word)
+		private void AppendToken(string word)
 		{
-			tokenList[tokenList.Count - 1] = new Token(type, word);
+			Token oldToken = this.tokenList[this.tokenList.Count - 1];
+			Token newToken = new Token(oldToken.Type, string.Concat(oldToken.Word, word));
+			this.tokenList[this.tokenList.Count - 1] = newToken;
 		}
 
 		private static bool IsIdentifier(string word, bool allowReservedWords = false)
@@ -501,7 +612,7 @@ namespace Cix
 		OpShiftLeftAssign,
 		OpBitwiseANDAssign,
 		OpBitwiseORAssign,
-		OpBitwiseNOTAssign,
+		OpBitwiseXORAssign,
 		OpTernaryAfterCondition,
 		OpTernaryAfterTrueExpression,
 		KeyBreak,

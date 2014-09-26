@@ -38,7 +38,7 @@ Operator Rules:
 	- OpPreincrement (++) requires: Preceding semicolon, closescope, openparen, comma, or binary/ternary operator. Succeeding identifier.
 	- OpPostincrement (++) requires: Preceding identifier or closebracket. Succeeding binary/ternary operator or semicolon.
 	- OpPredecrement (--): Preceding semicolon, closescope, openparen, comma, or binary/ternary operator. Succeeding identifier.
-	- OpPostIncrement: Preceding identifier or closebracket. Succeeding binary/ternary operator or semicolon.
+	- OpPostdecrement: Preceding identifier or closebracket. Succeeding binary/ternary operator or semicolon.
 	- OpPointerDerefence (*): Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { + - ! ~ & }. Succeeding identifier.
 	- OpVariableDerefence (&): Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { + - ! ~ & }. Succeeding identifier.
 	- OpMemberAccess (.): Preceding identifier, closeparen, closebracket. Succeeding identifier.
