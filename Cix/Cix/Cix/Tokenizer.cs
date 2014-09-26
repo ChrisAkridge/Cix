@@ -641,7 +641,7 @@ namespace Cix
 		KeyUShort,
 		KeyVoid,
 		KeyWhile,
-		IndeterminateAsterisk
+		Indeterminate
 	}
 
 	public sealed class Token
