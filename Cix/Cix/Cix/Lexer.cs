@@ -72,7 +72,7 @@ namespace Cix
 				}
 				catch (Exception ex)
 				{
-
+					
 				}
 
 				if (char.IsWhiteSpace(current))

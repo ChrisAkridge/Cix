@@ -369,7 +369,7 @@ namespace Cix
 			}
 			else if (IsIdentifier(last, true) || last.IsOneOfString(")", "]", "++", "--"))
 			{
-				this.AddToken(TokenType.IndeterminateAsterisk, "*");
+				this.AddToken(TokenType.Indeterminate, "*");
 			}
 			else
 			{

@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="CharExtensions.cs" />
     <Compile Include="ParseException.cs" />
+    <Compile Include="Preproccesor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Lexer.cs" />
     <Compile Include="StringExtensions.cs" />
