@@ -11,15 +11,6 @@ namespace Cix
 	/// </summary>
 	public sealed class Tokenizer
 	{
-		private static readonly char[] validIdentifierCharacters = new char[]
-		{ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 
-		  'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 
-		  'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c',
-		  'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-		  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 
-		  'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6',
-		  '7', '8', '9', '_', '.' };
-
 		private static readonly string[] unaryPrefixOperators = new string[] { "+", "-", "!", "~", "++", "--", "*", "&" };
 		private static readonly string[] unaryPostfixOperators = new string[] { "++", "--" };
 		private static readonly string[] binaryTernaryOperators = new string[]
@@ -74,7 +65,7 @@ namespace Cix
 				string last = (i > 0) ? words[i - 1] : "\0";
 				string next = (i < wordCount - 1) ? words[i + 1] : "\0";
 
-				if (IsIdentifier(current)) { this.AddToken(TokenType.Identifier, current); }
+				if (current.IsIdentifier()) { this.AddToken(TokenType.Identifier, current); }
 				else if (current == ";") { this.AddToken(TokenType.Semicolon, ";"); }
 				else if (current == "{") { this.AddToken(TokenType.OpenScope, "{"); }
 				else if (current == "}") { this.AddToken(TokenType.CloseScope, "}"); }
@@ -166,7 +157,7 @@ namespace Cix
 
 			if (last == ";" || last == "}" || last == "(" || last == "," || IsBinaryTernaryOperator(last) || last.IsOneOfString("-", "!", "~"))
 			{
-				if (IsIdentifier(next) || next.IsOneOfString("-", "!", "~", "*", "&"))
+				if (next.IsIdentifier() || next.IsOneOfString("-", "!", "~", "*", "&"))
 				{
 					this.AddToken(TokenType.OpIdentity, "+");
 				}
@@ -175,9 +166,9 @@ namespace Cix
 					throw new TokenException("+", string.Format("Invalid unary identity operator. Preceded by {0}, succeeded by {1}.", last, next));
 				}
 			}
-			else if (IsIdentifier(last) || last == ")" || last == "]" || last.IsOneOfString("++", "--"))
+			else if (last.IsIdentifier() || last == ")" || last == "]" || last.IsOneOfString("++", "--"))
 			{
-				if (IsIdentifier(next) || next.IsOneOfString("-", "!", "~", "--", "&", "*"))
+				if (next.IsIdentifier() || next.IsOneOfString("-", "!", "~", "--", "&", "*"))
 				{
 					this.AddToken(TokenType.OpAdd, "+");
 				}
@@ -202,7 +193,7 @@ namespace Cix
 
 			if (last.IsOneOfString(";", "}", "(", ",", "+", "!", "~") || IsBinaryTernaryOperator(last))
 			{
-				if (IsIdentifier(next) || next.IsOneOfString("+", "!", "~", "*", "&"))
+				if (next.IsIdentifier() || next.IsOneOfString("+", "!", "~", "*", "&"))
 				{
 					this.AddToken(TokenType.OpInverse, "-");
 				}
@@ -211,9 +202,9 @@ namespace Cix
 					throw new TokenException("-", string.Format("Invalid unary inverse operator. Preceded by {0}, succeeded by {1}.", last, next));
 				}
 			}
-			else if (IsIdentifier(last) || last.IsOneOfString(")", "]", "++", "--"))
+			else if (last.IsIdentifier() || last.IsOneOfString(")", "]", "++", "--"))
 			{
-				if (IsIdentifier(next) || next.IsOneOfString("(", "+", "!", "~", "++", "&", "*"))
+				if (next.IsIdentifier() || next.IsOneOfString("(", "+", "!", "~", "++", "&", "*"))
 				{
 					this.AddToken(TokenType.OpSubtract, "-");
 				}
@@ -236,7 +227,7 @@ namespace Cix
 
 			if (last.IsOneOfString(";", "}", "(", ",", "+", "-", "!", "~") || IsBinaryTernaryOperator(last))
 			{
-				if (IsIdentifier(next) || next.IsOneOfString("+", "-", "!", "~", "*", "&"))
+				if (next.IsIdentifier() || next.IsOneOfString("+", "-", "!", "~", "*", "&"))
 				{
 					this.AddToken(TokenType.OpLogicalNOT, "!");
 				}
@@ -259,7 +250,7 @@ namespace Cix
 
 			if (last.IsOneOfString(";", "}", "(", ",", "+", "-", "!", "~") || IsBinaryTernaryOperator(last))
 			{
-				if (IsIdentifier(next) || next.IsOneOfString("+", "-", "!", "~", "*", "&"))
+				if (next.IsIdentifier() || next.IsOneOfString("+", "-", "!", "~", "*", "&"))
 				{
 					this.AddToken(TokenType.OpBitwiseAND, "~");
 				}
@@ -284,7 +275,7 @@ namespace Cix
 
 			if (last.IsOneOfString(";", "}", "(", ",") || IsBinaryTernaryOperator(last))
 			{
-				if (IsIdentifier(next))
+				if (next.IsIdentifier())
 				{
 					this.AddToken(TokenType.OpPreincrement, "++");
 				}
@@ -293,7 +284,7 @@ namespace Cix
 					throw new TokenException("++", string.Format("Invalid preincrement operator. Preceded by {0}, succeeded by {1}.", last, next));
 				}
 			}
-			else if (IsIdentifier(last) || last == "}")
+			else if (last.IsIdentifier() || last == "}")
 			{
 				if (IsBinaryTernaryOperator(next) || next == ";")
 				{
@@ -320,7 +311,7 @@ namespace Cix
 
 			if (last.IsOneOfString(";", "}", "(", ",") || IsBinaryTernaryOperator(last))
 			{
-				if (IsIdentifier(next))
+				if (next.IsIdentifier())
 				{
 					this.AddToken(TokenType.OpPredecrement, "--");
 				}
@@ -329,7 +320,7 @@ namespace Cix
 					throw new TokenException("--", string.Format("Invalid predecrement operator. Preceded by {0}, succeeded by {1}.", last, next));
 				}
 			}
-			else if (IsIdentifier(last) || last == "}")
+			else if (last.IsIdentifier() || last == "}")
 			{
 				if (IsBinaryTernaryOperator(next) || next == ";")
 				{
@@ -358,7 +349,7 @@ namespace Cix
 
 			if (last.IsOneOfString(";", "}", "(", ",", "+", "-", "!", "~", "&") || IsBinaryTernaryOperator(last))
 			{
-				if (IsIdentifier(next) || next.IsOneOfString("(", ")"))
+				if (next.IsIdentifier() || next.IsOneOfString("(", ")"))
 				{
 					this.AddToken(TokenType.OpPointerDereference, "*");
 				}
@@ -367,7 +358,7 @@ namespace Cix
 					throw new TokenException("*", string.Format("Invalid pointer dereference operator. Preceded by {0}, succeeded by {1}.", last, next));
 				}
 			}
-			else if (IsIdentifier(last, true) || last.IsOneOfString(")", "]", "++", "--"))
+			else if (last.IsIdentifier(true) || last.IsOneOfString(")", "]", "++", "--"))
 			{
 				this.AddToken(TokenType.Indeterminate, "*");
 			}
@@ -387,7 +378,7 @@ namespace Cix
 
 			if (last.IsOneOfString(";", "}", "(", ",", "+", "-", "!", "~", "&") || IsBinaryTernaryOperator(last))
 			{
-				if (IsIdentifier(next) || next.IsOneOfString("*", "&"))
+				if (next.IsIdentifier() || next.IsOneOfString("*", "&"))
 				{
 					this.AddToken(TokenType.OpVariableDereference, "&");
 				}
@@ -396,9 +387,9 @@ namespace Cix
 					throw new TokenException("&", string.Format("Invalid variable dereference operator. Preceded by {0}, succeeded by {1}.", last, next));
 				}
 			}
-			else if (IsIdentifier(last) || last.IsOneOfString(")", "]", "++", "--"))
+			else if (last.IsIdentifier() || last.IsOneOfString(")", "]", "++", "--"))
 			{
-				if (IsIdentifier(next) || next.IsOneOfString("+", "-", "!", "~", "++", "--", "*"))
+				if (next.IsIdentifier() || next.IsOneOfString("+", "-", "!", "~", "++", "--", "*"))
 				{
 					this.AddToken(TokenType.OpBitwiseAND, "&");
 				}
@@ -419,9 +410,9 @@ namespace Cix
 			// OpMemberAccess (.): Preceding identifier, closeparen, closebracket. 
 			//	Succeeding identifier.
 
-			if (IsIdentifier(last) || last.IsOneOfString(")", "]"))
+			if (last.IsIdentifier() || last.IsOneOfString(")", "]"))
 			{
-				if (IsIdentifier(next))
+				if (next.IsIdentifier())
 				{
 					this.AddToken(TokenType.OpMemberAccess, ".");
 				}
@@ -442,9 +433,9 @@ namespace Cix
 			// OpPointerAccess (->): Preceding identifier, closeparen, closebracket. 
 			//	Succeeding identifier.
 
-			if (IsIdentifier(last) || last.IsOneOfString(")", "]"))
+			if (last.IsIdentifier() || last.IsOneOfString(")", "]"))
 			{
-				if (IsIdentifier(next))
+				if (next.IsIdentifier())
 				{
 					this.AddToken(TokenType.OpPointerMemberAccess, "->");
 				}
@@ -465,9 +456,9 @@ namespace Cix
 			//	Preceding identifier, closeparen, closebracket, one of { ++ -- }. 
 			//	Succeeding identifier, one of { + - ! ~ ++ -- & * }.
 
-			if (IsIdentifier(last) || last.IsOneOfString(")", "]", "++", "--"))
+			if (last.IsIdentifier() || last.IsOneOfString(")", "]", "++", "--"))
 			{
-				if (IsIdentifier(next) || next.IsOneOfString("+", "-", "!", "~", "++", "--", "&", "*"))
+				if (next.IsIdentifier() || next.IsOneOfString("+", "-", "!", "~", "++", "--", "&", "*"))
 				{
 					this.AddToken(this.unambiguousBinaryOperatorTokens[current], current);
 				}
@@ -488,9 +479,9 @@ namespace Cix
 			// Preceded by: Identifier.
 			// Succeeded by: Identifier, closeparen.
 
-			if (IsIdentifier(last))
+			if (last.IsIdentifier())
 			{
-				if (IsIdentifier(next) || next == ")")
+				if (next.IsIdentifier() || next == ")")
 				{
 					this.AppendToken(current);
 				}
@@ -515,41 +506,6 @@ namespace Cix
 			Token oldToken = this.tokenList[this.tokenList.Count - 1];
 			Token newToken = new Token(oldToken.Type, string.Concat(oldToken.Word, word));
 			this.tokenList[this.tokenList.Count - 1] = newToken;
-		}
-
-		private static bool IsIdentifier(string word, bool allowReservedWords = false)
-		{
-			if (string.IsNullOrEmpty(word) || word == "\\r\\n")
-			{
-				return false;
-			}
-
-			if (word.Length == 1 && word[0] == '.')
-			{
-				// A dot by itself is an OperatorMemberAccess. If it's not by itself, it's part of a numeric literal.
-				return false;
-			}
-
-			foreach (char c in word)
-			{
-				if (!c.IsOneOfCharacter(validIdentifierCharacters))
-				{
-					return false;
-				}
-			}
-
-			if (!allowReservedWords)
-			{
-				string lower = word.ToLower();
-				foreach (string reservedWord in reservedKeywords)
-				{
-					if (word == reservedWord)
-					{
-						return false;
-					}
-				}
-			}
-			return true;
 		}
 
 		private static bool IsBinaryTernaryOperator(string word)

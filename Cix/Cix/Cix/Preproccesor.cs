@@ -1,88 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Cix
 {
-	public static class Preproccesor
+	public sealed class Preprocessor
 	{
-		public static string Preprocess(string filePath, out List<string> definedConstants)
-		{
-			string basePath = Path.GetDirectoryName(filePath);
+		private string filePath;									// the full path to the file
+		private string basePath;									// the path to the directory holding the file
+		private List<string> definedConstants;						// a list of all defined constants (i.e. #define __SOME_FILE__)
+		private Dictionary<string, string> definedSubstitutions;	// a list of all defined substitutions (i.e. #define THIS THAT)
+		private List<string> includedFilePaths;						// paths to all files included by #include
 
+		public Preprocessor(string filePath)
+		{
 			if (!File.Exists(filePath))
 			{
-				throw new FileNotFoundException(string.Format("The file at {0} was not found."));
+				throw new FileNotFoundException(string.Format("The file at {0} does not exist.", filePath));
 			}
 
-			definedConstants = new List<string>();
-			Dictionary<string, string> substitutions = new Dictionary<string, string>();
-			string[] lines = File.ReadAllLines(filePath);
-			List<string> resultLines = new List<string>();
-
-			foreach (string line in lines)
-			{
-				if (!line.StartsWith("#"))
-				{
-					continue;
-				}
-
-				string[] words = line.Split(' ');
-
-				switch (words[0])
-				{
-					case "#include":
-						if (words.Length != 2)
-						{
-							throw new Exception(string.Format("Invalid number of words in include directive."));
-						}
-						string fileName = words[1].Substring(1, words[1].Length - 2);
-						resultLines.AddRange(LoadIncludedFile(basePath, fileName));
-						break;
-					case "#define":
-						if (words.Length == 2)
-						{
-							definedConstants.Add(words[1]);
-						}
-						else if (words.Length == 3)
-						{
-							substitutions.Add(words[1], words[2]);
-							// TODO: actually do the substitution
-							// also validate that valid identifiers are being used
-						}
-						break;
-					case "#undefine":
-					case "#ifdef":
-					case "#ifndef":
-					case "#else":
-					case "#endif":
-					default:
-						break;
-				}
-			}
+			this.filePath = filePath;
+			this.basePath = Path.GetDirectoryName(this.filePath);
+			this.definedConstants = new List<string>();
+			this.definedSubstitutions = new Dictionary<string, string>();
+			this.includedFilePaths = new List<string>();
 		}
 
-		private static string[] LoadIncludedFile(string basePath, string fileName)
+		public string Preprocess()
 		{
-			if (!fileName.Contains("."))
-			{
-				throw new ArgumentException(string.Format("The #included file's name was not valid. Line: #include <{0}>", fileName));
-			}
-			else if (fileName.Substring(fileName.IndexOf(".") + 1) != "cix")
-			{
-				throw new ArgumentException(string.Format("The #included file's name must end with a CIX extension. Line: #include <{0}>", fileName));
-			}
+			StringBuilder resultBuilder = new StringBuilder();	// we'll append every preprocessed line to this builder
+			bool withinConditional = false;						// set when we find a #ifdef or #ifndef directive; cleared when we find an #endif directive
+			bool conditionalValue = false;						// we evaluate the condition as soon as we find it; this field holds the result
 
-			string fullPath = Path.Combine(basePath, fileName);
-			if (!File.Exists(fullPath))
-			{
-				throw new FileNotFoundException(string.Format("The #included file at {0} does not exist.", fullPath));
-			}
+			// First, grab the lines of the file. 
+			// Every preprocessor directive is guaranteed to be on one line, so we can only look at the lines instead of lexing it.
+			string[] fileLines = File.ReadAllLines(this.filePath);
 
-			return File.ReadAllLines(fullPath);
+			foreach (string line in fileLines)
+			{
+				if (line.StartsWith("#"))
+				{
+					
+				}
+				else
+				{
+
+				}
+			}
 		}
 	}
 }
