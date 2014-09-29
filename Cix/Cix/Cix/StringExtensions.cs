@@ -63,5 +63,76 @@ namespace Cix
 			return true;
 		}
 
+		public static string RemoveComments(this string input)
+		{
+			StringBuilder result = new StringBuilder();				// Stores the uncommented version of the file.
+			CommentKind currentCommentKind = CommentKind.NoComment;	// Keeps track of what kind of comment we're in, if any
+
+			for (int i = 0; i < input.Length; i++)
+			{
+				char current = input[i];
+				char last = (i > 0) ? input[i - 1] : '\0';
+				char next = (i < input.Length - 1) ? input[i + 1] : '\0';
+ 
+				if (current == '/')
+				{
+					if (last == '/' || last == '*')
+					{
+						continue;
+					}
+					else if (next == '/')
+					{
+						currentCommentKind = CommentKind.SingleLine;
+					}
+					else if (next == '*')
+					{
+						currentCommentKind = CommentKind.MultipleLines;
+					}
+					else
+					{
+						result.Append(current);
+					}
+				}
+				else if (current == '*')
+				{
+					if (last == '/')
+					{
+						continue;
+					}
+					else if (next == '/')
+					{
+						currentCommentKind = CommentKind.NoComment;
+					}
+					else
+					{
+						result.Append(current);
+					}
+				}
+				else if (current == '\r' || current == '\n')
+				{
+					if (currentCommentKind == CommentKind.SingleLine)
+					{
+						currentCommentKind = CommentKind.NoComment;
+					}
+					result.Append(current);
+				}
+				else
+				{
+					if (currentCommentKind == CommentKind.NoComment)
+					{
+						result.Append(current);
+					}
+				}
+			}
+
+			return result.ToString();
+		}
+
+		private enum CommentKind
+		{
+			NoComment,
+			SingleLine,
+			MultipleLines
+		}
 	}
 }

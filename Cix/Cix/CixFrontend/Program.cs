@@ -32,12 +32,19 @@ namespace CixFrontend
 				return;
 			}
 
-			Console.Write("By character (B)/Tokenized (T)");
-			char option = char.ToLower((char)Console.Read());
+			string file = File.ReadAllText(filePath);
 
-			if (option == 'b')
+			Console.Write("Remove comments(C)/By character (B)/Tokenized (T)");
+			char option = char.ToLower((char)Console.Read());
+			Console.WriteLine();
+
+			if (option == 'c')
 			{
-				Lexer iterator = new Lexer(filePath);
+				Console.WriteLine(file.RemoveComments());
+			}
+			else if (option == 'b')
+			{
+				Lexer iterator = new Lexer(file.RemoveComments());
 				try
 				{
 					foreach (string word in iterator.EnumerateWords())

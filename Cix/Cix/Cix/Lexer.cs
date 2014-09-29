@@ -15,7 +15,6 @@ namespace Cix
 		private string file;				// The actual text of the file.
 		private StringBuilder builder;		// A builder holding the current word.
 		private ParsingContext context;		// The context of the lexing; roughly, what the last scanned character was part of
-		private CommentKind commentKind;	// If within a comment, is it a single-line comment (\\) or a multiline comment? (\* *\)
 		private List<string> wordList;		// A list of lexed words.
 		private int lineNumber;				// The current line number where the scanning is. Used to make ParseExceptions.
 		private int charNumber;				// The current character number where the scanning is. Used to make ParseExceptions.
@@ -30,14 +29,9 @@ namespace Cix
 		/// Initializes a new instance of the <see cref="Lexer"/> class.
 		/// </summary>
 		/// <param name="filePath">The path to the file to be lexed.</param>
-		public Lexer(string filePath)
+		public Lexer(string file)
 		{
-			if (!File.Exists(filePath))
-			{
-				throw new FileNotFoundException(string.Format("The file at {0} does not exist.", filePath));
-			}
-
-			this.file = File.ReadAllText(filePath);
+			this.file = file;
 		}
 
 		/// <summary>
@@ -53,7 +47,6 @@ namespace Cix
 
 			this.builder = new StringBuilder();
 			this.context = ParsingContext.Root;
-			this.commentKind = CommentKind.NoComment;
 			this.wordList = new List<string>();
 			this.lineNumber = this.charNumber = 0;
 
@@ -181,10 +174,6 @@ namespace Cix
 					{
 						this.builder.Append(current);
 					}
-					else if (this.context == ParsingContext.Comment)
-					{
-						continue;
-					}
 					else
 					{
 						throw new ParseException(string.Format("Invalid character {0}.", current), this.file, this.lineNumber, this.charNumber);
@@ -217,13 +206,6 @@ namespace Cix
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Whitespace:
-					break;
-				case ParsingContext.Comment:
-					if (this.commentKind == CommentKind.SingleLine && isLineTerminator)
-					{
-						this.commentKind = CommentKind.NoComment;
-						this.context = ParsingContext.Whitespace;
-					}
 					break;
 				case ParsingContext.Directive:
 				case ParsingContext.Word:
@@ -270,8 +252,6 @@ namespace Cix
 					this.builder.Append(current);
 					this.AddWordToList();
 					break;
-				case ParsingContext.Comment:
-					break;
 				case ParsingContext.Operator:
 					this.AddWordToList();
 					this.builder.Append(current);
@@ -294,8 +274,6 @@ namespace Cix
 					this.context = ParsingContext.Word;
 					if (this.builder.Length > 0) { this.AddWordToList(); }
 					this.builder.Append(current);
-					break;
-				case ParsingContext.Comment:
 					break;
 				case ParsingContext.Directive:
 					if (current == '_')
@@ -354,8 +332,6 @@ namespace Cix
 					this.context = ParsingContext.StringLiteral;
 					this.builder.Append('"');
 					break;
-				case ParsingContext.Comment:
-					break;
 				case ParsingContext.Directive:
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
@@ -394,8 +370,6 @@ namespace Cix
 				case ParsingContext.Whitespace:
 					this.context = ParsingContext.Operator;
 					this.builder.Append('+');
-					break;
-				case ParsingContext.Comment:
 					break;
 				case ParsingContext.Word:
 					this.AddWordToList();
@@ -440,8 +414,6 @@ namespace Cix
 					this.builder.Append('-');
 					this.context = ParsingContext.Operator;
 					break;
-				case ParsingContext.Comment:
-					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
@@ -480,8 +452,6 @@ namespace Cix
 					this.builder.Append('!');
 					this.context = ParsingContext.Operator;
 					break;
-				case ParsingContext.Comment:
-					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
@@ -517,8 +487,6 @@ namespace Cix
 					this.builder.Append('~');
 					this.context = ParsingContext.Operator;
 					break;
-				case ParsingContext.Comment:
-					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
@@ -552,8 +520,6 @@ namespace Cix
 				case ParsingContext.Whitespace:
 					this.builder.Append('*');
 					this.context = ParsingContext.Operator;
-					break;
-				case ParsingContext.Comment:
 					break;
 				case ParsingContext.Operator:
 					if (last == '*')
@@ -590,24 +556,6 @@ namespace Cix
 				case ParsingContext.Operator:
 					throw new ParseException("Invalid forward slash in root context, directive, or operator.", this.file, this.lineNumber, this.charNumber);
 				case ParsingContext.Whitespace:
-					if (next.IsOneOfCharacter('/', '*'))
-					{
-						this.context = ParsingContext.Comment;
-						this.commentKind = (next == '/') ? CommentKind.SingleLine : CommentKind.MultipleLines;
-					}
-					else
-					{
-						this.builder.Append('/');
-						this.context = ParsingContext.Operator;
-					}
-					break;
-				case ParsingContext.Comment:
-					if (last == '*')
-					{
-						this.context = ParsingContext.Whitespace;
-						this.commentKind = CommentKind.NoComment;
-					}
-					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
@@ -636,8 +584,6 @@ namespace Cix
 					this.builder.Append('%');
 					this.context = ParsingContext.Operator;
 					break;
-				case ParsingContext.Comment:
-					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
@@ -663,8 +609,6 @@ namespace Cix
 				case ParsingContext.Whitespace:
 					this.builder.Append('<');
 					this.context = ParsingContext.Operator;
-					break;
-				case ParsingContext.Comment:
 					break;
 				case ParsingContext.Operator:
 					if (last == '<')
@@ -702,8 +646,6 @@ namespace Cix
 				case ParsingContext.Whitespace:
 					this.builder.Append('>');
 					this.context = ParsingContext.Operator;
-					break;
-				case ParsingContext.Comment:
 					break;
 				case ParsingContext.Operator:
 					if (last.IsOneOfCharacter('-', '>'))
@@ -744,8 +686,6 @@ namespace Cix
 					this.builder.Append('&');
 					this.context = ParsingContext.Operator;
 					break;
-				case ParsingContext.Comment:
-					break;
 				case ParsingContext.Operator:
 					if (last == '&')
 					{
@@ -782,8 +722,6 @@ namespace Cix
 				case ParsingContext.Whitespace:
 					this.builder.Append('|');
 					this.context = ParsingContext.Operator;
-					break;
-				case ParsingContext.Comment:
 					break;
 				case ParsingContext.Operator:
 					if (last == '|')
@@ -823,8 +761,6 @@ namespace Cix
 					this.builder.Append('^');
 					this.context = ParsingContext.Operator;
 					break;
-				case ParsingContext.Comment:
-					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
@@ -852,8 +788,6 @@ namespace Cix
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
 					throw new ParseException("Invalid dot in root context, whitespace context, directive, operator, or numeric literal fraction/suffix.", this.file, this.lineNumber, this.charNumber);
-				case ParsingContext.Comment:
-					break;
 				case ParsingContext.Word:
 					this.AddWordToList();
 					this.builder.Append('.');
@@ -883,8 +817,6 @@ namespace Cix
 					this.builder.Append('?');
 					this.context = ParsingContext.Operator;
 					break;
-				case ParsingContext.Comment:
-					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
@@ -913,8 +845,6 @@ namespace Cix
 					this.builder.Append(':');
 					this.context = ParsingContext.Operator;
 					break;
-				case ParsingContext.Comment:
-					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
@@ -941,8 +871,6 @@ namespace Cix
 				case ParsingContext.Whitespace:
 					this.builder.Append('=');
 					this.context = ParsingContext.Operator;
-					break;
-				case ParsingContext.Comment:
 					break;
 				case ParsingContext.Operator:
 					if (last.IsOneOfCharacter('<', '>', '+', '-', '*', '/', '%', '&', '|', '^', '!', '='))
@@ -984,8 +912,6 @@ namespace Cix
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
 					throw new ParseException("Invalid backslash in most contexts.", this.file, this.lineNumber, this.charNumber);
-				case ParsingContext.Comment:
-					break;
 				case ParsingContext.StringLiteral:
 					this.builder.Append('\\');
 					break;
@@ -1010,8 +936,6 @@ namespace Cix
 					this.AddWordToList();
 					this.context = ParsingContext.Whitespace;
 					break;
-				case ParsingContext.Comment:
-					break;
 				case ParsingContext.Directive:
 					throw new ParseException("Invalid semicolon in directive.", this.file, this.lineNumber, this.charNumber);
 				case ParsingContext.StringLiteral:
@@ -1033,8 +957,6 @@ namespace Cix
 				case ParsingContext.Whitespace:
 					this.builder.Append(',');
 					this.AddWordToList();
-					break;
-				case ParsingContext.Comment:
 					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
@@ -1062,8 +984,6 @@ namespace Cix
 					this.builder.Append('#');
 					this.context = ParsingContext.Directive;
 					this.withinDirective = true;
-					break;
-				case ParsingContext.Comment:
 					break;
 				case ParsingContext.Directive:
 				case ParsingContext.Word:
@@ -1097,8 +1017,6 @@ namespace Cix
 					this.builder.Append(current);
 					this.context = ParsingContext.NumericLiteral;
 					break;
-				case ParsingContext.Comment:
-					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
@@ -1123,7 +1041,6 @@ namespace Cix
 		{
 			Root,
 			Whitespace,
-			Comment,
 			Directive,
 			Word,
 			Operator,
@@ -1131,13 +1048,6 @@ namespace Cix
 			NumericLiteralFraction,
 			NumericLiteralSuffix,
 			StringLiteral
-		}
-
-		private enum CommentKind
-		{
-			NoComment,
-			SingleLine,
-			MultipleLines
 		}
 	}
 }
