@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Cix;
+using Cix.Exceptions;
 
 namespace CixFrontend
 {

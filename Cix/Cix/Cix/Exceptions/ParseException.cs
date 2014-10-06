@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Cix
+namespace Cix.Exceptions
 {
 	public sealed class ParseException : Exception
 	{
