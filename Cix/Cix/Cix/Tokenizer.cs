@@ -480,7 +480,7 @@ namespace Cix
 			// Preceded by: Identifier.
 			// Succeeded by: Identifier, closeparen.
 
-			if (last.IsIdentifier())
+			if (last.IsIdentifier(allowReservedWords: true))
 			{
 				if (next.IsIdentifier() || next == ")")
 				{

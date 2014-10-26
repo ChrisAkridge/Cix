@@ -35,7 +35,7 @@ namespace CixFrontend
 
 			string file = File.ReadAllText(filePath);
 
-			Console.Write("Remove comments (C)/Preprocessed (P)/By character (B)/Tokenized (T) ");
+			Console.Write("Remove comments (C)/Preprocessed (P)/By character (B)/Tokenized (T)/First stage (F) ");
 			char option = char.ToLower((char)Console.Read());
 			Console.WriteLine();
 
@@ -99,6 +99,28 @@ namespace CixFrontend
 					{
 						Console.Write("{0}: {1}", ex.GetType().Name, ex.Message);
 					}
+				}
+			}
+			else if (option == 'f')
+			{
+				try
+				{
+					file = file.RemoveComments();
+
+					Preprocessor preprocessor = new Preprocessor(file, filePath);
+					file = preprocessor.Preprocess();
+
+					var words = new Lexer(file).EnumerateWords();
+					var tokenList = new Tokenizer().Tokenize(words);
+
+					foreach (var token in tokenList)
+					{
+						Console.WriteLine("{0}: {1}", token.Type, token.Word);
+					}
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine("{0}: {1}", ex.GetType().Name, ex.Message);
 				}
 			}
 			Console.ReadKey();
