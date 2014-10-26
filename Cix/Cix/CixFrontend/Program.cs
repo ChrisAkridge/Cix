@@ -35,13 +35,28 @@ namespace CixFrontend
 
 			string file = File.ReadAllText(filePath);
 
-			Console.Write("Remove comments(C)/By character (B)/Tokenized (T)");
+			Console.Write("Remove comments (C)/Preprocessed (P)/By character (B)/Tokenized (T) ");
 			char option = char.ToLower((char)Console.Read());
 			Console.WriteLine();
 
 			if (option == 'c')
 			{
 				Console.WriteLine(file.RemoveComments());
+			}
+			else if (option == 'p')
+			{
+				Preprocessor preprocessor = new Preprocessor(file, filePath);
+				//try
+				//{
+					foreach (string line in preprocessor.Preprocess().Split(new string[] { "\r", "\r\n"}, StringSplitOptions.RemoveEmptyEntries))
+					{
+						Console.WriteLine(line);
+					}
+				//}
+				//catch (Exception ex)
+				//{
+				//	Console.WriteLine("{0}: {1}", ex.GetType().Name, ex.Message);
+				//}
 			}
 			else if (option == 'b')
 			{

@@ -43,25 +43,26 @@ namespace Cix
 
 			foreach (string line in fileLines)
 			{
-				if (line.StartsWith("#else"))
+				string trimmedLine = line.Trim();
+				if (trimmedLine.StartsWith("#else"))
 				{
 					conditionalValue = true;
 				}
-				else if (line.StartsWith("#endif"))
+				else if (trimmedLine.StartsWith("#endif"))
 				{
 					conditionalValue = null;
 				}
 
-				if (conditionalValue.Value == false)
+				if (conditionalValue.HasValue && conditionalValue.Value == false)
 				{
 					continue;
 				}
 
-				if (line.StartsWith("#"))
+				if (trimmedLine.StartsWith("#"))
 				{
 					// This line is a preprocessor directive.
 
-					if (line.StartsWith("#define"))
+					if (trimmedLine.StartsWith("#define"))
 					{
 						// #define <identifier>: Defines a constant named <identifier>.
 						// If <identifier> is used in an #ifdef, it will evaluate to true. 
@@ -94,7 +95,7 @@ namespace Cix
 								// The first word must be a valid identifer. The second word must be a valid identifier OR composed only of digits.
 								// Credit to http://stackoverflow.com/a/894567 for the Regex solution.
 
-								if (!this.definedSubstitutions.ContainsKey(words[1]))
+								if (this.definedSubstitutions.ContainsKey(words[1]))
 								{
 									throw new PreprocessingException(string.Format("The substitution word {0} may not be defined multiple times.", words[1]));
 								}
@@ -107,7 +108,7 @@ namespace Cix
 							}
 						}
 					}
-					else if (line.StartsWith("#undefine"))
+					else if (trimmedLine.StartsWith("#undefine"))
 					{
 						// #undefine <identifier>: Undefines a defined constant.
 
@@ -126,7 +127,7 @@ namespace Cix
 							this.definedConstants.Remove(constantToUndefine);
 						}
 					}
-					else if (line.StartsWith("#ifdef"))
+					else if (trimmedLine.StartsWith("#ifdef"))
 					{
 						// #ifdef <identifier>: If <identifier> is #defined, we continue processing everything between this #ifdef and the next #else/#endif.
 						// Otherwise, we ignore every line up to the next #else or #endif.
@@ -140,7 +141,7 @@ namespace Cix
 							conditionalValue = definedConstants.Contains(words[1]);
 						}
 					}
-					else if (line.StartsWith("#ifndef"))
+					else if (trimmedLine.StartsWith("#ifndef"))
 					{
 						// #ifndef <identifier>: If <identifier> is not #defined, we continue processing everything between this #ifndef and the next #else/#endif.
 						// Otherwise, we ignore every line up to the next #else or #endif.
@@ -155,9 +156,17 @@ namespace Cix
 						}
 					}
 					// We've already taken care of the #else and #endif at the top.
-					else if (line.StartsWith("#include"))
+					else if (trimmedLine.StartsWith("#include"))
 					{
-
+						// #include "file" or #include <file>: Loads and preprocesses a source file in this directory. Substitutes this line for a newline, the file, and another newline.
+						string[] words = line.Split(' ');
+						if (words.Length != 2)
+						{
+							throw new PreprocessingException(string.Format("Invalid number of words in include statement. Found {0} words, expected two.", words.Length));
+						}
+						string fileName = words[1].Substring(1, words[1].Length - 2); // get all the text from after the first char and before the last one
+						string file = this.LoadIncludeFile(fileName);
+						resultBuilder.Append(file);
 					}
 				}
 				else
@@ -168,12 +177,43 @@ namespace Cix
 
 					if (!conditionalValue.HasValue || conditionalValue.Value)
 					{
-						resultBuilder.Append(line);
+						string resultLine = line;
+						foreach (var substitution in definedSubstitutions)
+						{
+							if (resultLine.Contains(substitution.Key))
+							{
+								resultLine = resultLine.Replace(substitution.Key, substitution.Value);
+							}
+						}
+
+						resultBuilder.Append(resultLine);
 					}
 				}
 			}
 
-			return null;
+			return resultBuilder.ToString();
+		}
+
+		public string LoadIncludeFile(string fileName)
+		{
+			// For now, we'll just make #include "file" and #include <file> do the same thing
+			// They'll look in the current dir for the file to include
+			// Then they'll load and preprocess the file
+			// And then return it.
+
+			string filePath = Path.Combine(this.basePath, fileName);
+			if (!File.Exists(filePath))
+			{
+				throw new PreprocessingException(string.Format("The include file at {0} does not exist.", filePath));
+			}
+
+			this.includedFilePaths.Add(filePath);
+
+			string file = File.ReadAllText(filePath);
+			Preprocessor filePreprocessor = new Preprocessor(file, filePath);
+			file = filePreprocessor.Preprocess();
+
+			return string.Concat(Environment.NewLine, file, Environment.NewLine);
 		}
 	}
 }
