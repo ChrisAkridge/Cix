@@ -1,0 +1,24 @@
+Cix: Abstract Syntax Tree Parsing and Elements
+
+DataType: Represents the type of a value, structure member, or function variable.
+	string Name
+	int pointerLevel
+Element: An element of the AST tree. Implemented as a memberless abstract class from which all element classes derive.
+	Value: A value (constant or expression) that evaluates to a single value. Derives from Element.
+		DataType Type
+	ExpressionElement: Any of the below.
+		Constant: A value containing an instance of a type. The value itself is defined as a byte array, allowing the storage of fundamental types, length-prefixed strings, and struct instances.
+		Operator: A unary, binary, or ternary operator that performs operations on values.
+		MemberAccess: Direct access to a named variable in the current scope of execution.
+		FunctionCall: A call to a named function consisting of zero or more arguments, each argument being a constant or expression.
+			FunctionParameter: The value for an argument in a function call; contains an expression that contains either a single constant or a full set of expression elements.
+		ArrayMemberAccess: An access to an element in a named array. The member to access is indicated by an index that is either a numeric constant value or an expression. 
+	Expression: A list of expression elements sorted in postfix form.
+	FunctionDeclaration: Declares a function with a return type, name, list of arguments, and list of statements.
+		FunctionArgument: One of the arguments of a function with a type and name.
+		VariableLengthArgument: Found at the end of a list of arguments, this element indicates that the function accepts any further amount of arguments.
+	StructDeclaration: Declares a structure with a name.
+		StructMemberDeclaration: Declares the member of a structure with a type and name.
+	VariableDeclaration:
+	VariableDeclarationWithInitialization:
+	ConditionalBlock:
