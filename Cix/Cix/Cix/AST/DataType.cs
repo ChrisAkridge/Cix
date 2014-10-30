@@ -10,8 +10,9 @@ namespace Cix.AST
 	{
 		public string TypeName { get; private set; }
 		public int PointerLevel { get; private set; }
+		public int TypeSize { get; private set; }
 
-		public DataType(string typeName, int pointerLevel)
+		public DataType(string typeName, int pointerLevel, int typeSize)
 		{
 			if (string.IsNullOrEmpty(typeName))
 			{
@@ -20,11 +21,17 @@ namespace Cix.AST
 
 			if (pointerLevel < 0)
 			{
-				throw new ArgumentException(string.Format("Invalid pointer level {0}", pointerLevel));
+				throw new ArgumentException(string.Format("Invalid pointer level {0}.", pointerLevel));
+			}
+
+			if (typeSize <= 0)
+			{
+				throw new ArgumentException(string.Format("Invalid type size {0}.", typeSize));
 			}
 
 			this.TypeName = typeName;
 			this.PointerLevel = pointerLevel;
+			this.TypeSize = typeSize;
 		}
 
 		public Type GetBCLType()

@@ -41,6 +41,8 @@
   <ItemGroup>
     <Compile Include="AST\DataType.cs" />
     <Compile Include="AST\Element.cs" />
+    <Compile Include="AST\ExpressionConstant.cs" />
+    <Compile Include="AST\ExpressionElement.cs" />
     <Compile Include="AST\FunctionArgument.cs" />
     <Compile Include="CharExtensions.cs" />
     <Compile Include="Exceptions\ParseException.cs" />
