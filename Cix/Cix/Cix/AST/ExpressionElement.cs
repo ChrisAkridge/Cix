@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	class ExpressionElement : Element
+	public class ExpressionElement : Element
 	{
 	}
 }
