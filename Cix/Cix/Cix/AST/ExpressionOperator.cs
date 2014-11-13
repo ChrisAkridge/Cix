@@ -48,12 +48,7 @@ namespace Cix.AST
 		BinaryANDAssign,
 		BinaryORAssign,
 		BinaryXORAssign,
-		TernaryAfterCondition,
-		TernaryAfterTrue,
-		StructMemberAccess,
-		StructPointerMemberAccess,
-		Typecast,
-		FunctionCall,
-		ArrayMemberAccess
+		BinaryMemberAccess,
+		BinaryPointerMemberAccess
 	}
 }
