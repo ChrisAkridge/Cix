@@ -41,11 +41,16 @@
   <ItemGroup>
     <Compile Include="AST\DataType.cs" />
     <Compile Include="AST\Element.cs" />
+    <Compile Include="AST\Expression.cs" />
+    <Compile Include="AST\ExpressionArrayAccess.cs" />
     <Compile Include="AST\ExpressionConstant.cs" />
     <Compile Include="AST\ExpressionElement.cs" />
+    <Compile Include="AST\ExpressionFunctionCall.cs" />
+    <Compile Include="AST\ExpressionFunctionParameter.cs" />
     <Compile Include="AST\ExpressionMemberAccess.cs" />
     <Compile Include="AST\ExpressionOperator.cs" />
     <Compile Include="AST\FunctionArgument.cs" />
+    <Compile Include="AST\FunctionDeclaration.cs" />
     <Compile Include="CharExtensions.cs" />
     <Compile Include="Exceptions\ParseException.cs" />
     <Compile Include="Exceptions\PreprocessingException.cs" />
