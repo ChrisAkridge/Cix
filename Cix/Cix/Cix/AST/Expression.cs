@@ -1,28 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class Expression : Element
+	/// <summary>
+	/// A list of expression elements (operators and operands) stored in postfix form.
+	/// For instance, (3 + 2) * 5 becomes 3 2 + 5 *
+	/// </summary>
+	public sealed class Expression : ExpressionElement
 	{
 		private List<ExpressionElement> elements;
 
-		public ReadOnlyCollection<ExpressionElement> Elements
+		public IReadOnlyList<ExpressionElement> Elements
 		{
 			get
 			{
-				return this.elements.AsReadOnly() ?? null;
+				return this.elements.AsReadOnly();
 			}
 		}
 
-		public static Expression Parse(IEnumerable<Token> tokens)
+		public Expression(IEnumerable<ExpressionElement> elements)
 		{
-			// TODO: implement
-			return null;
+			this.elements = elements.ToList();
+		}
+
+		public static Expression Parse(IEnumerable<ExpressionElement> infixElements)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

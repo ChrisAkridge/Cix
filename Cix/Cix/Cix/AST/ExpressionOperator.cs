@@ -8,7 +8,12 @@ namespace Cix.AST
 {
 	public sealed class ExpressionOperator : ExpressionElement
 	{
+		public ExpressionOperators Operator { get; private set; }
 
+		public ExpressionOperator(ExpressionOperators @operator)
+		{
+			this.Operator = @operator;
+		}
 	}
 
 	public enum ExpressionOperators
