@@ -51,6 +51,7 @@
     <Compile Include="AST\Function.cs" />
     <Compile Include="AST\Statement.cs" />
     <Compile Include="AST\VarargsFunctionArgument.cs" />
+    <Compile Include="AST\VariableDeclaration.cs" />
     <Compile Include="CharExtensions.cs" />
     <Compile Include="Exceptions\ParseException.cs" />
     <Compile Include="Exceptions\PreprocessingException.cs" />

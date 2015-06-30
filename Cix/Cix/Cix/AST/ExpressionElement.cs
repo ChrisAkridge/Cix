@@ -8,5 +8,6 @@ namespace Cix.AST
 {
 	public class ExpressionElement : Element
 	{
+		// this probably should be abstract
 	}
 }

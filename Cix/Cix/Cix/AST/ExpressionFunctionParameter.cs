@@ -6,16 +6,15 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	/// <summary>
-	/// Represents a parameter in a function call.
-	/// </summary>
-	public sealed class ExpressionFunctionParameter : ExpressionElement
+	public sealed class ExpressionFunctionParameter
 	{
-		public Expression Value { get; private set; }
+		public DataType ParameterType { get; private set; }
+		public Expression ValueExpression { get; private set; }
 
-		public ExpressionFunctionParameter(Expression value)
+		public ExpressionFunctionParameter(DataType parameterType, Expression valueExpression)
 		{
-			this.Value = value;
+			this.ParameterType = parameterType;
+			this.ValueExpression = valueExpression;
 		}
 	}
 }
