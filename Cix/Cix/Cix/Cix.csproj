@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AST\ConditionalBlock.cs" />
     <Compile Include="AST\DataType.cs" />
     <Compile Include="AST\Element.cs" />
     <Compile Include="AST\ExpressionConstant.cs" />
@@ -49,9 +50,10 @@
     <Compile Include="AST\ExpressionOperator.cs" />
     <Compile Include="AST\FunctionArgument.cs" />
     <Compile Include="AST\Function.cs" />
-    <Compile Include="AST\Statement.cs" />
+    <Compile Include="AST\SwitchCase.cs" />
     <Compile Include="AST\VarargsFunctionArgument.cs" />
     <Compile Include="AST\VariableDeclaration.cs" />
+    <Compile Include="AST\VariableDeclarationWithInitialization.cs" />
     <Compile Include="CharExtensions.cs" />
     <Compile Include="Exceptions\ParseException.cs" />
     <Compile Include="Exceptions\PreprocessingException.cs" />
