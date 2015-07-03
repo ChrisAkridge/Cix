@@ -13,7 +13,5 @@ namespace Cix.AST
 
 		public List<FunctionArgument> Arguments { get; private set; }
 		public bool HasVariableArgumentsEntry { get; private set; }
-
-		// public List<Statement> Statements
 	}
 }
