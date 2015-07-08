@@ -54,7 +54,7 @@ namespace Cix
 			}
 
 			this.currentIndex--;
-			return false;
+			return true;
 		}
 
 		public List<Token> MoveStatement()
@@ -68,7 +68,7 @@ namespace Cix
 
 			if (IsStatementTerminator(this.Current))
 			{
-				result.Add(this.Current);
+				if (this.Current.Type == TokenType.Semicolon) { result.Add(this.Current); }
 				this.MoveNext();
 				return result;
 			}
@@ -100,6 +100,31 @@ namespace Cix
 
 				if (!this.MoveNext()) return;
 			}
+		}
+
+		/// <summary>
+		/// Checks if the current token is of an expected type, and throws if it is not.
+		/// </summary>
+		/// <param name="expected">The expected type of the token.</param>
+		/// <returns>The current token if it is valid.</returns>
+		public Token Validate(TokenType expected)
+		{
+			if (this.Current == null)
+			{
+				throw new ArgumentOutOfRangeException("Encountered beginning or end of token stream too early");
+			}
+			else if (this.Current.Type != expected)
+			{
+				throw new ArgumentException(String.Format("Invalid token type, expected type {0}, got type {1} (word: \"{2}\"", expected, this.Current.Type, this.Current.Word));
+			}
+
+			return this.Current;
+		}
+
+		public Token MoveNextValidate(TokenType expected)
+		{
+			this.MoveNext();
+			return this.Validate(expected);
 		}
 
 		private static bool IsStatementTerminator(Token token)

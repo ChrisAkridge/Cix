@@ -9,11 +9,13 @@ namespace Cix.AST
 	public sealed class SwitchCase : Element
 	{
 		public ExpressionConstant CaseConstant { get; private set; }
+		public bool IsDefaultCase { get; private set; }
 		public List<Element> Statements { get; private set; }
 
-		public SwitchCase(ExpressionConstant caseConstant, IEnumerable<Element> statements)
+		public SwitchCase(ExpressionConstant caseConstant, bool isDefaultCase, IEnumerable<Element> statements)
 		{
 			this.CaseConstant = caseConstant;
+			this.IsDefaultCase = isDefaultCase;
 			this.Statements = statements.ToList();
 		}
 	}

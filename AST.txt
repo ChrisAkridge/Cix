@@ -27,7 +27,7 @@ Element: An element of the AST tree. Implemented as a memberless abstract class 
 		ElseBlock: A list of statements that must follow after any IfBlocks and ElseIfBlocks.
 	SwitchBlock: A variable or conditional expression, followed by a list of cases.
 		SwitchCase: A constant or char/string literal and a list of statements.
-	LoopFor: A initializer (expression in the form of <variable> = <expression> or VariableDeclarationWithInitialization), a conditional (expression evaluating to a boolean number), an afterthought (any statement), and a list of statements to execute.
+	LoopFor: A initializer (expression in the form of <variable> = <expression> or VariableDeclarationWithInitialization), a conditional (expression evaluating to a boolean number), an iterator (any statement), and a list of statements to execute.
 	LoopWhile: A conditional expression and a list of statements to execute while the condition does not evaluate to zero.
 	LoopDoWhile: Same structure as above, but compiled differently.
 	Break: A break statement for loops and switch blocks.

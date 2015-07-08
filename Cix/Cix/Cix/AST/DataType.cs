@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class DataType
+	public sealed class DataType : Element
 	{
 		public string TypeName { get; private set; }
 		public int PointerLevel { get; private set; }

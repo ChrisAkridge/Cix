@@ -54,8 +54,12 @@
     <Compile Include="AST\FunctionArgument.cs" />
     <Compile Include="AST\Function.cs" />
     <Compile Include="AST\DoWhileLoop.cs" />
+    <Compile Include="AST\Generator\RootGenerator.cs" />
+    <Compile Include="AST\Generator\StructureGenerator.cs" />
     <Compile Include="AST\Return.cs" />
     <Compile Include="AST\ReturnValue.cs" />
+    <Compile Include="AST\StructDeclaration.cs" />
+    <Compile Include="AST\StructMemberDeclaration.cs" />
     <Compile Include="AST\SwitchBlock.cs" />
     <Compile Include="AST\SwitchCase.cs" />
     <Compile Include="AST\VarargsFunctionArgument.cs" />
