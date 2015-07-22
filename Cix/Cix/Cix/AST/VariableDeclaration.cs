@@ -13,8 +13,8 @@ namespace Cix.AST
 
 		public VariableDeclaration(DataType type, string name)
 		{
-			this.Type = type;
-			this.Name = name;
+			Type = type;
+			Name = name;
 		}
 	}
 }

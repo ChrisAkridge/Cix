@@ -13,8 +13,8 @@ namespace Cix.AST
 
 		public WhileLoop(Expression condition, IEnumerable<Element> statements)
 		{
-			this.Condition = condition;
-			this.Statements = statements.ToList();
+			Condition = condition;
+			Statements = statements.ToList();
 		}
 	}
 }

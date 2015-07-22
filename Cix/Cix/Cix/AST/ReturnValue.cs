@@ -12,7 +12,7 @@ namespace Cix.AST
 
 		public ReturnValue(Expression returnExpression)
 		{
-			this.ReturnExpression = returnExpression;
+			ReturnExpression = returnExpression;
 		}
 	}
 }

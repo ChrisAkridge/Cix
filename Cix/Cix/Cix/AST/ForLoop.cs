@@ -15,10 +15,10 @@ namespace Cix.AST
 
 		public ForLoop(Expression initializor, Expression condition, Expression iterator, IEnumerable<Element> statements)
 		{
-			this.Initializor = initializor;
-			this.Condition = condition;
-			this.Iterator = iterator;
-			this.Statements = statements.ToList();
+			Initializor = initializor;
+			Condition = condition;
+			Iterator = iterator;
+			Statements = statements.ToList();
 		}
 	}
 }

@@ -13,8 +13,8 @@ namespace Cix.AST
 
 		public ExpressionFunctionParameter(DataType parameterType, Expression valueExpression)
 		{
-			this.ParameterType = parameterType;
-			this.ValueExpression = valueExpression;
+			ParameterType = parameterType;
+			ValueExpression = valueExpression;
 		}
 	}
 }

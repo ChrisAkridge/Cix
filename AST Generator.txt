@@ -1,34 +1,20 @@
-AST Generation Rules (anything not stated here is an error):
-	Root:
-		Structure:
-			1. Find KeyStruct token.
-			2. Validate next token as Identifier, and use the token's word as the name of the structure.
-			3. Create a StructDeclaration using the name and an empty StructMemberDeclaration list.
-			4. Move the enumerator immediately past the openscope.
-			5. Perform the below creation of StructureMemberDeclarations until we encounter a closescope.
-				a. Enumerate and retrieve a whole statement. This statement should contain the entire member declaration.
-				b. If the statement has two to three tokens (type, name, (opt.)semicolon), it is not a pointer member or the pointer asterisks are with either the type or the name.
-					i. Check the first token for asterisks. If there are asterisks, create the proper DataType with name, size, and pointer level, and go to step d. Else, create a DataType at no pointer level.
-					ii. Check the second token for asterisks. If there are asterisks, set the pointer level in the DataType. Else, this is not a pointer member.
-				c. If the statement has three to four tokens (type, indeterminate, name, (opt.)semicolon), it is a pointer member. Create a DataType using the first token with a pointer level defined by the second token.
-				d. Create a string set to the member's name.
-				e. Create and return StructMemberDeclaration from these tokens.
-			6. Package all StructMemberDeclarations into a List and return.
-		
-		Function:
-			1. Find type token.
-			2. If the type token contains asterisks, it is a function returning a pointer. Create and set the DataType as such. Else, continue to step 3.
-			3. Read the next token. It is either one or more asterisks, or more commonly, an identifier, potentially with asterisks. Set the DataType's pointer level and create the function name as such.
-			~. If the last token was just asterisks, the next token is the identifier.
-			4. Move the enumerator over the openparen.
-			5. Until we encounter a closeparen,
-				a. Read a token. This is a type name with possible asterisks. Set the DataType as such.
-				b. Read a token. This is either a set of one or more asterisks or an identifier, potentially with asterisks. Set the DataType's pointer level and create the argument name as such.
-				~. If the last token was just asterisks, the next token is an identifier.
-				c. Read a token. If it's a comma, skip over it. If it's a closeparen, continue to step d.
-				d. Create a function argument with the created values and return it.
-				=== OR ===
-				a. Read a token. If it's an ellipsis, this is a variable length argument. Create the correct type and return it.
-			6. Move over the openscope and set a depth level to 1.
-			7. Until we find a closescope at depth 1...
-				a. 
+AST Generation:
+
+The Abstract Syntax Tree describes the structure of a valid Cix program after comment removal, preprocessing, lexing, and tokenizing. The AST generator transforms a sequence of tokens into a tree composed of AST elements that represents the program.
+
+The AST generator is a two-pass process. The first pass wholly defines structures and their members, as well as function definitions (name, return type, and arguments). The second pass enters function bodies and generates the tree from their internals.
+
+The first pass is primarily to resolve names without them having to be defined before their first usage. This rule applies partially in the first pass as well, allowing structure members and function definitions to use types that aren't defined until deeper in the file. To accomplish this, the first pass generator will mark as-of-yet unknown data types as "unresolved", and it keeps track of all unresolved type names in order to resolve them when they appear later in the file.
+
+The steps for a first pass AST generation are as follows:
+	1. A token may be either a KeyStruct or any identifier. If it's an identifier, and the identifier does not map to a type, assign it to the unresolved type names list.
+	2. If it's KeyStruct,
+		a. Read the next token, expecting an identifier. This identifier is the structure name.
+		b. Read the next token, expecting an openscope.
+		c. Structures must contain at least one structure member. Read a token, expecting an identifier (follow unresolved rules). If the identifier has one or more asterisks, set it up as a pointer type.
+		d. Read a token, expecting an identifier. This is the member's name.
+		e. Read a token. If it's a semicolon, go to step 2a. If it's an OpenBracket, this member defines an array of values.
+			i. Read all tokens until we reach a CloseBracket.
+			ii. Send it to the expression evaluator, evaluate it down, and use the final number as the array size.
+			iii. Read a token, expecting a semicolon. Return to step 2a.
+	3. If it's 

@@ -29,19 +29,19 @@ namespace Cix.AST
 				throw new ArgumentException(string.Format("Invalid type size {0}.", typeSize));
 			}
 
-			this.TypeName = typeName;
-			this.PointerLevel = pointerLevel;
-			this.TypeSize = typeSize;
+			TypeName = typeName;
+			PointerLevel = pointerLevel;
+			TypeSize = typeSize;
 		}
 
 		public Type GetBCLType()
 		{
-			if (this.PointerLevel != 0)
+			if (PointerLevel != 0)
 			{
 				throw new InvalidOperationException("This type is a pointer type; for type safety Cix cannot return the analogous BCL type.");
 			}
 
-			switch (this.TypeName)
+			switch (TypeName)
 			{
 				case "char":
 					return typeof(byte);
@@ -66,7 +66,7 @@ namespace Cix.AST
 				case "void":
 					return typeof(void);
 				default:
-					throw new InvalidOperationException(string.Format("The Cix type {0} does not have an analogous BCL type.", this.TypeName));
+					throw new InvalidOperationException(string.Format("The Cix type {0} does not have an analogous BCL type.", TypeName));
 			}
 		}
 	}

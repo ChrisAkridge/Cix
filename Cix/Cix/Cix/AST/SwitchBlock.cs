@@ -13,8 +13,8 @@ namespace Cix.AST
 
 		public SwitchBlock(Expression switchExpression, IEnumerable<SwitchCase> switchCases)
 		{
-			this.SwitchExpression = switchExpression;
-			this.SwitchCases = switchCases.ToList();
+			SwitchExpression = switchExpression;
+			SwitchCases = switchCases.ToList();
 		}
 	}
 }

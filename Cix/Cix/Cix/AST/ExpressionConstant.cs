@@ -24,73 +24,73 @@ namespace Cix.AST
 		public ExpressionConstant(DataType type)
 		{
 			// Use this constructor for user-defined types
-			this.Type = type;
-			this.value = new byte[type.TypeSize];
+			Type = type;
+			value = new byte[type.TypeSize];
 		}
 
 		public ExpressionConstant(bool value)
 		{
-			this.Type = new DataType("byte", 0, 1);
+			Type = new DataType("byte", 0, 1);
 			this.value = new byte[] { value ? (byte)1 : (byte)0 };
 		}
 
 		public ExpressionConstant(byte value)
 		{
-			this.Type = new DataType("byte", 0, 1);
+			Type = new DataType("byte", 0, 1);
 			this.value = new byte[] { value };
 		}
 
 		public ExpressionConstant(sbyte value)
 		{
-			this.Type = new DataType("sbyte", 0, 1);
+			Type = new DataType("sbyte", 0, 1);
 			this.value = new byte[] { unchecked((byte)value) };
 		}
 
 		public ExpressionConstant(short value)
 		{
-			this.Type = new DataType("short", 0, 2);
+			Type = new DataType("short", 0, 2);
 			this.value = BitConverter.GetBytes(value);
 		}
 
 		public ExpressionConstant(ushort value)
 		{
-			this.Type = new DataType("ushort", 0, 2);
+			Type = new DataType("ushort", 0, 2);
 			this.value = BitConverter.GetBytes(value);
 		}
 
 		public ExpressionConstant(int value)
 		{
-			this.Type = new DataType("int", 0, 4);
+			Type = new DataType("int", 0, 4);
 			this.value = BitConverter.GetBytes(value);
 		}
 
 		public ExpressionConstant(uint value)
 		{
-			this.Type = new DataType("uint", 0, 4);
+			Type = new DataType("uint", 0, 4);
 			this.value = BitConverter.GetBytes(value);
 		}
 
 		public ExpressionConstant(long value)
 		{
-			this.Type = new DataType("long", 0, 8);
+			Type = new DataType("long", 0, 8);
 			this.value = BitConverter.GetBytes(value);
 		}
 
 		public ExpressionConstant(ulong value)
 		{
-			this.Type = new DataType("ulong", 0, 8);
+			Type = new DataType("ulong", 0, 8);
 			this.value = BitConverter.GetBytes(value);
 		}
 
 		public ExpressionConstant(float value)
 		{
-			this.Type = new DataType("float", 0, 4);
+			Type = new DataType("float", 0, 4);
 			this.value = BitConverter.GetBytes(value);
 		}
 
 		public ExpressionConstant(double value)
 		{
-			this.Type = new DataType("double", 0, 8);
+			Type = new DataType("double", 0, 8);
 			this.value = BitConverter.GetBytes(value);
 		}
 
@@ -99,7 +99,7 @@ namespace Cix.AST
 			byte[] utf8 = Encoding.UTF8.GetBytes(value);
 			uint stringLength = (uint)utf8.Length;
 
-			this.Type = new DataType("lpstring", 0, (int)stringLength + 4);
+			Type = new DataType("lpstring", 0, (int)stringLength + 4);
 			this.value = BitConverter.GetBytes(stringLength).Concat(utf8).ToArray();
 		}
 	}

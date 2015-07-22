@@ -41,148 +41,141 @@ namespace Cix
 		/// <returns>A list containing each word of the source file.</returns>
 		public List<string> EnumerateWords()
 		{
-			if (string.IsNullOrEmpty(this.file))
+			if (string.IsNullOrEmpty(file))
 			{
 				return new List<string>();
 			}
 
-			this.builder = new StringBuilder();
-			this.context = ParsingContext.Root;
-			this.wordList = new List<string>();
-			this.lineNumber = this.charNumber = 0;
+			builder = new StringBuilder();
+			context = ParsingContext.Root;
+			wordList = new List<string>();
+			lineNumber = charNumber = 0;
 
-			for (int i = 0; i < this.file.Length; i++)
+			for (int i = 0; i < file.Length; i++)
 			{
-				this.charNumber++;
+				charNumber++;
 				char current = '\0';
 				char last = '\0';
 				char next = '\0';
 
-				try
-				{
-					current = this.file[i];
-					last = (i > 0) ? this.file[i - 1] : '\0';
-					next = (i < this.file.Length - 1) ? this.file[i + 1] : '\0';
-				}
-				catch (Exception ex)
-				{
-					
-				}
+				current = file[i];
+				last = (i > 0) ? file[i - 1] : '\0';
+				next = (i < file.Length - 1) ? file[i + 1] : '\0';
 
 				if (char.IsWhiteSpace(current))
 				{
-					this.ProcessWhitespace(current, last, next);
+					ProcessWhitespace(current, last, next);
 				}
 				else if (current.IsOneOfCharacter('{', '}', '[', ']', '(', ')'))
 				{
-					this.ProcessBraceBracketOrParentheses(current, last, next);
+					ProcessBraceBracketOrParentheses(current, last, next);
 				}
 				else if (char.IsLetter(current) || current == '_')
 				{
-					this.ProcessLetterOrUnderscore(current, last, next);
+					ProcessLetterOrUnderscore(current, last, next);
 				}
 				else if (char.IsDigit(current))
 				{
-					this.ProcessNumber(current, last, next);
+					ProcessNumber(current, last, next);
 				}
 				else if (current == '"')
 				{
-					this.ProcessQuotationMark(last, next);
+					ProcessQuotationMark(last, next);
 				}
 				else if (current == '+')
 				{
-					this.ProcessPlusSign(last, next);
+					ProcessPlusSign(last, next);
 				}
 				else if (current == '-')
 				{
-					this.ProcessMinusSign(last, next);
+					ProcessMinusSign(last, next);
 				}
 				else if (current == '!')
 				{
-					this.ProcessExclamationMark(last, next);
+					ProcessExclamationMark(last, next);
 				}
 				else if (current == '~')
 				{
-					this.ProcessTilde(last, next);
+					ProcessTilde(last, next);
 				}
 				else if (current == '*')
 				{
-					this.ProcessAsterisk(last, next);
+					ProcessAsterisk(last, next);
 				}
 				else if (current == '/')
 				{
-					this.ProcessForwardSlash(last, next);
+					ProcessForwardSlash(last, next);
 				}
 				else if (current == '%')
 				{
-					this.ProcessPercentSign(last, next);
+					ProcessPercentSign(last, next);
 				}
 				else if (current == '<')
 				{
-					this.ProcessLessThanSign(last, next);	
+					ProcessLessThanSign(last, next);	
 				}
 				else if (current == '>')
 				{
-					this.ProcessGreaterThanSign(last, next);	
+					ProcessGreaterThanSign(last, next);	
 				}
 				else if (current == '&')
 				{
-					this.ProcessAmpersand(last, next);
+					ProcessAmpersand(last, next);
 				}
 				else if (current == '|')
 				{
-					this.ProcessVerticalLine(last, next);
+					ProcessVerticalLine(last, next);
 				}
 				else if (current == '^')
 				{
-					this.ProcessCaret(last, next);
+					ProcessCaret(last, next);
 				}
 				else if (current == '.')
 				{
-					this.ProcessDot(last, next);
+					ProcessDot(last, next);
 				}
 				else if (current == '?')
 				{
-					this.ProcessQuestionMark(last, next);
+					ProcessQuestionMark(last, next);
 				}
 				else if (current == ':')
 				{
-					this.ProcessColon(last, next);
+					ProcessColon(last, next);
 				}
 				else if (current == '=')
 				{
-					this.ProcessEqualsSign(last, next);
+					ProcessEqualsSign(last, next);
 				}
 				else if (current == '\\')
 				{
-					this.ProcessBackslash(last, next);
+					ProcessBackslash(last, next);
 				}
 				else if (current == ';')
 				{
-					this.ProcessSemicolon(last, next);
+					ProcessSemicolon(last, next);
 				}
 				else if (current == ',')
 				{
-					this.ProcessComma(last, next);
+					ProcessComma(last, next);
 				}
 				else if (current == '#')
 				{
-					this.ProcessNumberSign(last, next);
+					ProcessNumberSign(last, next);
 				}
 				else
 				{
-					if (this.context == ParsingContext.StringLiteral)
+					if (context == ParsingContext.StringLiteral)
 					{
-						this.builder.Append(current);
+						builder.Append(current);
 					}
 					else
 					{
-						throw new ParseException(string.Format("Invalid character {0}.", current), this.file, this.lineNumber, this.charNumber);
+						throw new ParseException(string.Format("Invalid character {0}.", current), file, lineNumber, charNumber);
 					}
 				}
 			}
 
-			return this.wordList;
+			return wordList;
 		}
 
 		private void ProcessWhitespace(char current, char last, char next)
@@ -191,19 +184,19 @@ namespace Cix
 
 			if (isLineTerminator && last != '\r')
 			{
-				this.lineNumber++;
-				this.charNumber = 0;
+				lineNumber++;
+				charNumber = 0;
 
-				if (this.withinDirective)
+				if (withinDirective)
 				{
-					this.withinDirective = false;
-					if (this.builder.Length > 0) { this.AddWordToList(); }
-					this.builder.Append("\\r\\n"); // This newline helps the tokenizer to figure out where directives end
-					this.AddWordToList();
+					withinDirective = false;
+					if (builder.Length > 0) { AddWordToList(); }
+					builder.Append("\\r\\n"); // This newline helps the tokenizer to figure out where directives end
+					AddWordToList();
 				}
 			}
 
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Whitespace:
@@ -214,8 +207,8 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					if (this.builder.Length > 0) { this.AddWordToList(); }
-					this.context = ParsingContext.Whitespace;
+					if (builder.Length > 0) { AddWordToList(); }
+					context = ParsingContext.Whitespace;
 					break;
 				case ParsingContext.StringLiteral:
 					if (isLineTerminator && last != '\r')
@@ -234,32 +227,32 @@ namespace Cix
 
 		private void ProcessBraceBracketOrParentheses(char current, char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Directive:
-					throw new ParseException("Invalid bracket, brace, or parentheses", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid bracket, brace, or parentheses", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
 					builder.Append(current);
-					this.AddWordToList();
-					this.context = ParsingContext.Whitespace;
+					AddWordToList();
+					context = ParsingContext.Whitespace;
 					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					this.AddWordToList();
-					this.context = ParsingContext.Whitespace;
-					this.builder.Append(current);
-					this.AddWordToList();
+					AddWordToList();
+					context = ParsingContext.Whitespace;
+					builder.Append(current);
+					AddWordToList();
 					break;
 				case ParsingContext.Operator:
-					this.AddWordToList();
-					this.builder.Append(current);
-					this.context = ParsingContext.Whitespace;
+					AddWordToList();
+					builder.Append(current);
+					context = ParsingContext.Whitespace;
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append(current);
+					builder.Append(current);
 					break;
 				default:
 					break;
@@ -268,55 +261,55 @@ namespace Cix
 
 		private void ProcessLetterOrUnderscore(char current, char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Whitespace:
-					this.context = ParsingContext.Word;
-					if (this.builder.Length > 0) { this.AddWordToList(); }
-					this.builder.Append(current);
+					context = ParsingContext.Word;
+					if (builder.Length > 0) { AddWordToList(); }
+					builder.Append(current);
 					break;
 				case ParsingContext.Directive:
 					if (current == '_')
 					{
-						throw new ParseException("Invalid underscore in preprocessor directive", this.file, this.lineNumber, this.charNumber);
+						throw new ParseException("Invalid underscore in preprocessor directive", file, lineNumber, charNumber);
 					}
-					this.builder.Append(current);
+					builder.Append(current);
 					break;
 				case ParsingContext.Word:
-					this.builder.Append(current);
+					builder.Append(current);
 					break;
 				case ParsingContext.Operator:
-					this.AddWordToList();
-					this.context = ParsingContext.Word;
-					this.builder.Append(current);
+					AddWordToList();
+					context = ParsingContext.Word;
+					builder.Append(current);
 					break;
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 					if (char.ToLower(current).IsOneOfCharacter('u', 'l', 'f', 'd'))
 					{
-						this.context = ParsingContext.NumericLiteralSuffix;
-						this.builder.Append(current);
+						context = ParsingContext.NumericLiteralSuffix;
+						builder.Append(current);
 					}
 					else
 					{
-						throw new ParseException(string.Format("Invalid letter {0} in numeric literal.", current), this.file, this.lineNumber, this.charNumber);
+						throw new ParseException(string.Format("Invalid letter {0} in numeric literal.", current), file, lineNumber, charNumber);
 					}
 					break;
 				case ParsingContext.NumericLiteralSuffix:
 					if (char.ToLower(last) == 'u' && char.ToLower(current) == 'l')
 					{
-						this.builder.Append(current);
-						this.AddWordToList();
-						this.context = ParsingContext.Whitespace;
+						builder.Append(current);
+						AddWordToList();
+						context = ParsingContext.Whitespace;
 					}
 					else
 					{
-						throw new ParseException(string.Format("Invalid letter {0} in numeric literal suffix.", current), this.file, this.lineNumber, this.charNumber);
+						throw new ParseException(string.Format("Invalid letter {0} in numeric literal suffix.", current), file, lineNumber, charNumber);
 					}
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append(current);
+					builder.Append(current);
 					break;
 				default:
 					break;
@@ -325,24 +318,24 @@ namespace Cix
 
 		private void ProcessQuotationMark(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
-					throw new ParseException("Invalid quotation mark.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid quotation mark.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
-					this.context = ParsingContext.StringLiteral;
-					this.builder.Append('"');
+					context = ParsingContext.StringLiteral;
+					builder.Append('"');
 					break;
 				case ParsingContext.Directive:
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					throw new ParseException("Invalid quotation mark in word, directive, or numeric literal.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid quotation mark in word, directive, or numeric literal.", file, lineNumber, charNumber);
 				case ParsingContext.Operator:
-					this.AddWordToList();
-					this.builder.Append('"');
-					this.context = ParsingContext.StringLiteral;
+					AddWordToList();
+					builder.Append('"');
+					context = ParsingContext.StringLiteral;
 					break;
 				case ParsingContext.StringLiteral:
 					if (last == '\\')
@@ -351,9 +344,9 @@ namespace Cix
 					}
 					else
 					{
-						this.builder.Append('"');
-						this.AddWordToList();
-						this.context = ParsingContext.Whitespace;
+						builder.Append('"');
+						AddWordToList();
+						context = ParsingContext.Whitespace;
 					}
 					break;
 				default:
@@ -363,41 +356,41 @@ namespace Cix
 
 		private void ProcessPlusSign(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Directive:
-					throw new ParseException("Invalid character + in root context or directive.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid character + in root context or directive.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
-					this.context = ParsingContext.Operator;
-					this.builder.Append('+');
+					context = ParsingContext.Operator;
+					builder.Append('+');
 					break;
 				case ParsingContext.Word:
-					this.AddWordToList();
-					this.context = ParsingContext.Operator;
-					this.builder.Append('+');
+					AddWordToList();
+					context = ParsingContext.Operator;
+					builder.Append('+');
 					break;
 				case ParsingContext.Operator:
 					if (last == '+')
 					{
-						this.builder.Append('+');
-						this.AddWordToList();
-						this.context = ParsingContext.Whitespace;
+						builder.Append('+');
+						AddWordToList();
+						context = ParsingContext.Whitespace;
 					}
 					else
 					{
-						throw new ParseException("Invalid + in operator.", this.file, this.lineNumber, this.charNumber);
+						throw new ParseException("Invalid + in operator.", file, lineNumber, charNumber);
 					}
 					break;
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					this.AddWordToList();
-					this.context = ParsingContext.Operator;
-					this.builder.Append('+');
+					AddWordToList();
+					context = ParsingContext.Operator;
+					builder.Append('+');
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append('+');
+					builder.Append('+');
 					break;
 				default:
 					break;
@@ -406,35 +399,35 @@ namespace Cix
 
 		private void ProcessMinusSign(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Directive:
-					throw new ParseException("Invalid minus sign in root context or directive.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid minus sign in root context or directive.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
-					this.builder.Append('-');
-					this.context = ParsingContext.Operator;
+					builder.Append('-');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					this.AddWordToList();
-					this.builder.Append('-');
-					this.context = ParsingContext.Operator;
+					AddWordToList();
+					builder.Append('-');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.Operator:
 					if (last == '-')
 					{
-						this.builder.Append('-');
+						builder.Append('-');
 					}
 					else
 					{
-						throw new ParseException("Invalid minus sign in operator.", this.file, this.lineNumber, this.charNumber);
+						throw new ParseException("Invalid minus sign in operator.", file, lineNumber, charNumber);
 					}
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append('-');
+					builder.Append('-');
 					break;
 				default:
 					break;
@@ -443,15 +436,15 @@ namespace Cix
 
 		private void ProcessExclamationMark(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Directive:
 				case ParsingContext.Operator:
-					throw new ParseException("Invalid exclamation mark in root context, directive, or operator.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid exclamation mark in root context, directive, or operator.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
-					this.builder.Append('!');
-					this.context = ParsingContext.Operator;
+					builder.Append('!');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
@@ -459,13 +452,13 @@ namespace Cix
 				case ParsingContext.NumericLiteralSuffix:
 					if (next == '=')
 					{
-						this.AddWordToList();
-						this.builder.Append('!');
-						this.context = ParsingContext.Operator;
+						AddWordToList();
+						builder.Append('!');
+						context = ParsingContext.Operator;
 					}
 					else
 					{
-						throw new ParseException("Invalid exclamation mark in word or numeric literal.", this.file, this.lineNumber, this.charNumber);
+						throw new ParseException("Invalid exclamation mark in word or numeric literal.", file, lineNumber, charNumber);
 					}
 					break;
 				case ParsingContext.StringLiteral:
@@ -478,15 +471,15 @@ namespace Cix
 
 		private void ProcessTilde(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Directive:
 				case ParsingContext.Operator:
-					throw new ParseException("Invalid tilde in root context, directive, or operator.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid tilde in root context, directive, or operator.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
-					this.builder.Append('~');
-					this.context = ParsingContext.Operator;
+					builder.Append('~');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
@@ -494,17 +487,17 @@ namespace Cix
 				case ParsingContext.NumericLiteralSuffix:
 					if (next == '=')
 					{
-						this.AddWordToList();
-						this.builder.Append('~');
-						this.context = ParsingContext.Operator;
+						AddWordToList();
+						builder.Append('~');
+						context = ParsingContext.Operator;
 					}
 					else
 					{
-						throw new ParseException("Invalid tilde in word or numeric literal.", this.file, this.lineNumber, this.charNumber);
+						throw new ParseException("Invalid tilde in word or numeric literal.", file, lineNumber, charNumber);
 					}
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append('~');
+					builder.Append('~');
 					break;
 				default:
 					break;
@@ -513,35 +506,35 @@ namespace Cix
 
 		private void ProcessAsterisk(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Directive:
-					throw new ParseException("Invalid asterisk in root context, or directive.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid asterisk in root context, or directive.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
-					this.builder.Append('*');
-					this.context = ParsingContext.Operator;
+					builder.Append('*');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.Operator:
 					if (last == '*')
 					{
-						this.builder.Append('*');
+						builder.Append('*');
 					}
 					else
 					{
-						throw new ParseException("Invalid operator.", this.file, this.lineNumber, this.charNumber);
+						throw new ParseException("Invalid operator.", file, lineNumber, charNumber);
 					}
 					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					this.AddWordToList();
-					this.builder.Append('*');
-					this.context = ParsingContext.Operator;
+					AddWordToList();
+					builder.Append('*');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append('*');
+					builder.Append('*');
 					break;
 				default:
 					break;
@@ -550,23 +543,23 @@ namespace Cix
 
 		private void ProcessForwardSlash(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Directive:
 				case ParsingContext.Operator:
-					throw new ParseException("Invalid forward slash in root context, directive, or operator.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid forward slash in root context, directive, or operator.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					this.AddWordToList();
-					this.builder.Append('/');
-					this.context = ParsingContext.Operator;
+					AddWordToList();
+					builder.Append('/');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append('/');
+					builder.Append('/');
 					break;
 				default:
 					break;
@@ -575,26 +568,26 @@ namespace Cix
 
 		private void ProcessPercentSign(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Directive:
 				case ParsingContext.Operator:
-					throw new ParseException("Invalid percent sign in root context, directive, or operator.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid percent sign in root context, directive, or operator.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
-					this.builder.Append('%');
-					this.context = ParsingContext.Operator;
+					builder.Append('%');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					this.AddWordToList();
-					this.builder.Append('%');
-					this.context = ParsingContext.Operator;
+					AddWordToList();
+					builder.Append('%');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append('%');
+					builder.Append('%');
 					break;
 				default:
 					break;
@@ -603,13 +596,13 @@ namespace Cix
 
 		private void ProcessLessThanSign(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root: // where you left off: fix the directive handler for < and > because they're totally valid here.
-					throw new ParseException("Invalid less-than sign in root context.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid less-than sign in root context.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
-					this.builder.Append('<');
-					this.context = ParsingContext.Operator;
+					builder.Append('<');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.Operator:
 					if (last == '<')
@@ -618,7 +611,7 @@ namespace Cix
 					}
 					else
 					{
-						throw new ParseException("Invalid operator.", this.file, this.lineNumber, this.charNumber);
+						throw new ParseException("Invalid operator.", file, lineNumber, charNumber);
 					}
 					break;
 				case ParsingContext.Directive:
@@ -626,12 +619,12 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					this.AddWordToList();
-					this.builder.Append('<');
-					this.context = ParsingContext.Operator;
+					AddWordToList();
+					builder.Append('<');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append('<');
+					builder.Append('<');
 					break;
 				default:
 					break;
@@ -640,22 +633,22 @@ namespace Cix
 		
 		private void ProcessGreaterThanSign(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
-					throw new ParseException("Invalid greater-than sign in root context.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid greater-than sign in root context.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
-					this.builder.Append('>');
-					this.context = ParsingContext.Operator;
+					builder.Append('>');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.Operator:
 					if (last.IsOneOfCharacter('-', '>'))
 					{
-						this.builder.Append('>');
+						builder.Append('>');
 					}
 					else
 					{
-						throw new ParseException("Invalid operator.", this.file, this.lineNumber, this.charNumber);
+						throw new ParseException("Invalid operator.", file, lineNumber, charNumber);
 					}
 					break;
 				case ParsingContext.Directive:
@@ -663,12 +656,12 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					this.AddWordToList();
-					this.builder.Append('>');
-					this.context = ParsingContext.Operator;
+					AddWordToList();
+					builder.Append('>');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append('>');
+					builder.Append('>');
 					break;
 				default:
 					break;
@@ -677,36 +670,36 @@ namespace Cix
 
 		private void ProcessAmpersand(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Directive:
-					throw new ParseException("Invalid ampersand in root context or operator.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid ampersand in root context or operator.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
-					if (this.builder.Length > 0) { this.AddWordToList(); }
-					this.builder.Append('&');
-					this.context = ParsingContext.Operator;
+					if (builder.Length > 0) { AddWordToList(); }
+					builder.Append('&');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.Operator:
 					if (last == '&')
 					{
-						this.builder.Append('&');
+						builder.Append('&');
 					}
 					else
 					{
-						throw new ParseException("Invalid operator.", this.file, this.lineNumber, this.charNumber);
+						throw new ParseException("Invalid operator.", file, lineNumber, charNumber);
 					}
 					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					this.AddWordToList();
-					this.builder.Append('&');
-					this.context = ParsingContext.Operator;
+					AddWordToList();
+					builder.Append('&');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append('&');
+					builder.Append('&');
 					break;
 				default:
 					break;
@@ -715,35 +708,35 @@ namespace Cix
 
 		private void ProcessVerticalLine(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Directive:
-					throw new ParseException("Invalid vertical line in root context or operator.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid vertical line in root context or operator.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
-					this.builder.Append('|');
-					this.context = ParsingContext.Operator;
+					builder.Append('|');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.Operator:
 					if (last == '|')
 					{
-						this.builder.Append('|');
+						builder.Append('|');
 					}
 					else
 					{
-						throw new ParseException("Invalid operator.", this.file, this.lineNumber, this.charNumber);
+						throw new ParseException("Invalid operator.", file, lineNumber, charNumber);
 					}
 					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					this.AddWordToList();
-					this.builder.Append('|');
-					this.context = ParsingContext.Operator;
+					AddWordToList();
+					builder.Append('|');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append('|');
+					builder.Append('|');
 					break;
 				default:
 					break;
@@ -752,26 +745,26 @@ namespace Cix
 		
 		private void ProcessCaret(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Directive:
 				case ParsingContext.Operator:
-					throw new ParseException("Invalid caret in root context, directive, operator.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid caret in root context, directive, operator.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
-					this.builder.Append('^');
-					this.context = ParsingContext.Operator;
+					builder.Append('^');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					this.AddWordToList();
-					this.builder.Append('^');
-					this.context = ParsingContext.Operator;
+					AddWordToList();
+					builder.Append('^');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append('^');
+					builder.Append('^');
 					break;
 				default:
 					break;
@@ -780,7 +773,7 @@ namespace Cix
 
 		private void ProcessDot(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Whitespace:
@@ -788,18 +781,18 @@ namespace Cix
 				case ParsingContext.Operator:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					throw new ParseException("Invalid dot in root context, whitespace context, directive, operator, or numeric literal fraction/suffix.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid dot in root context, whitespace context, directive, operator, or numeric literal fraction/suffix.", file, lineNumber, charNumber);
 				case ParsingContext.Word:
-					this.AddWordToList();
-					this.builder.Append('.');
-					this.context = ParsingContext.Operator;
+					AddWordToList();
+					builder.Append('.');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.NumericLiteral:
-					this.builder.Append('.');
-					this.context = ParsingContext.NumericLiteralFraction;
+					builder.Append('.');
+					context = ParsingContext.NumericLiteralFraction;
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append('.');
+					builder.Append('.');
 					break;
 				default:
 					break;
@@ -808,26 +801,26 @@ namespace Cix
 
 		private void ProcessQuestionMark(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Directive:
 				case ParsingContext.Operator:
-					throw new ParseException("Invalid question mark in root context, directive, or operator.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid question mark in root context, directive, or operator.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
-					this.builder.Append('?');
-					this.context = ParsingContext.Operator;
+					builder.Append('?');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					this.AddWordToList();
-					this.builder.Append('?');
-					this.context = ParsingContext.Operator;
+					AddWordToList();
+					builder.Append('?');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append('?');
+					builder.Append('?');
 					break;
 				default:
 					break;
@@ -836,26 +829,26 @@ namespace Cix
 
 		private void ProcessColon(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Directive:
 				case ParsingContext.Operator:
-					throw new ParseException("Invalid colon in root context, directive, or operator.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid colon in root context, directive, or operator.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
-					this.builder.Append(':');
-					this.context = ParsingContext.Operator;
+					builder.Append(':');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					this.AddWordToList();
-					this.builder.Append(':');
-					this.context = ParsingContext.Operator;
+					AddWordToList();
+					builder.Append(':');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append(':');
+					builder.Append(':');
 					break;
 				default:
 					break;
@@ -864,36 +857,36 @@ namespace Cix
 
 		private void ProcessEqualsSign(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Directive:
-					throw new ParseException("Invalid equals sign in root context or directive.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid equals sign in root context or directive.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
-					this.builder.Append('=');
-					this.context = ParsingContext.Operator;
+					builder.Append('=');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.Operator:
 					if (last.IsOneOfCharacter('<', '>', '+', '-', '*', '/', '%', '&', '|', '^', '!', '='))
 					{
 						builder.Append('=');
-						this.context = ParsingContext.Whitespace;
+						context = ParsingContext.Whitespace;
 					}
 					else
 					{
-						throw new ParseException("Invalid operator.", this.file, this.lineNumber, this.charNumber);
+						throw new ParseException("Invalid operator.", file, lineNumber, charNumber);
 					}
 					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					this.AddWordToList();
-					this.builder.Append('=');
-					this.context = ParsingContext.Operator;
+					AddWordToList();
+					builder.Append('=');
+					context = ParsingContext.Operator;
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append('=');
+					builder.Append('=');
 					break;
 				default:
 					break;
@@ -902,7 +895,7 @@ namespace Cix
 
 		private void ProcessBackslash(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Whitespace:
@@ -912,9 +905,9 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					throw new ParseException("Invalid backslash in most contexts.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid backslash in most contexts.", file, lineNumber, charNumber);
 				case ParsingContext.StringLiteral:
-					this.builder.Append('\\');
+					builder.Append('\\');
 					break;
 				default:
 					break;
@@ -923,7 +916,7 @@ namespace Cix
 
 		private void ProcessSemicolon(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Whitespace:
@@ -932,15 +925,15 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					if (this.builder.Length > 0) { this.AddWordToList(); }
-					this.builder.Append(';');
-					this.AddWordToList();
-					this.context = ParsingContext.Whitespace;
+					if (builder.Length > 0) { AddWordToList(); }
+					builder.Append(';');
+					AddWordToList();
+					context = ParsingContext.Whitespace;
 					break;
 				case ParsingContext.Directive:
-					throw new ParseException("Invalid semicolon in directive.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid semicolon in directive.", file, lineNumber, charNumber);
 				case ParsingContext.StringLiteral:
-					this.builder.Append(';');
+					builder.Append(';');
 					break;
 				default:
 					break;
@@ -949,27 +942,27 @@ namespace Cix
 
 		private void ProcessComma(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Directive:
 				case ParsingContext.Operator:
-					throw new ParseException("Invalid comma in root context, directive, operator.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid comma in root context, directive, operator.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
-					this.builder.Append(',');
-					this.AddWordToList();
+					builder.Append(',');
+					AddWordToList();
 					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					this.AddWordToList();
-					this.builder.Append(',');
-					this.AddWordToList();
-					this.context = ParsingContext.Whitespace;
+					AddWordToList();
+					builder.Append(',');
+					AddWordToList();
+					context = ParsingContext.Whitespace;
 					break;
 				case ParsingContext.StringLiteral:
-					this.builder.Append(',');
+					builder.Append(',');
 					break;
 				default:
 					break;
@@ -978,13 +971,13 @@ namespace Cix
 
 		private void ProcessNumberSign(char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Whitespace:
-					this.builder.Append('#');
-					this.context = ParsingContext.Directive;
-					this.withinDirective = true;
+					builder.Append('#');
+					context = ParsingContext.Directive;
+					withinDirective = true;
 					break;
 				case ParsingContext.Directive:
 				case ParsingContext.Word:
@@ -992,9 +985,9 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					throw new ParseException("Invalid number sign in directive, word, operator, or numeric literal.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid number sign in directive, word, operator, or numeric literal.", file, lineNumber, charNumber);
 				case ParsingContext.StringLiteral:
-					this.builder.Append('#');
+					builder.Append('#');
 					break;
 				default:
 					break;
@@ -1003,26 +996,26 @@ namespace Cix
 
 		private void ProcessNumber(char current, char last, char next)
 		{
-			switch (this.context)
+			switch (context)
 			{
 				case ParsingContext.Root:
 				case ParsingContext.Directive:
 				case ParsingContext.NumericLiteralSuffix:
-					throw new ParseException("Invalid number in root context, directive, or numeric literal suffix.", this.file, this.lineNumber, this.charNumber);
+					throw new ParseException("Invalid number in root context, directive, or numeric literal suffix.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
 				case ParsingContext.Operator:
-					if (this.builder.Length > 0)
+					if (builder.Length > 0)
 					{
-						this.AddWordToList();
+						AddWordToList();
 					}
-					this.builder.Append(current);
-					this.context = ParsingContext.NumericLiteral;
+					builder.Append(current);
+					context = ParsingContext.NumericLiteral;
 					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.StringLiteral:
-					this.builder.Append(current);
+					builder.Append(current);
 					break;
 				default:
 					break;
@@ -1031,8 +1024,8 @@ namespace Cix
 
 		private void AddWordToList()
 		{
-			this.wordList.Add(this.builder.ToString());
-			this.builder.Clear();
+			wordList.Add(builder.ToString());
+			builder.Clear();
 		}
 
 		/// <summary>

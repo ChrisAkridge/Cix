@@ -18,8 +18,8 @@ namespace Cix.AST
 				throw new ArgumentException("The name of a function argument cannot be null or empty.");
 			}
 
-			this.Type = type;
-			this.ArgumentName = argumentName;
+			Type = type;
+			ArgumentName = argumentName;
 		}
 	}
 }

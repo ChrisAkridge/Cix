@@ -12,7 +12,7 @@ namespace Cix.AST
 
 		public ExpressionOperator(ExpressionOperators @operator)
 		{
-			this.Operator = @operator;
+			Operator = @operator;
 		}
 
 		public static int GetOperatorPrecedence(ExpressionOperators op)

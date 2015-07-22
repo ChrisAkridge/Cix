@@ -14,9 +14,9 @@ namespace Cix.AST
 
 		public SwitchCase(ExpressionConstant caseConstant, bool isDefaultCase, IEnumerable<Element> statements)
 		{
-			this.CaseConstant = caseConstant;
-			this.IsDefaultCase = isDefaultCase;
-			this.Statements = statements.ToList();
+			CaseConstant = caseConstant;
+			IsDefaultCase = isDefaultCase;
+			Statements = statements.ToList();
 		}
 	}
 }

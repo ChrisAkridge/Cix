@@ -16,12 +16,13 @@ namespace Cix.AST
 
 		public Expression(IEnumerable<ExpressionElement> elements)
 		{
-			this.Elements = elements.ToList();
+			Elements = elements.ToList();
 		}
 
 		public static Expression Parse(IEnumerable<ExpressionElement> infixElements)
 		{
 			throw new NotImplementedException();
+			// WYLO: Guess what.... It's finally time to write an expression parser. Good luck.
 		}
 	}
 }

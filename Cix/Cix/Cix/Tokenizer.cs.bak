@@ -66,75 +66,75 @@ namespace Cix
 				string last = (i > 0) ? words[i - 1] : "\0";
 				string next = (i < wordCount - 1) ? words[i + 1] : "\0";
 
-				if (current.IsIdentifier()) { AddToken(TokenType.Identifier, current); }
-				else if (current == ";") { AddToken(TokenType.Semicolon, ";"); }
-				else if (current == "{") { AddToken(TokenType.OpenScope, "{"); }
-				else if (current == "}") { AddToken(TokenType.CloseScope, "}"); }
-				else if (current == "(") { AddToken(TokenType.OpenParen, "("); }
-				else if (current == ")") { AddToken(TokenType.CloseParen, ")"); }
-				else if (current == "[") { AddToken(TokenType.OpenBracket, "["); }
-				else if (current == "]") { AddToken(TokenType.CloseBracket, "]"); }
-				else if (current == ",") { AddToken(TokenType.Comma, ","); }
+				if (current.IsIdentifier()) { this.AddToken(TokenType.Identifier, current); }
+				else if (current == ";") { this.AddToken(TokenType.Semicolon, ";"); }
+				else if (current == "{") { this.AddToken(TokenType.OpenScope, "{"); }
+				else if (current == "}") { this.AddToken(TokenType.CloseScope, "}"); }
+				else if (current == "(") { this.AddToken(TokenType.OpenParen, "("); }
+				else if (current == ")") { this.AddToken(TokenType.CloseParen, ")"); }
+				else if (current == "[") { this.AddToken(TokenType.OpenBracket, "["); }
+				else if (current == "]") { this.AddToken(TokenType.CloseBracket, "]"); }
+				else if (current == ",") { this.AddToken(TokenType.Comma, ","); }
 				else if (reservedKeywords.Contains(current.ToLower()))
 				{
-					ProcessReservedWord(current);
+					this.ProcessReservedWord(current);
 				}
 				else if (current == "+")
 				{
-					ProcessPlusSign(last, next);
+					this.ProcessPlusSign(last, next);
 				}
 				else if (current == "-")
 				{
-					ProcessMinusSign(last, next);
+					this.ProcessMinusSign(last, next);
 				}
 				else if (current == "!")
 				{
-					ProcessExclamationMark(last, next);
+					this.ProcessExclamationMark(last, next);
 				}
 				else if (current == "~")
 				{
-					ProcessTilde(last, next);
+					this.ProcessTilde(last, next);
 				}
 				else if (current == "++")
 				{
-					ProcessDoublePlus(last, next);
+					this.ProcessDoublePlus(last, next);
 				}
 				else if (current == "--")
 				{
-					ProcessDoubleMinus(last, next);
+					this.ProcessDoubleMinus(last, next);
 				}
 				else if (current == "*")
 				{
-					ProcessAsterisk(last, next);
+					this.ProcessAsterisk(last, next);
 				}
 				else if (current == "&")
 				{
-					ProcessAmpersand(last, next);
+					this.ProcessAmpersand(last, next);
 				}
 				else if (current == ".")
 				{
-					ProcessDot(last, next);
+					this.ProcessDot(last, next);
 				}
 				else if (current == "->")
 				{
-					ProcessArrow(last, next);
+					this.ProcessArrow(last, next);
 				}
 				else if (current.IsOneOfString("/", "%", "<<", ">>", "<", "<=", ">", ">=", "==", "!=", "|", "^", "&&", "||", "=", "+=", "-=", "*=", "/=", "%=", ">>=", "<<=", "&=", "|=", "^=", "?"))
 				{
-					ProcessOperator(current, last, next);
+					this.ProcessOperator(current, last, next);
 				}
 				else if (current.Count(c => c == '*') == current.Length && current.Length > 1)
 				{
 					// Two or more asterisks, but only asterisks
-					ProcessMultipleAsterisks(current, last, next);
+					this.ProcessMultipleAsterisks(current, last, next);
 				}
 				else
 				{
-					throw new TokenException(current, $"Unidentifiable word {current}");
-                }
+					throw new TokenException(current, string.Format("Unidentifiable word {0}.", current));
+				}
 			}
 
-			return tokenList;
+			return this.tokenList;
 		}
 
 		private void ProcessReservedWord(string current)
@@ -145,7 +145,7 @@ namespace Cix
 			{
 				throw new TokenException(current, "Invalid keyword. (how did you get here anyway)");
 			}
-			AddToken(tokenType, current);
+			this.AddToken(tokenType, current);
 		}
 
 		private void ProcessPlusSign(string last, string next)
@@ -160,7 +160,7 @@ namespace Cix
 			{
 				if (next.IsIdentifier() || next.IsOneOfString("-", "!", "~", "*", "&"))
 				{
-					AddToken(TokenType.OpIdentity, "+");
+					this.AddToken(TokenType.OpIdentity, "+");
 				}
 				else
 				{
@@ -171,7 +171,7 @@ namespace Cix
 			{
 				if (next.IsIdentifier() || next.IsOneOfString("-", "!", "~", "--", "&", "*"))
 				{
-					AddToken(TokenType.OpAdd, "+");
+					this.AddToken(TokenType.OpAdd, "+");
 				}
 				else
 				{
@@ -196,7 +196,7 @@ namespace Cix
 			{
 				if (next.IsIdentifier() || next.IsOneOfString("+", "!", "~", "*", "&"))
 				{
-					AddToken(TokenType.OpInverse, "-");
+					this.AddToken(TokenType.OpInverse, "-");
 				}
 				else
 				{
@@ -207,7 +207,7 @@ namespace Cix
 			{
 				if (next.IsIdentifier() || next.IsOneOfString("(", "+", "!", "~", "++", "&", "*"))
 				{
-					AddToken(TokenType.OpSubtract, "-");
+					this.AddToken(TokenType.OpSubtract, "-");
 				}
 				else
 				{
@@ -230,7 +230,7 @@ namespace Cix
 			{
 				if (next.IsIdentifier() || next.IsOneOfString("+", "-", "!", "~", "*", "&"))
 				{
-					AddToken(TokenType.OpLogicalNOT, "!");
+					this.AddToken(TokenType.OpLogicalNOT, "!");
 				}
 				else
 				{
@@ -253,7 +253,7 @@ namespace Cix
 			{
 				if (next.IsIdentifier() || next.IsOneOfString("+", "-", "!", "~", "*", "&"))
 				{
-					AddToken(TokenType.OpBitwiseAND, "~");
+					this.AddToken(TokenType.OpBitwiseAND, "~");
 				}
 				else
 				{
@@ -278,7 +278,7 @@ namespace Cix
 			{
 				if (next.IsIdentifier())
 				{
-					AddToken(TokenType.OpPreincrement, "++");
+					this.AddToken(TokenType.OpPreincrement, "++");
 				}
 				else
 				{
@@ -289,7 +289,7 @@ namespace Cix
 			{
 				if (IsBinaryTernaryOperator(next) || next == ";")
 				{
-					AddToken(TokenType.OpPostincrement, "++");
+					this.AddToken(TokenType.OpPostincrement, "++");
 				}
 				else
 				{
@@ -314,7 +314,7 @@ namespace Cix
 			{
 				if (next.IsIdentifier())
 				{
-					AddToken(TokenType.OpPredecrement, "--");
+					this.AddToken(TokenType.OpPredecrement, "--");
 				}
 				else
 				{
@@ -325,7 +325,7 @@ namespace Cix
 			{
 				if (IsBinaryTernaryOperator(next) || next == ";")
 				{
-					AddToken(TokenType.OpPostdecrement, "--");
+					this.AddToken(TokenType.OpPostdecrement, "--");
 				}
 				else
 				{
@@ -352,7 +352,7 @@ namespace Cix
 			{
 				if (next.IsIdentifier() || next.IsOneOfString("(", ")"))
 				{
-					AddToken(TokenType.OpPointerDereference, "*");
+					this.AddToken(TokenType.OpPointerDereference, "*");
 				}
 				else
 				{
@@ -361,7 +361,7 @@ namespace Cix
 			}
 			else if (last.IsIdentifier(true) || last.IsOneOfString(")", "]", "++", "--"))
 			{
-				AddToken(TokenType.Indeterminate, "*");
+				this.AddToken(TokenType.Indeterminate, "*");
 			}
 			else
 			{
@@ -381,7 +381,7 @@ namespace Cix
 			{
 				if (next.IsIdentifier() || next.IsOneOfString("*", "&"))
 				{
-					AddToken(TokenType.OpVariableDereference, "&");
+					this.AddToken(TokenType.OpVariableDereference, "&");
 				}
 				else
 				{
@@ -392,7 +392,7 @@ namespace Cix
 			{
 				if (next.IsIdentifier() || next.IsOneOfString("+", "-", "!", "~", "++", "--", "*"))
 				{
-					AddToken(TokenType.OpBitwiseAND, "&");
+					this.AddToken(TokenType.OpBitwiseAND, "&");
 				}
 				else
 				{
@@ -415,7 +415,7 @@ namespace Cix
 			{
 				if (next.IsIdentifier())
 				{
-					AddToken(TokenType.OpMemberAccess, ".");
+					this.AddToken(TokenType.OpMemberAccess, ".");
 				}
 				else
 				{
@@ -438,7 +438,7 @@ namespace Cix
 			{
 				if (next.IsIdentifier())
 				{
-					AddToken(TokenType.OpPointerMemberAccess, "->");
+					this.AddToken(TokenType.OpPointerMemberAccess, "->");
 				}
 				else
 				{
@@ -461,7 +461,7 @@ namespace Cix
 			{
 				if (next.IsIdentifier() || next.IsOneOfString("+", "-", "!", "~", "++", "--", "&", "*"))
 				{
-					AddToken(unambiguousBinaryOperatorTokens[current], current);
+					this.AddToken(this.unambiguousBinaryOperatorTokens[current], current);
 				}
 				else
 				{
@@ -484,7 +484,7 @@ namespace Cix
 			{
 				if (next.IsIdentifier() || next == ")")
 				{
-					AppendToken(current);
+					this.AppendToken(current);
 				}
 				else
 				{
@@ -499,14 +499,14 @@ namespace Cix
 
 		private void AddToken(TokenType type, string word)
 		{
-			tokenList.Add(new Token(type, word));
+			this.tokenList.Add(new Token(type, word));
 		}
 
 		private void AppendToken(string word)
 		{
-			Token oldToken = tokenList[tokenList.Count - 1];
+			Token oldToken = this.tokenList[this.tokenList.Count - 1];
 			Token newToken = new Token(oldToken.Type, string.Concat(oldToken.Word, word));
-			tokenList[tokenList.Count - 1] = newToken;
+			this.tokenList[this.tokenList.Count - 1] = newToken;
 		}
 
 		private static bool IsBinaryTernaryOperator(string word)
@@ -608,8 +608,8 @@ namespace Cix
 
 		public Token(TokenType type, string word)
 		{
-			Type = type;
-			Word = word;
+			this.Type = type;
+			this.Word = word;
 		}
 	}
 }

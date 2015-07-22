@@ -18,14 +18,14 @@ namespace Cix.AST
 		{
 			get
 			{
-				return (this.parameters != null) ? this.parameters.AsReadOnly() : null;
+				return (parameters != null) ? parameters.AsReadOnly() : null;
 			}
 		}
 
 		public ExpressionFunctionCall(string functionName, DataType functionReturnType, params ExpressionFunctionParameter[] parameters)
 		{
-			this.FunctionName = functionName;
-			this.FunctionReturnType = functionReturnType;
+			FunctionName = functionName;
+			FunctionReturnType = functionReturnType;
 
 			this.parameters = new List<ExpressionFunctionParameter>();
 			foreach (var parameter in parameters)

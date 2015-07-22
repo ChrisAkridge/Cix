@@ -15,10 +15,10 @@ namespace Cix.AST
 
 		public Function(DataType returnType, string name, IEnumerable<FunctionArgument> arguments, IEnumerable<Expression> statements)
 		{
-			this.ReturnType = returnType;
-			this.Name = name;
-			this.Arguments = arguments.ToList();
-			this.Statements = statements.ToList();
+			ReturnType = returnType;
+			Name = name;
+			Arguments = arguments.ToList();
+			Statements = statements.ToList();
 		}
 	}
 }

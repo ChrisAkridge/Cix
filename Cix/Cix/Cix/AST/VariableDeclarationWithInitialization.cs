@@ -17,9 +17,9 @@ namespace Cix.AST
 
 		public VariableDeclarationWithInitialization(DataType variableType, string variableName, Expression assignmentExpression)
 		{
-			this.VariableType = variableType;
-			this.VariableName = variableName;
-			this.AssignmentExpression = assignmentExpression;
+			VariableType = variableType;
+			VariableName = variableName;
+			AssignmentExpression = assignmentExpression;
 		}
 	}
 }

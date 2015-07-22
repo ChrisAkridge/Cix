@@ -124,7 +124,7 @@ namespace Cix
 					}
 				}
 			}
-			
+
 			return result.ToString();
 		}
 

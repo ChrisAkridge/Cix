@@ -48,10 +48,10 @@ namespace CixFrontend
 				Preprocessor preprocessor = new Preprocessor(file, filePath);
 				//try
 				//{
-					foreach (string line in preprocessor.Preprocess().Split(new string[] { "\r", "\r\n"}, StringSplitOptions.RemoveEmptyEntries))
-					{
-						Console.WriteLine(line);
-					}
+				foreach (string line in preprocessor.Preprocess().Split(new string[] { "\r", "\r\n"}, StringSplitOptions.RemoveEmptyEntries))
+				{
+					Console.WriteLine(line);
+				}
 				//}
 				//catch (Exception ex)
 				//{

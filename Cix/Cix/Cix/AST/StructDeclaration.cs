@@ -15,9 +15,9 @@ namespace Cix.AST
 		{
 			get
 			{
-				if (this.Members != null)
+				if (Members != null)
 				{
-					return this.Members.Sum(m => m.MemberType.TypeSize);
+					return Members.Sum(m => m.MemberType.TypeSize);
 				}
 				return 0;
 			}
@@ -25,8 +25,8 @@ namespace Cix.AST
 
 		public StructDeclaration(string name, IEnumerable<StructMemberDeclaration> members)
 		{
-			this.Name = name;
-			this.Members = members.ToList();
+			Name = name;
+			Members = members.ToList();
 		}
 	}
 }

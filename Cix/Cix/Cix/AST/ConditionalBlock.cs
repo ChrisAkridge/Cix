@@ -17,9 +17,9 @@ namespace Cix.AST
 		{
 			get
 			{
-				if (this.BlockType == ConditionalBlockType.IfBlock || this.BlockType == ConditionalBlockType.ElseIfBlock)
+				if (BlockType == ConditionalBlockType.IfBlock || BlockType == ConditionalBlockType.ElseIfBlock)
 				{
-					return this.blockCondition;
+					return blockCondition;
 				}
 				else
 				{
@@ -30,9 +30,9 @@ namespace Cix.AST
 
 		public ConditionalBlock(ConditionalBlockType blockType, Expression blockCondition, IEnumerable<Element> statements)
 		{
-			this.BlockType = blockType;
+			BlockType = blockType;
 			this.blockCondition = blockCondition;
-			this.BlockStatements = statements.ToList();
+			BlockStatements = statements.ToList();
 		}
 	}
 

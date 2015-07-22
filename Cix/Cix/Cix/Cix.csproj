@@ -29,6 +29,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -54,8 +57,7 @@
     <Compile Include="AST\FunctionArgument.cs" />
     <Compile Include="AST\Function.cs" />
     <Compile Include="AST\DoWhileLoop.cs" />
-    <Compile Include="AST\Generator\RootGenerator.cs" />
-    <Compile Include="AST\Generator\StructureGenerator.cs" />
+    <Compile Include="AST\Generator\FirstPassGenerator.cs" />
     <Compile Include="AST\Return.cs" />
     <Compile Include="AST\ReturnValue.cs" />
     <Compile Include="AST\StructDeclaration.cs" />
@@ -67,6 +69,7 @@
     <Compile Include="AST\VariableDeclarationWithInitialization.cs" />
     <Compile Include="AST\WhileLoop.cs" />
     <Compile Include="CharExtensions.cs" />
+    <Compile Include="Exceptions\ASTException.cs" />
     <Compile Include="Exceptions\ParseException.cs" />
     <Compile Include="Exceptions\PreprocessingException.cs" />
     <Compile Include="AST\Expression.cs" />

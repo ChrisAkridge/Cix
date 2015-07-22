@@ -15,14 +15,17 @@ namespace Cix
 		{
 			get
 			{
-				if (this.currentIndex < 0 || this.currentIndex >= this.tokens.Count)
+				if (currentIndex < 0 || currentIndex >= tokens.Count)
 				{
 					return null;
 				}
 
-				return this.tokens[currentIndex];
+				return tokens[currentIndex];
 			}
 		}
+
+		public bool AtBeginning => currentIndex == 0;
+		public bool AtEnd => currentIndex == (tokens.Count - 1);
 
 		public TokenEnumerator(List<Token> tokens)
 		{
@@ -32,28 +35,28 @@ namespace Cix
 			}
 
 			this.tokens = tokens;
-			this.currentIndex = 0;
+			currentIndex = 0;
 		}
 
 		public bool MoveNext()
 		{
-			if (this.currentIndex >= this.tokens.Count)
+			if (currentIndex >= tokens.Count)
 			{
 				return false;
 			}
 
-			this.currentIndex++;
+			currentIndex++;
 			return true;
 		}
 
 		public bool MoveLast()
 		{
-			if (this.currentIndex == 0)
+			if (currentIndex == 0)
 			{
 				return false;
 			}
 
-			this.currentIndex--;
+			currentIndex--;
 			return true;
 		}
 
@@ -61,22 +64,22 @@ namespace Cix
 		{
 			List<Token> result = new List<Token>();
 
-			if (this.currentIndex >= this.tokens.Count)
+			if (currentIndex >= tokens.Count)
 			{
 				return result;
 			}
 
-			if (IsStatementTerminator(this.Current))
+			if (IsStatementTerminator(Current))
 			{
-				if (this.Current.Type == TokenType.Semicolon) { result.Add(this.Current); }
-				this.MoveNext();
+				if (Current.Type == TokenType.Semicolon) { result.Add(Current); }
+				MoveNext();
 				return result;
 			}
 
 			do
 			{
-				result.Add(this.Current);
-			}   while (this.MoveNext() && !(IsStatementTerminator(this.Current)));
+				result.Add(Current);
+			}   while (MoveNext() && !(IsStatementTerminator(Current)));
 
 			return result;
 		}
@@ -84,21 +87,21 @@ namespace Cix
 		public void SkipBlock()
 		{
 			// First finds the next openscope and then skips to after the next closescope on that level
-			if (this.currentIndex >= this.tokens.Count) return;
+			if (currentIndex >= tokens.Count) return;
 
 			int scopeLevel = 0;
-			while (this.Current.Type != TokenType.OpenScope)
+			while (Current.Type != TokenType.OpenScope)
 			{
 				// Find the first openscope
-				if (!this.MoveNext()) return;
+				if (!MoveNext()) return;
 			}
 
-			while (this.Current.Type != TokenType.CloseScope && scopeLevel > 0)
+			while (Current.Type != TokenType.CloseScope && scopeLevel > 0)
 			{
-				if (this.Current.Type == TokenType.OpenScope) scopeLevel++;
-				else if (this.Current.Type == TokenType.CloseScope && scopeLevel > 0) scopeLevel--;
+				if (Current.Type == TokenType.OpenScope) scopeLevel++;
+				else if (Current.Type == TokenType.CloseScope && scopeLevel > 0) scopeLevel--;
 
-				if (!this.MoveNext()) return;
+				if (!MoveNext()) return;
 			}
 		}
 
@@ -107,24 +110,36 @@ namespace Cix
 		/// </summary>
 		/// <param name="expected">The expected type of the token.</param>
 		/// <returns>The current token if it is valid.</returns>
-		public Token Validate(TokenType expected)
+		public void Validate(TokenType expected)
 		{
-			if (this.Current == null)
+			if (Current == null)
 			{
-				throw new ArgumentOutOfRangeException("Encountered beginning or end of token stream too early");
+				throw new ArgumentOutOfRangeException(nameof(tokens), "Encountered beginning or end of token stream too early");
 			}
-			else if (this.Current.Type != expected)
+			else if (Current.Type != expected)
 			{
-				throw new ArgumentException(String.Format("Invalid token type, expected type {0}, got type {1} (word: \"{2}\"", expected, this.Current.Type, this.Current.Word));
+				throw new ArgumentException(String.Format("Invalid token type, expected type {0}, got type {1} (word: \"{2}\"", expected, Current.Type, Current.Word));
 			}
-
-			return this.Current;
 		}
 
-		public Token MoveNextValidate(TokenType expected)
+		public void ValidateNot(TokenType notExpected)
 		{
-			this.MoveNext();
-			return this.Validate(expected);
+			if (Current == null) throw new ArgumentOutOfRangeException(nameof(tokens), "Encountered beginning or end of stream too early");
+			else if (Current.Type == notExpected) throw new ArgumentException($"Invalid token type, expected anything but {notExpected}, but got it (word: \"{Current.Word}\"");
+		}
+
+		public bool MoveNextValidate(TokenType expected)
+		{
+			bool result = MoveNext();
+			Validate(expected);
+			return result;
+		}
+
+		public bool MoveNextValidateNot(TokenType notExpected)
+		{
+			bool result = MoveNext();
+			ValidateNot(notExpected);
+			return result;
 		}
 
 		private static bool IsStatementTerminator(Token token)

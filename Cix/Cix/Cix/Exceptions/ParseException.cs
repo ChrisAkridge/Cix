@@ -16,7 +16,7 @@ namespace Cix.Exceptions
 		{
 			get
 			{
-				return string.Format("At line {0} position {1}", this.lineNumber, this.charNumber);
+				return string.Format("At line {0} position {1}", lineNumber, charNumber);
 			}
 		}
 

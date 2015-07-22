@@ -10,11 +10,15 @@ namespace Cix.AST
 	{
 		public DataType MemberType { get; private set; }
 		public string MemberName { get; private set; }
+		public int ArraySize { get; private set; }
+		public int Offset { get; private set; }
 
-		public StructMemberDeclaration(DataType memberType, string memberName)
+		public StructMemberDeclaration(DataType memberType, string memberName, int arraySize, int offset)
 		{
-			this.MemberType = memberType;
-			this.MemberName = memberName;
+			MemberType = memberType;
+			MemberName = memberName;
+			ArraySize = arraySize;
+			Offset = offset;
 		}
 	}
 }

@@ -13,8 +13,8 @@ namespace Cix.AST
 
 		public ExpressionMemberAccess(string name, DataType type)
 		{
-			this.Name = name;
-			this.Type = type;
+			Name = name;
+			Type = type;
 		}
 	}
 }

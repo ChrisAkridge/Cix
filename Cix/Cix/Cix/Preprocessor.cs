@@ -7,7 +7,7 @@ using Cix.Exceptions;
 
 namespace Cix
 {
-	public sealed class Preprocessor
+    public sealed class Preprocessor
 	{
 		private string file;										// the contents of the file itself
 		private string filePath;									// the full path to the file
@@ -18,17 +18,14 @@ namespace Cix
 
 		public Preprocessor(string file, string filePath)
 		{
-			if (!File.Exists(filePath))
-			{
-				throw new FileNotFoundException(string.Format("The file at {0} does not exist.", filePath));
-			}
+			//Contract.Requires<FileNotFoundException>(File.Exists(filePath), $"The file at {filePath} does not exist.");
 
 			this.file = file;
 			this.filePath = filePath;
-			this.basePath = Path.GetDirectoryName(this.filePath);
-			this.definedConstants = new List<string>();
-			this.definedSubstitutions = new Dictionary<string, string>();
-			this.includedFilePaths = new List<string>();
+			basePath = Path.GetDirectoryName(this.filePath);
+			definedConstants = new List<string>();
+			definedSubstitutions = new Dictionary<string, string>();
+			includedFilePaths = new List<string>();
 		}
 
 		public string Preprocess()
@@ -81,7 +78,7 @@ namespace Cix
 							if (words[1].IsIdentifier())
 							{
 								// This is a valid preprocessor constant defintion. Add it to this list of constants.
-								this.definedConstants.Add(words[1]);
+								definedConstants.Add(words[1]);
 							}
 							else
 							{
@@ -95,12 +92,12 @@ namespace Cix
 								// The first word must be a valid identifer. The second word must be a valid identifier OR composed only of digits.
 								// Credit to http://stackoverflow.com/a/894567 for the Regex solution.
 
-								if (this.definedSubstitutions.ContainsKey(words[1]))
+								if (definedSubstitutions.ContainsKey(words[1]))
 								{
 									throw new PreprocessingException(string.Format("The substitution word {0} may not be defined multiple times.", words[1]));
 								}
 
-								this.definedSubstitutions.Add(words[1], words[2]);
+								definedSubstitutions.Add(words[1], words[2]);
 							}
 							else
 							{
@@ -120,11 +117,11 @@ namespace Cix
 						else
 						{
 							string constantToUndefine = words[1];
-							if (!this.definedConstants.Contains(constantToUndefine))
+							if (!definedConstants.Contains(constantToUndefine))
 							{
 								throw new PreprocessingException(string.Format("Could not undefine {0}, it was never defined to begin with.", constantToUndefine));
 							}
-							this.definedConstants.Remove(constantToUndefine);
+							definedConstants.Remove(constantToUndefine);
 						}
 					}
 					else if (trimmedLine.StartsWith("#ifdef"))
@@ -165,7 +162,7 @@ namespace Cix
 							throw new PreprocessingException(string.Format("Invalid number of words in include statement. Found {0} words, expected two.", words.Length));
 						}
 						string fileName = words[1].Substring(1, words[1].Length - 2); // get all the text from after the first char and before the last one
-						string file = this.LoadIncludeFile(fileName);
+						string file = LoadIncludeFile(fileName);
 						resultBuilder.Append(file);
 					}
 				}
@@ -201,13 +198,13 @@ namespace Cix
 			// Then they'll load and preprocess the file
 			// And then return it.
 
-			string filePath = Path.Combine(this.basePath, fileName);
+			string filePath = Path.Combine(basePath, fileName);
 			if (!File.Exists(filePath))
 			{
 				throw new PreprocessingException(string.Format("The include file at {0} does not exist.", filePath));
 			}
 
-			this.includedFilePaths.Add(filePath);
+			includedFilePaths.Add(filePath);
 
 			string file = File.ReadAllText(filePath);
 			Preprocessor filePreprocessor = new Preprocessor(file, filePath);
