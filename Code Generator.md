@@ -10,7 +10,7 @@ The AST of a Cix program describes a program in a tree structure using various t
 Assignable statements take many forms:
 
 * Assignment to local: `x = 1;`
-* Assignment to struct member of local: `x.y = 1;`'
+* Assignment to struct member of local: `x.y = 1;`
 * Assignment to memory at pointer: `*x = 1;`
 * Assignment to struct member at pointer: `x->y = 1;`
 * Assignment to memory at memory address: `*(x + 4) = 1;`
@@ -21,6 +21,12 @@ Multiple lvalues may be chained together, for instance `y = x = *(*(z + 12)->w->
 ## The Shunting Yard Algorithm In This Document
 Certain expressions expressed in infix form (`3 + 4`) may have a diagram showing their transformation into postfix form (`3 4 +`) in order to demonstrate the composition of the expression and of the resulting assembly code.
 
+For instance:
+
+```
+[Input] -> [Output] [Operators]
+```
+
 ## The Code Generator
 The Cix Code Generator receives its input as a fully constructed Abstract Syntax Tree (AST) representing a valid Cix program and outputs an IronArc assembly file containing the compiled code of the program. The assembled file can then be passed to an IronArc assembler in order to create an executable IronArc program.
 
@@ -28,11 +34,11 @@ The Cix Code Generator receives its input as a fully constructed Abstract Syntax
 During code generation, the code generator uses data structures to keep track of the state of a "virtual" IronArc machine, including its registers, data stack, and memory stack. This allows the code generator to resolve the location of local variables.
 
 #### The Virtual Execution Stack
-The Virtual Execution Stack (VES) is a stack that models what the actual IronArc stack will appear as during execution. The VES is composed of a `Stack<StackElement>` and two ulong values representing the values of the `EBP` and `ESP` registers (the stack base pointer and stack pointer, respectively). When code is generated that manipulates values on the stack, the VES and its ESP value are adjusted in the same way.
+The Virtual Execution Stack (VES) is a stack that models what the actual IronArc stack will appear as during execution. The VES is composed of a `Stack<StackElement>` and two ulong values representing the values of the `EBP` and `ESP` registers (the stack base pointer and stack pointer, respectively). When code is generated that manipulates values on the stack, the VES and its `ESP` value are adjusted in the same way.
 
-The StackElement stores knowable information about each stack item, including the name of the Cix object it represents (local variable, argument, etc.), and its size. The StackElement does not concern itself with the value of the data on the stack, as that cannot be definitively known until runtime anyway. If no name exists for a stack element (consider the result of 3 * 4; there is no defined name for that), then no name will be assigned.
+The `StackElement` stores knowable information about each stack item, including the name of the Cix object it represents (local variable, argument, etc.), and its size. The StackElement does not concern itself with the value of the data on the stack, as that cannot be definitively known until runtime anyway. If no name exists for a stack element (consider the result of 3 * 4; there is no defined name for that), then no name will be assigned.
 
-Stack indexes are a core method of accessing stack elements in IronArc. The indexes for an object change as the stack grows or shrinks. The top of the stack (the element immediately before ESP) always has index 0, every element behind it has indices increasing by 1 for each element.
+Stack indexes are a core method of accessing stack elements in IronArc. The indexes for an object change as the stack grows or shrinks. The top of the stack (the element immediately before `ESP`) always has index 0, every element behind it has indices increasing by 1 for each element.
 
 ```
 EBP = 0							ESP = 16
