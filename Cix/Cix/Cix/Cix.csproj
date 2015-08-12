@@ -51,8 +51,11 @@
     <Compile Include="AST\ExpressionElement.cs" />
     <Compile Include="AST\ExpressionFunctionCall.cs" />
     <Compile Include="AST\ExpressionFunctionParameter.cs" />
+    <Compile Include="AST\ExpressionIdentifier.cs" />
     <Compile Include="AST\ExpressionMemberAccess.cs" />
     <Compile Include="AST\ExpressionOperator.cs" />
+    <Compile Include="AST\ExpressionParentheses.cs" />
+    <Compile Include="AST\ExpressionTypecast.cs" />
     <Compile Include="AST\ForLoop.cs" />
     <Compile Include="AST\FunctionArgument.cs" />
     <Compile Include="AST\Function.cs" />
@@ -73,6 +76,7 @@
     <Compile Include="Exceptions\ParseException.cs" />
     <Compile Include="Exceptions\PreprocessingException.cs" />
     <Compile Include="AST\Expression.cs" />
+    <Compile Include="AST\NumericLiteral.cs" />
     <Compile Include="Preprocessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Lexer.cs" />

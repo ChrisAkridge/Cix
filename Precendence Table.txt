@@ -1,0 +1,60 @@
+Cix Expression Parser
+Converts infix-type expressions into postfix expressions
+
+Operators:
+	- 120 precedence (l to r)
+		Unary postincrement (x++)
+		Unary postdecrement (x--)
+		Binary Member Access (x.y)
+		Binary Pointer Member Access (x->y)
+		Function Call (x(y))
+		Array Member Access (x[y])
+	- 110 Precedence (r to l)
+		Unary preincrement (++x)
+		Unary predecrement (--x)
+		Unary indentity (+x)
+		Unary inverse (-x)
+		Unary Logical NOT (!x)
+		Unary Bitwise NOT (~x)
+		Unary Dereference (*x)
+		Unary Address Of (&x)
+	- 100 Precedence (l to r)
+		Multiplication (x * y)
+		Division (x / y)
+		Modulus (x % y)
+	- 90 Precedence (l to r)
+		Addition (x + y)
+		Subtraction (x - y)
+	- 80 Precedence (l to r)
+		Shift Left (x << y)
+		Shift Right (x >> y)
+	- 70 Precedence (l to r)
+		Less Than (x < y)
+		Greater Than (x > y)
+		Less Than or Equal To (x <= y)
+		Greater Than or Equal To (x >= y)
+	- 60 Precedence (l to r)
+		Equality (x == y)
+		Inequality (x != y)
+	- 50 Precendence (l to r)
+		Bitwise AND (x & y)
+	- 40 Precendence (l to r)
+		Bitwise XOR (x ^ y)
+	- 30 Precedence (l to r)
+		Bitwise OR (x | y)
+	- 20 Precedence (l to r)
+		Logical AND (x && y)
+	- 10 Precedence (l to r)
+		Logical OR (x || y)
+	- 0 Precedence (r to l)
+		Assignment (x = y)
+		Add Assign
+		Sub Assign
+		Mult Assign
+		Div Assign
+		Mod Assign
+		Shift Left Assign
+		Shift Right Assign
+		AND Assign
+		OR Assign
+		XOR Assign

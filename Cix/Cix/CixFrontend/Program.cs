@@ -103,8 +103,8 @@ namespace CixFrontend
 			}
 			else if (option == 'f')
 			{
-				try
-				{
+				//try
+				//{
 					file = file.RemoveComments();
 
 					Preprocessor preprocessor = new Preprocessor(file, filePath);
@@ -117,11 +117,11 @@ namespace CixFrontend
 					{
 						Console.WriteLine("{0}: {1}", token.Type, token.Word);
 					}
-				}
-				catch (Exception ex)
-				{
-					Console.WriteLine("{0}: {1}", ex.GetType().Name, ex.Message);
-				}
+				//}
+				//catch (Exception ex)
+				//{
+				//	Console.WriteLine("{0}: {1}", ex.GetType().Name, ex.Message);
+				//}
 			}
 			Console.ReadKey();
 		}

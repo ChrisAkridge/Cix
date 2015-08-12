@@ -63,6 +63,32 @@ namespace Cix
 			return true;
 		}
 
+		public static bool IsNumericLiteral(this string word)
+		{
+			if (string.IsNullOrEmpty(word) || word == "\r\n")
+			{
+				// Empty strings and newlines cannot be numeric literals.
+				return false;
+			}
+
+			if (!char.IsDigit(word[0]))
+			{
+				// A numeric literal cannot start with a letter.
+				return false;
+			}
+
+			foreach (char c in word.ToLowerInvariant())
+			{
+				// All characters in a numeric literal must be a digit, a period, or one of the suffixes
+				if (!(c >= '0' && c <= '9') || c == '.' || c.IsOneOfCharacter('u', 'l', 'f', 'd'))
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
 		public static string RemoveComments(this string input)
 		{
 			StringBuilder result = new StringBuilder();				// Stores the uncommented version of the file.

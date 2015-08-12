@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class ExpressionMemberAccess : ExpressionElement
+	public sealed class Identifier : Element
 	{
-		public string Name { get; private set; }
+		public string Name { get; }
 
-		public ExpressionMemberAccess(string name)
+		public Identifier(string name)
 		{
 			Name = name;
 		}

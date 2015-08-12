@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions; // wow I don't use this one often
@@ -18,8 +19,6 @@ namespace Cix
 
 		public Preprocessor(string file, string filePath)
 		{
-			//Contract.Requires<FileNotFoundException>(File.Exists(filePath), $"The file at {filePath} does not exist.");
-
 			this.file = file;
 			this.filePath = filePath;
 			basePath = Path.GetDirectoryName(this.filePath);

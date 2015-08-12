@@ -23,7 +23,7 @@ namespace Cix.AST
 				case ExpressionOperators.UnaryPostdecrement:
 				case ExpressionOperators.BinaryMemberAccess:
 				case ExpressionOperators.BinaryPointerMemberAccess:
-					return 1;
+					return 12;
 				case ExpressionOperators.UnaryPreincrement:
 				case ExpressionOperators.UnaryPredecrement:
 				case ExpressionOperators.UnaryIdentity:
@@ -32,32 +32,32 @@ namespace Cix.AST
 				case ExpressionOperators.UnaryBitwiseNOT:
 				case ExpressionOperators.UnaryDerefence:
 				case ExpressionOperators.UnaryAddressOf:
-					return 2;
+					return 11;
 				case ExpressionOperators.BinaryMultiplication:
 				case ExpressionOperators.BinaryDivision:
 				case ExpressionOperators.BinaryModulus:
-					return 3;
+					return 10;
 				case ExpressionOperators.BinaryAddition:
 				case ExpressionOperators.BinarySubtraction:
-					return 4;
+					return 9;
 				case ExpressionOperators.BinaryShiftLeft:
 				case ExpressionOperators.BinaryShiftRight:
-					return 5;
+					return 8;
 				case ExpressionOperators.BinaryLessThan:
 				case ExpressionOperators.BinaryLessThanOrEqualTo:
 				case ExpressionOperators.BinaryGreaterThan:
 				case ExpressionOperators.BinaryGreaterThanOrEqualTo:
-					return 6;
-				case ExpressionOperators.BinaryBitwiseAND:
 					return 7;
+				case ExpressionOperators.BinaryBitwiseAND:
+					return 6;
 				case ExpressionOperators.BinaryBitwiseXOR:
-					return 8;
+					return 5;
 				case ExpressionOperators.BinaryBitwiseOR:
-					return 9;
+					return 4;
 				case ExpressionOperators.BinaryLogicalAND:
-					return 10;
+					return 3;
 				case ExpressionOperators.BinaryLogicalOR:
-					return 11;
+					return 2;
 				case ExpressionOperators.BinaryAssignment:
 				case ExpressionOperators.BinaryAddAssign:
 				case ExpressionOperators.BinarySubAssign:
@@ -69,7 +69,7 @@ namespace Cix.AST
 				case ExpressionOperators.BinaryANDAssign:
 				case ExpressionOperators.BinaryORAssign:
 				case ExpressionOperators.BinaryXORAssign:
-					return 12;
+					return 1;
 				default:
 					return -1;
 			}

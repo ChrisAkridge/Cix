@@ -1,0 +1,88 @@
+x = 1;
+
+[] -> [] []
+[x = 1] -> [] []
+[= 1] -> [x] []
+[1] -> [x] [=]
+[] -> [x 1] [=]
+[] -> [x 1 =]
+
+x 1 =
+
+*(x + 24) = 2);
+
+[*(x + 24)] -> [] []
+[(x + 24)] -> [] [*]
+[x + 24)] -> [] [* (]
+[+ 24) = 2] -> [x] [* (]
+[24) = 2] -> [x 24] [* ( +]
+[) = 2] -> [x 24] [* ( +]
+[ = 2] -> [x 24 +] [*]
+[2] -> [x 24 + *] [=]
+[] -> [x 24 + * 2] [=]
+x 24 + * 2 =
+
+
+stackalloc 8
+deref stack[1] stack[0]
+push 96
+add
+push 2
+pop *stack[1]
+
+y = x = 1;
+y x	1 = =
+
+// Stack: y, x
+stackalloc 8
+deref stack[2] stack[0]
+stackalloc 8
+deref stack[2] stack[0]
+push 1
+mov stack[0] *stack[1]
+mov stack[0] *stack[2]
+subl esp 20 esp
+subl ssp 12 ssp
+
+
+y.z = 1;
+y.z 1 =
+
+// Stack: y, &y.z, 1
+stackalloc 8
+deref stack[1] stack[0]
+addl stack[0] 0 stack[0]
+push 1:s4
+mov stack[0] *stack[1]
+subl esp 12 esp
+subl ssp 8 ssp
+
+int y = x + func(i = 2);
+
+*(x + 24) = 12;
+
+int* func(int x) { return &i; }
+int y = *(func(4)) = 2;
+int a = *(0x384390285028508) = 2;
+
+z = y = x = c = g = h = 2
+
+
+y + 2
+
+
+// Stack, y, y + 2
+stackalloc 8
+deref stack[1] stack[2]
+push 2
+stackalloc 4
+addl *stack[2] stack[1] stack[0]
+pop eax
+subl esp 12 esp
+subl ssp 8 ssp
+push eax
+
+= * . -> x
+
+++i and --i are lvalues
+i++ and i-- are rvalues by themselves but i is an lvalue

@@ -359,9 +359,16 @@ namespace Cix
 					throw new TokenException("*", string.Format("Invalid pointer dereference operator. Preceded by {0}, succeeded by {1}.", last, next));
 				}
 			}
-			else if (last.IsIdentifier(true) || last.IsOneOfString(")", "]", "++", "--"))
+			else if (last.IsIdentifier(true))
 			{
-				AddToken(TokenType.Indeterminate, "*");
+				if (last.IsOneOfString(")", "]", "++", "--") && (next.IsIdentifier() || next.IsOneOfString("+", "-", "!", "~", "++", "--", "&", "*")))
+				{
+					AddToken(TokenType.OpMultiply, "*");
+				}
+				else
+				{
+					AddToken(TokenType.Indeterminate, "*");
+				}
 			}
 			else
 			{
@@ -598,7 +605,7 @@ namespace Cix
 		KeyUShort,
 		KeyVoid,
 		KeyWhile,
-		Indeterminate
+		Indeterminate	// int* x; is a declaration, but x * y is a multiplication
 	}
 
 	public sealed class Token

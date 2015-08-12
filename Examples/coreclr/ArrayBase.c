@@ -1,0 +1,8 @@
+// object.cix
+
+
+
+struct ArrayBase
+{
+	
+}
