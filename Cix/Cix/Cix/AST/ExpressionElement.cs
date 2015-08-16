@@ -25,6 +25,23 @@ namespace Cix.AST
 				{
 					case TokenType.Identifier:
 						// WYLO: TYPECASTS AND FUNCTIONS, FOOL
+						/* Okay, but seriously now.
+						 * Names aren't particularly difficult if we keep a nametable and pass it around.
+						 * If we have a type name (including pointers), it can be resolved in two ways: 
+						 * as a typecast (as LeftParen, Identifier, RightParen), or as a SizeOf operation
+						 * (OperatorSizeOf, which you must add, LeftParen, Identifier, RightParen). If we
+						 * know the size of our type, we can substitute in here as a numeric literal.
+						 * 
+						 * If we have a function name (or a local variable with type func_ptr [which you
+						 * also must add]), it's either a dereference (OpDereference, Identifier) or it's
+						 * a call (Identifier, LeftParen, args, RightParen). Do some syntactic matching to
+						 * ensure our parentheses balance, split everything between the parens by commas,
+						 * create an ExpressionFunctionCall with the arguments ToElements-ed and parsed
+						 * properly.
+						 *
+						 * If we have a local variable, we can merely add it as a ExpressionMemberAccess.
+						 * Also, scope issues need to be taken care of.
+						 */
 						break;
 					case TokenType.OpenParen:
 						result.Add(new ExpressionParentheses(ParenthesesType.Left));
