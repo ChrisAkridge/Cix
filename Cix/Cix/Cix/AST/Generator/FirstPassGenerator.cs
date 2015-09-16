@@ -31,7 +31,6 @@ namespace Cix.AST.Generator
 			nameTable.Add("long", new DataType("long", 0, 8));
 			nameTable.Add("ulong", new DataType("ulong", 0, 8));
 			nameTable.Add("double", new DataType("double", 0, 8));
-			nameTable.Add("lpstring", new DataType("lpstring", 0, -1));
 			nameTable.Add("void", new DataType("void", 0, -1));
 		}
 
@@ -62,6 +61,8 @@ namespace Cix.AST.Generator
 			tokens.MoveNextValidate(TokenType.Identifier);
 			string structName = tokens.Current.Word;
 			string memberName = null;
+			uint memberArraySize = 0;
+			int currentOffset = 0;
 
 			// Create the structure instance.
 			StructDeclaration structure = new StructDeclaration(structName, new List<StructMemberDeclaration>());
@@ -83,7 +84,7 @@ namespace Cix.AST.Generator
 				{
 					if (typePointerLevel > 0)
 					{
-						// Too many pointer declarations (int*** ** i; is technically legal in ISO C but it's not legal here because it's bad style)
+						// Too many pointer declarations (int*** ** i;) is technically legal in ISO C but it's not legal here because it's bad style
 						throw new ASTException($"Within struct {structName} member #{structure.Members.Count}: Too many separate pointer definitions (some asterisks separated by whitespace). Remove whitespace or asterisks.");
 					}
 
@@ -110,23 +111,46 @@ namespace Cix.AST.Generator
 				}
 				else if (tokens.Current.Type == TokenType.OpenBracket)
 				{
-					// The array's size is defined by an expression that must be statically evaluatable into a 32-bit signed integer.
-					// Read the entire token stream up into but not including the CloseBracket.
-					List<Token> expressionTokens = new List<Token>();
-					tokens.MoveNext();
-
-					while (tokens.Current.Type != TokenType.CloseBracket)
+					// The array's size is defined by a 32-bit unsigned integer.
+					// Read and expect the next token to be a literal.
+					tokens.MoveNextValidate(TokenType.Identifier);
+					if (tokens.Current.Word.IsNumericLiteral())
 					{
-						expressionTokens.Add(tokens.Current);
-						tokens.MoveNext();
+						NumericLiteral literal = NumericLiteral.Parse(tokens.Current.Word);
+
+						if (literal.UnsignedIntegralValue > Int32.MaxValue)
+						{
+							throw new ASTException($"StructArrayMemberSizeOutOfRange: The {memberName} member of the {structName} structure has a size of {literal.UnsignedIntegralValue}, which is far too large. Maximum value is {int.MaxValue}.");
+						}
+
+						memberArraySize = (uint)literal.UnsignedIntegralValue;
+
+						// Now we're expecting a close bracket and semicolon.
+						tokens.MoveNextValidate(TokenType.CloseBracket);
+						tokens.MoveNextValidate(TokenType.Semicolon);
 					}
+					else
+					{
+						throw new ASTException($"StructArrayMemberInvalidSize: The {memberName} member of the {structName} structure had a size that wasn't a number, but \"{tokens.Current.Word}\".");
+                    }
 				}
 
-			createMemberDefintion:
-				;
+				createMemberDefintion:
+				structure.Members.Add(new StructMemberDeclaration(GetTypeByName(typeName), memberName, (int)memberArraySize, currentOffset));
+				currentOffset += GetTypeByName(typeName).TypeSize;
 			}
 
-			// Check if this struct can resolve any type names.
+			tree.Add(structure);
+		}
+
+		private DataType GetTypeByName(string name)
+		{
+			if (!nameTable.ContainsKey(name) || !(nameTable[name] is DataType))
+			{
+				throw new ASTException();
+			}
+
+			return (DataType)nameTable[name];
 		}
 	}
 }
