@@ -11,26 +11,17 @@ namespace Cix.AST
 	{
 		public string FunctionName { get; private set; }
 		public DataType FunctionReturnType { get; private set; }
-
-		private List<ExpressionFunctionParameter> parameters;
-		
-		public ReadOnlyCollection<ExpressionFunctionParameter> Parameters
-		{
-			get
-			{
-				return (parameters != null) ? parameters.AsReadOnly() : null;
-			}
-		}
+		public List<ExpressionFunctionParameter> Parameters { get; }
 
 		public ExpressionFunctionCall(string functionName, DataType functionReturnType, params ExpressionFunctionParameter[] parameters)
 		{
 			FunctionName = functionName;
 			FunctionReturnType = functionReturnType;
 
-			this.parameters = new List<ExpressionFunctionParameter>();
+			this.Parameters = new List<ExpressionFunctionParameter>();
 			foreach (var parameter in parameters)
 			{
-				this.parameters.Add(parameter);
+				this.Parameters.Add(parameter);
 			}
 		}
 	}

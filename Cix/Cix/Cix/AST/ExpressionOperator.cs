@@ -21,6 +21,7 @@ namespace Cix.AST
 			{
 				case ExpressionOperators.UnaryPostincrement:
 				case ExpressionOperators.UnaryPostdecrement:
+				case ExpressionOperators.UnaryArrayAccess:
 				case ExpressionOperators.BinaryMemberAccess:
 				case ExpressionOperators.BinaryPointerMemberAccess:
 					return 12;
@@ -118,6 +119,7 @@ namespace Cix.AST
 		BinaryShiftLeftAssign,
 		BinaryShiftRightAssign,
 		BinaryMemberAccess,
-		BinaryPointerMemberAccess
+		BinaryPointerMemberAccess,
+		UnaryArrayAccess
 	}
 }

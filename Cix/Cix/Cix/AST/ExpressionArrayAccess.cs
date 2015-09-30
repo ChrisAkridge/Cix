@@ -8,15 +8,28 @@ namespace Cix.AST
 {
 	public sealed class ExpressionArrayAccess : ExpressionElement
 	{
-		public string ArrayName { get; private set; }
-		public DataType ArrayType { get; private set; }
-		public Expression IndexExpression { get; private set; }
+		private List<ExpressionElement> elements;
 
-		public ExpressionArrayAccess(string arrayName, DataType arrayType, Expression indexExpression)
+		public IReadOnlyList<ExpressionElement> Elements
 		{
-			this.ArrayName = arrayName;
-			this.ArrayType = arrayType;
-			this.IndexExpression = indexExpression;
+			get
+			{
+				return elements.AsReadOnly();
+			}
 		}
+
+		public ExpressionElementSequence Sequence { get; }
+
+		public ExpressionArrayAccess(IEnumerable<ExpressionElement> cElements, ExpressionElementSequence sequence)
+		{
+			cElements = elements;
+			Sequence = sequence;
+		}
+	}
+
+	public enum ExpressionElementSequence
+	{
+		Infix,
+		PostFix
 	}
 }

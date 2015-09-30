@@ -91,6 +91,7 @@
     <Compile Include="AST\Continue.cs" />
     <Compile Include="AST\DataType.cs" />
     <Compile Include="AST\Element.cs" />
+    <Compile Include="AST\ExpressionArrayAccess.cs" />
     <Compile Include="AST\ExpressionConstant.cs" />
     <Compile Include="AST\ExpressionElement.cs" />
     <Compile Include="AST\ExpressionFunctionCall.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="AST\ExpressionMemberAccess.cs" />
     <Compile Include="AST\ExpressionOperator.cs" />
     <Compile Include="AST\ExpressionParentheses.cs" />
+    <Compile Include="AST\ExpressionSquareBracket.cs" />
     <Compile Include="AST\ExpressionTypecast.cs" />
     <Compile Include="AST\ForLoop.cs" />
     <Compile Include="AST\FunctionArgument.cs" />
