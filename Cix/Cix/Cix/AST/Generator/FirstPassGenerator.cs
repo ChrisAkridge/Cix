@@ -2,155 +2,208 @@
 using System.Collections.Generic;
 using System.Linq;
 using Cix.Exceptions;
+using Cix.AST.Generator.IntermediateForms;
 
 namespace Cix.AST.Generator
 {
 	public sealed class FirstPassGenerator
 	{
-		private Dictionary<string, Element> nameTable;
 		private TokenEnumerator tokens;
-		private List<string> unresolvedTypeNames = new List<string>();
 
-		public FirstPassGenerator(List<Token> cTokens, Dictionary<string, Element> cNameTable)
+		public FirstPassGenerator(TokenEnumerator cTokens)
 		{
-			if (cTokens == null) throw new ArgumentNullException(nameof(cTokens), "The provided token list was null.");
-			if (cTokens.Count == 0) throw new ArgumentException(nameof(cTokens), "The provided token list was empty.");
-			if (cNameTable == null) throw new ArgumentNullException(nameof(cNameTable), "The provided name table was null.");
-
-			tokens = new TokenEnumerator(cTokens);
-			nameTable = cNameTable;
-
-			nameTable.Add("byte", new DataType("byte", 0, 1));
-			nameTable.Add("sbyte", new DataType("sbyte", 0, 1));
-			nameTable.Add("short", new DataType("short", 0, 2));
-			nameTable.Add("ushort", new DataType("ushort", 0, 2));
-			nameTable.Add("char", new DataType("char", 0, 2));
-			nameTable.Add("int", new DataType("int", 0, 4));
-			nameTable.Add("uint", new DataType("uint", 0, 4));
-			nameTable.Add("float", new DataType("float", 0, 4));
-			nameTable.Add("long", new DataType("long", 0, 8));
-			nameTable.Add("ulong", new DataType("ulong", 0, 8));
-			nameTable.Add("double", new DataType("double", 0, 8));
-			nameTable.Add("void", new DataType("void", 0, -1));
+			tokens = cTokens;
 		}
 
-		public IEnumerable<Element> GenerateAST()
+		public List<IntermediateStruct> StageAGenerator()
 		{
-			List<Element> result = new List<Element>();
+			// Take every struct header into an intermediate definition of
+			// { Name, FirstDefinitionTokenIndex, LastTokenIndex }, the
+			// last of which is the index of the final semicolon, NOT the
+			// closescope.
+
+			List<IntermediateStruct> result = new List<IntermediateStruct>();
+
+			// ensure we're at the beginning of all the code
+			tokens.Reset();
 
 			while (!tokens.AtEnd)
 			{
-				Token token = tokens.Current;
+				if (tokens.Current.Type != TokenType.KeyStruct)
+				{
+					// Skip over everything that isn't a structure header.
+					tokens.MoveNext();
+					continue;
+				}
 
-				if (token.Type == TokenType.KeyStruct)
-				{
-					// Structure found, enter the struct parser
-				}
-				else if (token.Type == TokenType.Identifier)
-				{
-					// Function found
-				}
+				tokens.MoveNextValidate(TokenType.Identifier);
+				IntermediateStruct newStruct = new IntermediateStruct(tokens.Current.Word);
+				tokens.MoveNextValidate(TokenType.OpenScope);
+				newStruct.FirstDefinitionTokenIndex = tokens.CurrentIndex + 1;
+				tokens.SkipBlock();
+				newStruct.LastTokenIndex = tokens.CurrentIndex - 2;
+				result.Add(newStruct);
 			}
 
 			return result;
 		}
 
-		private void GenerateStructureAST(List<Element> tree)
+		public List<Element> StageBGenerator(List<IntermediateStruct> intermediateStructs)
 		{
-			// Move to the next token to read the name.
-			tokens.MoveNextValidate(TokenType.Identifier);
-			string structName = tokens.Current.Word;
-			string memberName = null;
-			uint memberArraySize = 0;
-			int currentOffset = 0;
+			// Part 1: Get intermediate forms for all the struct members where types are just named and pointer levels are considered.
+			// Here, we'll ensure that void- and lpstring-typed members may only appear as pointer members.
 
-			// Create the structure instance.
-			StructDeclaration structure = new StructDeclaration(structName, new List<StructMemberDeclaration>());
-
-			// Expect an openscope.
-			tokens.MoveNextValidate(TokenType.OpenScope);
-
-			while (tokens.Current.Type != TokenType.CloseScope)
+			foreach (var intermediateStruct in intermediateStructs)
 			{
-				// Expect an identifier for the struct member type name.
-				tokens.MoveNextValidate(TokenType.Identifier);
-				string typeName = tokens.Current.Word;
-				int typePointerLevel = typeName.Count(c => c == '*');
-				typeName = typeName.Substring(0, typeName.Length - typePointerLevel - 1);   // Remove the asterisks from the type name.
+				ParseIntermediateStructMembers(intermediateStruct);
+				NameTable.Instance[intermediateStruct.Name] = intermediateStruct;
+			}
 
-				// Expect either an indentifier (member name) or indeterminate asterisk.
-				tokens.MoveNext();
-				if (tokens.Current.Type == TokenType.Indeterminate)
+			// Ensure that all structs have unique names.
+			if (intermediateStructs.Select(s => s.Name).Count() != intermediateStructs.Select(s => s.Name).Distinct().Count())
+			{
+				throw new ASTException("Some structs have the same name.");
+			}
+
+			// Part 2: Create the fully-formed definitions for all structs.
+			// Loop through every intermediate struct and define all its member. If a member is a struct that isn't defined yet, define it.
+			List<Element> tree = new List<Element>();
+
+			foreach (var intermediateStruct in intermediateStructs)
+			{
+				if (NameTable.Instance[intermediateStruct.Name] is IntermediateStruct)
 				{
-					if (typePointerLevel > 0)
-					{
-						// Too many pointer declarations (int*** ** i;) is technically legal in ISO C but it's not legal here because it's bad style
-						throw new ASTException($"Within struct {structName} member #{structure.Members.Count}: Too many separate pointer definitions (some asterisks separated by whitespace). Remove whitespace or asterisks.");
-					}
-
-					typePointerLevel = tokens.Current.Word.Length;
-
-					// Expect an identifier (member name).
-					tokens.MoveNextValidate(TokenType.Identifier);
-					memberName = tokens.Current.Word;
+					int depthLevel = 0;
+					CreateStructDeclaration(intermediateStruct, ref depthLevel);
 				}
-				else if (tokens.Current.Type == TokenType.Identifier)
+			}
+
+			tree.AddRange(NameTable.Instance.Names.Where(n => n.Value is StructDeclaration).Select(kvp => kvp.Value));
+			return tree;
+		}
+
+		private void ParseIntermediateStructMembers(IntermediateStruct intermediateStruct)
+		{
+			var statements = tokens.Subset(intermediateStruct.FirstDefinitionTokenIndex, intermediateStruct.LastTokenIndex).SplitOnSemicolon();
+
+			foreach (var statement in statements)
+			{
+				// Valid member definitions:
+				// int i;
+				// void* pv;
+				// byte** ppb;
+				// int array[50];
+				// short* p_array[25];
+
+				string memberTypeName = "";
+				int memberPointerLevel = 0;
+				string memberName = "";
+				int memberArraySize = 0;
+
+				var enumerator = statement.GetEnumerator();
+				enumerator.MoveNext();	// start with the first item
+
+				if (enumerator.Current.Word.Contains("*"))
 				{
-					memberName = tokens.Current.Word;
+					memberTypeName = enumerator.Current.Word.Remove(enumerator.Current.Word.IndexOf('*'));
+					memberPointerLevel = enumerator.Current.Word.Count(c => c == '*');
 				}
 				else
 				{
-					throw new ASTException($"Within struct {structName} member #{structure.Members.Count}: Invalid token, expected identifier or asterisks, got {tokens.Current.Type}.");
+					if (enumerator.Current.Word == "void" || enumerator.Current.Word == "lpstring") { throw new ASTException("Members of type void or lpstring may not appear in structs."); }
+					memberTypeName = enumerator.Current.Word;
 				}
 
-				// Expect either a semicolon (end member declaration) or an OpenBracket (define this member as an array).
-				tokens.MoveNext();
-				if (tokens.Current.Type == TokenType.Semicolon)
+				enumerator.MoveNext(); // next up is the member name...
+
+				if (enumerator.Current.Type == TokenType.Indeterminate)
 				{
-					goto createMemberDefintion;
+					memberPointerLevel = enumerator.Current.Word.Length; // ...usually
+					enumerator.MoveNext();
 				}
-				else if (tokens.Current.Type == TokenType.OpenBracket)
+
+				if (enumerator.Current.Type != TokenType.Identifier) { throw new ASTException($"Expected member name, not a {enumerator.Current.Type}."); }
+				memberName = enumerator.Current.Word;
+
+				if (enumerator.MoveNext() && enumerator.Current.Type == TokenType.OpenBracket)
 				{
-					// The array's size is defined by a 32-bit unsigned integer.
-					// Read and expect the next token to be a literal.
-					tokens.MoveNextValidate(TokenType.Identifier);
-					if (tokens.Current.Word.IsNumericLiteral())
-					{
-						NumericLiteral literal = NumericLiteral.Parse(tokens.Current.Word);
+					// This is an array member.
+					if (!enumerator.MoveNext() || enumerator.Current.Type != TokenType.Identifier) { throw new ASTException("Expected number of items."); }
+					NumericLiteral arraySizeLiteral = NumericLiteral.Parse(enumerator.Current.Word);
+					if (arraySizeLiteral.UnderlyingType != typeof(int)) { throw new ASTException($"Invalid array size {enumerator.Current.Word}."); }
+					memberArraySize = (int)arraySizeLiteral.SignedIntegralValue;
 
-						if (literal.UnsignedIntegralValue > Int32.MaxValue)
-						{
-							throw new ASTException($"StructArrayMemberSizeOutOfRange: The {memberName} member of the {structName} structure has a size of {literal.UnsignedIntegralValue}, which is far too large. Maximum value is {int.MaxValue}.");
-						}
-
-						memberArraySize = (uint)literal.UnsignedIntegralValue;
-
-						// Now we're expecting a close bracket and semicolon.
-						tokens.MoveNextValidate(TokenType.CloseBracket);
-						tokens.MoveNextValidate(TokenType.Semicolon);
-					}
-					else
-					{
-						throw new ASTException($"StructArrayMemberInvalidSize: The {memberName} member of the {structName} structure had a size that wasn't a number, but \"{tokens.Current.Word}\".");
-                    }
+					if (!enumerator.MoveNext() || enumerator.Current.Type != TokenType.CloseBracket) { throw new ASTException("Expected close bracket."); }
+				}
+				else
+				{
+					// This is not an array member, but...
+					memberArraySize = 1;
+					// ...it still acts like a one-member array.
 				}
 
-				createMemberDefintion:
-				structure.Members.Add(new StructMemberDeclaration(GetTypeByName(typeName), memberName, (int)memberArraySize, currentOffset));
-				currentOffset += GetTypeByName(typeName).TypeSize;
+				intermediateStruct.Members.Add(new IntermediateStructMember(memberTypeName, memberName, memberPointerLevel, memberArraySize));
 			}
-
-			tree.Add(structure);
 		}
 
-		private DataType GetTypeByName(string name)
+		private StructDeclaration CreateStructDeclaration(IntermediateStruct intermediateStruct, ref int depthLevel)
 		{
-			if (!nameTable.ContainsKey(name) || !(nameTable[name] is DataType))
+			string structName = intermediateStruct.Name;
+			List<StructMemberDeclaration> members = new List<StructMemberDeclaration>();
+			int offsetCounter = 0;
+			
+			foreach (var intermediateMember in intermediateStruct.Members)
 			{
-				throw new ASTException();
+				// Resolve the type.
+				var typeEntry = NameTable.Instance[intermediateMember.TypeName]; // TODO: if name not found, throw
+				if (typeEntry is DataType)
+				{
+					// Scenario 1: Member has a primitive type or is a pointer to a primitive type
+					DataType baseType = (DataType)typeEntry;
+					DataType fullType = new DataType(baseType.TypeName, intermediateMember.PointerLevel, baseType.TypeSize);
+					StructMemberDeclaration member = new StructMemberDeclaration(fullType, intermediateMember.Name, intermediateMember.ArraySize, offsetCounter);
+					members.Add(member);
+					offsetCounter += member.MemberType.TypeSize * member.ArraySize;
+				}
+				else if (typeEntry is StructDeclaration)
+				{
+					// Scenario 2: Member has a struct type or is a pointer to a struct type
+					StructDeclaration baseType = (StructDeclaration)typeEntry;
+					members.Add(GetDeclarationOfStructMember(baseType, intermediateMember, ref offsetCounter));
+				}
+				else if (typeEntry is IntermediateStruct)
+				{
+					// Scenario 3: Member has a struct type which is not fully defined
+					depthLevel++;
+
+					if (depthLevel > 100)
+					{
+						// why is the user nesting 100 structs
+						throw new ASTException("Too many nested struct members. Consider refactoring or look for circular struct members.");
+					}
+
+					StructDeclaration newlyDefinedStruct = CreateStructDeclaration((IntermediateStruct)typeEntry, ref depthLevel);
+					members.Add(GetDeclarationOfStructMember(newlyDefinedStruct, intermediateMember, ref offsetCounter));
+				}
+				else if (typeEntry == null && intermediateMember.Name == "void" && intermediateMember.PointerLevel > 0)
+				{
+					// Scenario 4: Pointer to void
+					StructMemberDeclaration member = new StructMemberDeclaration(new DataType("void", intermediateMember.PointerLevel, 8), intermediateMember.Name, intermediateMember.ArraySize, offsetCounter);
+					members.Add(member);
+				}
 			}
 
-			return (DataType)nameTable[name];
+			StructDeclaration result = new StructDeclaration(intermediateStruct.Name, members);
+			NameTable.Instance[intermediateStruct.Name] = result;
+			return result;
+		}
+
+		private StructMemberDeclaration GetDeclarationOfStructMember(StructDeclaration memberType, IntermediateStructMember intermediateMember, ref int offsetCounter)
+		{
+			DataType fullType = new DataType(memberType.Name, intermediateMember.PointerLevel, memberType.Size);
+			StructMemberDeclaration result = new StructMemberDeclaration(fullType, intermediateMember.Name, intermediateMember.ArraySize, offsetCounter);
+			offsetCounter += result.MemberType.TypeSize * result.ArraySize;
+			return result;
 		}
 	}
 }

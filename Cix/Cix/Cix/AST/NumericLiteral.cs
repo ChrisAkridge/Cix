@@ -168,17 +168,9 @@ namespace Cix.AST
 				{
 					return new NumericLiteral(result);
 				}
-				else if (result > ushort.MaxValue && result < uint.MaxValue)
+				else
 				{
 					return new NumericLiteral((uint)result);
-				}
-				else if (result > byte.MaxValue && result < ushort.MaxValue)
-				{
-					return new NumericLiteral((ushort)result);
-				}
-				else if (result <= byte.MaxValue)
-				{
-					return new NumericLiteral((byte)result);
 				}
 			}
 			else
@@ -190,17 +182,9 @@ namespace Cix.AST
 				{
 					return new NumericLiteral(result);
 				}
-				else if (result > short.MaxValue && result < int.MaxValue)
+				else
 				{
 					return new NumericLiteral((int)result);
-				}
-				else if (result > sbyte.MaxValue && result < short.MaxValue)
-				{
-					return new NumericLiteral((short)result);
-				}
-				else if (result <= sbyte.MaxValue)
-				{
-					return new NumericLiteral((sbyte)result);
 				}
 			}
 

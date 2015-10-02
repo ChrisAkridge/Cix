@@ -31,7 +31,7 @@ namespace Cix.AST
 
 			TypeName = typeName;
 			PointerLevel = pointerLevel;
-			TypeSize = typeSize;
+			TypeSize = (pointerLevel == 0) ? typeSize : 8;
 		}
 
 		public Type GetBCLType()

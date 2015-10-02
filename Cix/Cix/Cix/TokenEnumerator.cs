@@ -9,23 +9,23 @@ namespace Cix
 	public sealed class TokenEnumerator
 	{
 		private List<Token> tokens;
-		private int currentIndex;
+		public int CurrentIndex { get; private set; }
 		
 		public Token Current
 		{
 			get
 			{
-				if (currentIndex < 0 || currentIndex >= tokens.Count)
+				if (CurrentIndex < 0 || CurrentIndex >= tokens.Count)
 				{
 					return null;
 				}
 
-				return tokens[currentIndex];
+				return tokens[CurrentIndex];
 			}
 		}
 
-		public bool AtBeginning => currentIndex == 0;
-		public bool AtEnd => currentIndex == (tokens.Count - 1);
+		public bool AtBeginning => CurrentIndex == 0;
+		public bool AtEnd => CurrentIndex == (tokens.Count - 1);
 
 		public TokenEnumerator(List<Token> tokens)
 		{
@@ -35,28 +35,78 @@ namespace Cix
 			}
 
 			this.tokens = tokens;
-			currentIndex = 0;
+			CurrentIndex = 0;
+		}
+
+		public TokenEnumerator Subset(int startIndex, int endIndex)
+		{
+			if ((startIndex < 0 || startIndex >= tokens.Count) || (endIndex < 0 || endIndex >= tokens.Count))
+			{
+				throw new ArgumentOutOfRangeException($"The start and/or end indices are out of range. Start index: {startIndex}, end index: {endIndex}, valid range is [0-{tokens.Count}).");
+			}
+			
+			if (startIndex > endIndex)
+			{
+				throw new ArgumentOutOfRangeException($"The start index of {startIndex} is greater than the end index of {endIndex}.");
+			}
+			else if (startIndex == endIndex)
+			{
+				return new TokenEnumerator(new List<Token>());
+			}
+
+			int length = endIndex - startIndex;
+			return new TokenEnumerator(tokens.Skip(startIndex).Take(length).ToList());
+		}
+
+		public IEnumerable<List<Token>> SplitOnSemicolon()
+		{
+			var result = new List<List<Token>>();
+			var currentStatement = new List<Token>();
+
+			Reset();
+
+			do
+			{
+				if (Current.Type == TokenType.Semicolon)
+				{
+					result.Add(currentStatement);
+					currentStatement = new List<Token>();
+				}
+				else if (Current.Type == TokenType.OpenScope || Current.Type == TokenType.CloseScope)
+				{
+					result.Add(currentStatement);
+					result.Add(new List<Token>() { Current });
+					currentStatement = new List<Token>();
+				}
+				else
+				{
+					currentStatement.Add(Current);
+				}
+			} while (MoveNext());
+
+			if (currentStatement.Any()) result.Add(currentStatement);
+			return result;
 		}
 
 		public bool MoveNext()
 		{
-			if (currentIndex >= tokens.Count)
+			if (CurrentIndex >= tokens.Count - 1)
 			{
 				return false;
 			}
 
-			currentIndex++;
+			CurrentIndex++;
 			return true;
 		}
 
 		public bool MoveLast()
 		{
-			if (currentIndex == 0)
+			if (CurrentIndex == 0)
 			{
 				return false;
 			}
 
-			currentIndex--;
+			CurrentIndex--;
 			return true;
 		}
 
@@ -64,7 +114,7 @@ namespace Cix
 		{
 			List<Token> result = new List<Token>();
 
-			if (currentIndex >= tokens.Count)
+			if (CurrentIndex >= tokens.Count)
 			{
 				return result;
 			}
@@ -87,14 +137,16 @@ namespace Cix
 		public void SkipBlock()
 		{
 			// First finds the next openscope and then skips to after the next closescope on that level
-			if (currentIndex >= tokens.Count) return;
+			if (CurrentIndex >= tokens.Count) return;
 
-			int scopeLevel = 0;
 			while (Current.Type != TokenType.OpenScope)
 			{
 				// Find the first openscope
 				if (!MoveNext()) return;
 			}
+
+			int scopeLevel = 1;
+			if (!MoveNext()) return;
 
 			while (Current.Type != TokenType.CloseScope && scopeLevel > 0)
 			{
@@ -103,6 +155,13 @@ namespace Cix
 
 				if (!MoveNext()) return;
 			}
+
+			MoveNext();
+		}
+
+		public void Reset()
+		{
+			CurrentIndex = 0;
 		}
 
 		/// <summary>

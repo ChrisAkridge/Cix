@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
+	[Obsolete]
     public sealed class NameToBeResolved : Element
     {
 		public string Name { get; }

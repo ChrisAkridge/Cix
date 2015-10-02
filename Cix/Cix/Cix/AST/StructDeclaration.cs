@@ -17,7 +17,7 @@ namespace Cix.AST
 			{
 				if (Members != null)
 				{
-					return Members.Sum(m => m.MemberType.TypeSize);
+					return Members.Sum(m => m.Size);
 				}
 				return 0;
 			}

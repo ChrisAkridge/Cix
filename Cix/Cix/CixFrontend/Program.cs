@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Cix;
+using Cix.AST;
 using Cix.Exceptions;
 
 namespace CixFrontend
@@ -35,7 +36,7 @@ namespace CixFrontend
 
 			string file = File.ReadAllText(filePath);
 
-			Console.Write("Remove comments (C)/Preprocessed (P)/By character (B)/Tokenized (T)/First stage (F) ");
+			Console.Write("Remove comments (C)/Preprocessed (P)/By character (L)/Tokenized (T)/First stage (F)/AST First Pass Stage A (A)/Stage B (B) ");
 			char option = char.ToLower((char)Console.Read());
 			Console.WriteLine();
 
@@ -58,7 +59,7 @@ namespace CixFrontend
 				//	Console.WriteLine("{0}: {1}", ex.GetType().Name, ex.Message);
 				//}
 			}
-			else if (option == 'b')
+			else if (option == 'l')
 			{
 				Lexer iterator = new Lexer(file.RemoveComments());
 				try
@@ -122,6 +123,46 @@ namespace CixFrontend
 				//{
 				//	Console.WriteLine("{0}: {1}", ex.GetType().Name, ex.Message);
 				//}
+			}
+			else if (option == 'a')
+			{
+				file = file.RemoveComments();
+
+				Preprocessor preprocessor = new Preprocessor(file, filePath);
+				file = preprocessor.Preprocess();
+
+				var words = new Lexer(file).EnumerateWords();
+				var tokenList = new Tokenizer().Tokenize(words);
+				var intermediateStructs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).StageAGenerator();
+				
+				foreach (var intermediateStruct in intermediateStructs)
+				{
+					Console.WriteLine($"Struct named {intermediateStruct.Name}, starting at index {intermediateStruct.FirstDefinitionTokenIndex}, ending at index {intermediateStruct.LastTokenIndex}.");
+				}
+			}
+			else if (option == 'b')
+			{
+				file = file.RemoveComments();
+
+				Preprocessor preprocessor = new Preprocessor(file, filePath);
+				file = preprocessor.Preprocess();
+
+				var words = new Lexer(file).EnumerateWords();
+				var tokenList = new Tokenizer().Tokenize(words);
+				var intermediateStructs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).StageAGenerator();
+				var structs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).StageBGenerator(intermediateStructs);
+
+				foreach (StructDeclaration structDeclaration in structs)
+				{
+					Console.WriteLine($"Struct named {structDeclaration.Name} with size {structDeclaration.Size} ({structDeclaration.Members.Count} members):");
+					foreach (var member in structDeclaration.Members)
+					{
+						Console.WriteLine($"\tMember of type {member.MemberType.TypeName}{new string('*', member.MemberType.PointerLevel)}");
+						Console.WriteLine($"\tNamed {member.MemberName} with array size {member.ArraySize}.");
+						Console.WriteLine($"\tOverall size {member.Size} bytes, offset +{member.Offset}.");
+						Console.WriteLine();
+					}
+				}
 			}
 			Console.ReadKey();
 		}
