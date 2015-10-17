@@ -80,7 +80,7 @@ namespace Cix
 			foreach (char c in word.ToLowerInvariant())
 			{
 				// All characters in a numeric literal must be a digit, a period, or one of the suffixes
-				if (!(c >= '0' && c <= '9') || c == '.' || c.IsOneOfCharacter('u', 'l', 'f', 'd'))
+				if (!(c >= '0' && c <= '9') && c == '.' && c.IsOneOfCharacter('u', 'l', 'f', 'd'))
 				{
 					return false;
 				}
@@ -152,6 +152,19 @@ namespace Cix
 			}
 			
 			return result.ToString();
+		}
+
+		public static Tuple<string, int> SeparateTypeNameAndPointerLevel(this string fullTypeName)
+		{
+			if (!fullTypeName.Any(c => c == '*'))
+			{
+				return new Tuple<string, int>(fullTypeName, 0);
+			}
+
+			int pointerLevel = fullTypeName.Count(c => c == '*');
+			string typeName = fullTypeName.Substring(0, fullTypeName.Length - pointerLevel);
+
+			return new Tuple<string, int>(typeName, pointerLevel);
 		}
 
 		private enum CommentKind

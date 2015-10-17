@@ -42,5 +42,19 @@ namespace Cix.AST.Generator
 			Names.Add("float", new DataType("float", 0, 4));
 			Names.Add("double", new DataType("double", 0, 8));
 		}
+
+		public static bool IsPrimitiveType(string typeName)
+		{
+			return typeName == "byte" ||
+				   typeName == "sbyte" ||
+				   typeName == "short" ||
+				   typeName == "ushort" ||
+				   typeName == "int" ||
+				   typeName == "uint" ||
+				   typeName == "long" ||
+				   typeName == "ulong" ||
+				   typeName == "float" ||
+				   typeName == "double";
+		}
 	}
 }

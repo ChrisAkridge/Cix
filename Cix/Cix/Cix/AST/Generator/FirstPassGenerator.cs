@@ -82,6 +82,40 @@ namespace Cix.AST.Generator
 			return tree;
 		}
 
+		/// <summary>
+		/// Parses the token stream to find global variables and add them to the tree.
+		/// </summary>
+		/// <param name="tree">The abstract syntax tree immediately after stage B generation.</param>
+		/// <returns>The abstract syntax tree containing global variable declarations plus stage B generation.</returns>
+		public List<Element> StageCGenerator(List<Element> tree)
+		{
+			tokens.Reset();
+			var globalVariables = new List<GlobalVariableDeclaration>();
+
+			// Scan through all tokens at the root level, looking for the global keyword.
+			int nestingDepth = 0;
+			do
+			{
+				if (tokens.Current.Type == TokenType.OpenScope)
+				{
+					nestingDepth++;
+				}
+				else if (tokens.Current.Type == TokenType.CloseScope)
+				{
+					nestingDepth--;
+				}
+				else if (tokens.Current.Word == "global" && nestingDepth == 0)
+				{
+					var globalStatement = tokens.MoveStatement();
+					globalVariables.Add(GetGlobalVariableDeclaration(globalStatement));
+				}
+				tokens.MoveNext();
+			} while (!tokens.AtEnd);
+
+			tree.AddRange(globalVariables);
+			return tree;
+		}
+
 		private void ParseIntermediateStructMembers(IntermediateStruct intermediateStruct)
 		{
 			var statements = tokens.Subset(intermediateStruct.FirstDefinitionTokenIndex, intermediateStruct.LastTokenIndex).SplitOnSemicolon();
@@ -204,6 +238,45 @@ namespace Cix.AST.Generator
 			StructMemberDeclaration result = new StructMemberDeclaration(fullType, intermediateMember.Name, intermediateMember.ArraySize, offsetCounter);
 			offsetCounter += result.MemberType.TypeSize * result.ArraySize;
 			return result;
+		}
+
+		private GlobalVariableDeclaration GetGlobalVariableDeclaration(List<Token> globalStatement)
+		{
+			// Valid global variable definitions
+			//  global T name;
+			//  global U primitive = 137;
+			//  global T* ptr;
+
+			int pointerLevel = 0;
+
+			if (globalStatement.Any(t => t.Type == TokenType.Indeterminate))
+			{
+				Token indeterminate = globalStatement.First(t => t.Type == TokenType.Indeterminate);
+				pointerLevel = indeterminate.Word.Length;
+				globalStatement.RemoveAt(globalStatement.IndexOf(indeterminate));
+			}
+
+			var typeData = globalStatement[1].Word.SeparateTypeNameAndPointerLevel();
+			string typeName = typeData.Item1;
+			pointerLevel = (pointerLevel == 0) ? typeData.Item2 : pointerLevel;
+
+			string variableName = globalStatement[2].Word;
+			NumericLiteral numericLiteral = null;
+
+			if (globalStatement.Any(t => t.Word == "=") && NameTable.IsPrimitiveType(typeName))
+			{
+				string numericLiteralToken = globalStatement[4].Word;
+				numericLiteral = NumericLiteral.Parse(numericLiteralToken);
+			}
+
+			if (typeName == "void" && pointerLevel == 0) { throw new ASTException("No global variable may have the type of void."); }
+			else if (!(NameTable.Instance[typeName] is DataType) && !(NameTable.Instance[typeName] is StructMemberDeclaration) && typeName != "void")
+				{ throw new ASTException($"{typeName} is not a type; it's a {NameTable.Instance[typeName].GetType().Name}."); }
+			else if (!NameTable.Instance.Names.ContainsKey(typeName) && typeName != "void") { throw new ASTException($"Type {typeName} for global variable doesn't exist."); }
+			else if (typeName == "lpstring") { throw new ASTException("No global variable may directly have the type of lpstring. Consider using byte* instead."); }
+
+			int typeSize = (pointerLevel == 0) ? ((DataType)NameTable.Instance[typeName]).TypeSize : 8;
+			return new GlobalVariableDeclaration(new DataType(typeName, pointerLevel, typeSize), variableName, numericLiteral);
 		}
 	}
 }
