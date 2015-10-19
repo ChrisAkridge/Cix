@@ -22,7 +22,7 @@ namespace Cix.AST
 
 		public ExpressionArrayAccess(IEnumerable<ExpressionElement> cElements, ExpressionElementSequence sequence)
 		{
-			cElements = elements;
+			elements = cElements.ToList();
 			Sequence = sequence;
 		}
 	}
