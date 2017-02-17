@@ -10,7 +10,19 @@ namespace Cix
 	{
 		private List<Token> tokens;
 		public int CurrentIndex { get; private set; }
-		
+
+		public Token Previous
+		{
+			get
+			{
+				if (CurrentIndex - 1 < 0 || CurrentIndex - 1 >= tokens.Count)
+				{ return null; }
+
+				return tokens[CurrentIndex - 1];
+			}
+		}
+
+
 		public Token Current
 		{
 			get
@@ -21,6 +33,17 @@ namespace Cix
 				}
 
 				return tokens[CurrentIndex];
+			}
+		}
+
+		public Token Next
+		{
+			get
+			{
+				if (CurrentIndex + 1 < 0 || CurrentIndex + 1 >= tokens.Count)
+				{ return null; }
+
+				return tokens[CurrentIndex + 1];
 			}
 		}
 
@@ -85,6 +108,30 @@ namespace Cix
 			} while (MoveNext());
 
 			if (currentStatement.Any()) result.Add(currentStatement);
+			return result;
+		}
+
+		public IEnumerable<List<Token>> SplitOnComma()
+		{
+			var result = new List<List<Token>>();
+			var currentStatement = new List<Token>();
+
+			Reset();
+
+			do
+			{
+				if (Current.Type == TokenType.Comma)
+				{
+					result.Add(currentStatement);
+					currentStatement = new List<Token>();
+				}
+				else
+				{
+					currentStatement.Add(Current);
+				}
+			} while (MoveNext());
+
+			if (currentStatement.Any()) { result.Add(currentStatement); }
 			return result;
 		}
 

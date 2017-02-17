@@ -69,5 +69,10 @@ namespace Cix.AST
 					throw new InvalidOperationException(string.Format("The Cix type {0} does not have an analogous BCL type.", TypeName));
 			}
 		}
+
+		public DataType WithPointerLevel(int pointerLevel)
+		{
+			return new DataType(TypeName, pointerLevel, TypeSize);
+		}
 	}
 }

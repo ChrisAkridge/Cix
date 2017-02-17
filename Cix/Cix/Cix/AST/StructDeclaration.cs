@@ -28,5 +28,7 @@ namespace Cix.AST
 			Name = name;
 			Members = members.ToList();
 		}
+
+		public DataType ToDataType() => new DataType(Name, 0, Size);
 	}
 }

@@ -464,9 +464,9 @@ namespace Cix
 			//	Preceding identifier, closeparen, closebracket, one of { ++ -- }. 
 			//	Succeeding identifier, one of { + - ! ~ ++ -- & * }.
 
-			if (last.IsIdentifier() || last.IsOneOfString(")", "]", "++", "--"))
+			if (last.IsIdentifierOrNumber() || last.IsOneOfString(")", "]", "++", "--"))
 			{
-				if (next.IsIdentifier() || next.IsOneOfString("+", "-", "!", "~", "++", "--", "&", "*"))
+				if (next.IsIdentifierOrNumber() || next.IsOneOfString("+", "-", "!", "~", "++", "--", "&", "*"))
 				{
 					AddToken(unambiguousBinaryOperatorTokens[current], current);
 				}

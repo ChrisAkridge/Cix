@@ -107,6 +107,7 @@
     <Compile Include="AST\Function.cs" />
     <Compile Include="AST\DoWhileLoop.cs" />
     <Compile Include="AST\Generator\FirstPassGenerator.cs" />
+    <Compile Include="AST\Generator\IntermediateForms\IntermediateFunction.cs" />
     <Compile Include="AST\Generator\IntermediateForms\IntermediateStruct.cs" />
     <Compile Include="AST\Generator\IntermediateForms\IntermediateStructMember.cs" />
     <Compile Include="AST\Generator\NameTable.cs" />

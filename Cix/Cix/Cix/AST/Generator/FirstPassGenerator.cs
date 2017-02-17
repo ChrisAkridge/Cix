@@ -116,6 +116,127 @@ namespace Cix.AST.Generator
 			return tree;
 		}
 
+		/// <summary>
+		/// Parses the token stream to find function headers and their start/end token indices.
+		/// </summary>
+		/// <param name="tree">A tree containing everything up to the stage C generation.</param>
+		/// <returns>A tree with the function information.</returns>
+		public List<IntermediateFunction> StageDGenerator()
+		{
+			tokens.Reset();
+			var functions = new List<IntermediateFunction>();
+
+			// Scan through all the tokens at the root level.
+			// Functions are the only root element that doesn't start with "struct" or "global".
+			int nestingDepth = 0;
+			do
+			{
+				if (tokens.Current.Type == TokenType.OpenScope)
+				{
+					nestingDepth++;
+				}
+				else if (tokens.Current.Type == TokenType.CloseScope)
+				{
+					nestingDepth--;
+				}
+				else if (tokens.Current.Type == TokenType.KeyStruct)
+				{
+					// Skip this entire struct definition.
+					tokens.SkipBlock();
+					continue;
+				}
+				else if (tokens.Current.Word == "global")
+				{
+					tokens.MoveStatement();
+				}
+				else if (nestingDepth == 0 && tokens.Current.Type != TokenType.KeyStruct &&
+					tokens.Current.Word != "global")
+				{
+					// We've found a type name! Probably! Let's find it in the nametable before we
+					// get too excited.
+					string possibleTypeName = tokens.Current.Word;
+					if (!NameTable.Instance.Names.ContainsKey(possibleTypeName.TrimAsterisks()))
+					{
+						throw new ASTException($"A function was declared with return type {possibleTypeName}. No type by that name exists.");
+					}
+
+					// This is a proper function. Let's get started!
+					// Remember that the return type can appear as both "type* name" and "type * name",
+					// so we'll have to check for that.
+					DataType returnType = GetDataTypeFromNameTable(possibleTypeName);
+					tokens.MoveNext();
+
+					if (tokens.Current.Type == TokenType.Indeterminate)
+					{
+						returnType = returnType.WithPointerLevel(tokens.Current.Word.Length);
+						tokens.MoveNext();
+					}
+
+					string name = tokens.Current.Word;
+					if (!name.IsIdentifier())
+					{
+						throw new ASTException($"The function name \"{name}\" is not valid.");
+					}
+
+					// Up next should be the leftparen for the function argument list.
+					tokens.MoveNext();
+					if (tokens.Current.Type != TokenType.OpenParen)
+					{
+						throw new ASTException($"Expected a left paren, found {tokens.Current.Word}");
+					}
+					int argsStartIndex = tokens.CurrentIndex;
+					int argsEndIndex = argsStartIndex;
+
+					// Find the close parentheses. No function argument can have parentheses in it,
+					// so we don't have to worry about nesting.
+					while (tokens.Current.Type != TokenType.CloseParen)
+					{
+						tokens.MoveNext();
+						argsEndIndex++;
+					}
+
+					// The above loop stops just before the closeparen. Add 1 to move it to the
+					// closeparen.
+					argsEndIndex += 1;
+					//tokens.MoveNext();
+
+					// Parse the function arguments.
+					var functionArguments = ParseFunctionArguments(argsStartIndex, argsEndIndex);
+
+					// The openscope should be the next token.
+					if (!tokens.MoveNextValidate(TokenType.OpenScope))
+					{
+						throw new ASTException($"Unexpected token \"{tokens.Current.Word}\" between function arguments and function statements.");
+					}
+
+					int openScopeIndex = tokens.CurrentIndex;
+					int closeScopeIndex = -1;
+					int functionNestingDepth = 1;
+
+					while (true)
+					{
+						if (!tokens.MoveNext()) { throw new ASTException($"The function {name} is missing a }}."); }
+						if (tokens.Current.Type == TokenType.OpenScope) { functionNestingDepth++; }
+						else if (tokens.Current.Type == TokenType.CloseScope)
+						{
+							if (functionNestingDepth > 1) { functionNestingDepth--; }
+							else
+							{
+								closeScopeIndex = tokens.CurrentIndex;
+								break;
+							}
+						}
+					}
+
+					functions.Add(new IntermediateFunction(returnType, name, functionArguments, openScopeIndex, closeScopeIndex));
+				}
+
+				tokens.MoveNext();
+			} while (!tokens.AtEnd);
+
+			return functions;
+		}
+
 		private void ParseIntermediateStructMembers(IntermediateStruct intermediateStruct)
 		{
 			var statements = tokens.Subset(intermediateStruct.FirstDefinitionTokenIndex, intermediateStruct.LastTokenIndex).SplitOnSemicolon();
@@ -144,7 +265,10 @@ namespace Cix.AST.Generator
 				}
 				else
 				{
-					if (enumerator.Current.Word == "void" || enumerator.Current.Word == "lpstring") { throw new ASTException("Members of type void or lpstring may not appear in structs."); }
+					if (enumerator.Current.Word == "void" || enumerator.Current.Word == "lpstring")
+					{
+						throw new ASTException("Members of type void or lpstring may not appear in structs. Use a pointer to that type instead.");
+					}
 					memberTypeName = enumerator.Current.Word;
 				}
 
@@ -277,6 +401,90 @@ namespace Cix.AST.Generator
 
 			int typeSize = (pointerLevel == 0) ? ((DataType)NameTable.Instance[typeName]).TypeSize : 8;
 			return new GlobalVariableDeclaration(new DataType(typeName, pointerLevel, typeSize), variableName, numericLiteral);
+		}
+
+		private DataType GetDataTypeFromNameTable(string typeName)
+		{
+			var typeNameWithPointerLevel = typeName.SeparateTypeNameAndPointerLevel();
+			var typeInNameTable = NameTable.Instance[typeNameWithPointerLevel.Item1];
+
+			if (typeInNameTable == null)
+			{
+				throw new ASTException($"Tried to find a type named \"{typeName}\", but that name isn't defined.");
+			}
+
+			if (typeInNameTable is DataType)
+			{
+				return ((DataType)typeInNameTable).WithPointerLevel(typeNameWithPointerLevel.Item2);
+			}
+			else if (typeInNameTable is StructDeclaration)
+			{
+				return ((StructDeclaration)typeInNameTable).ToDataType()
+					.WithPointerLevel(typeNameWithPointerLevel.Item2);
+			}
+			else
+			{
+				throw new ASTException($"Tried to find a type named \"{typeName}\", but that name defines a {typeInNameTable.GetType().Name}");
+			}
+		}
+
+		private List<FunctionArgument> ParseFunctionArguments(int startIndex, int endIndex)
+		{
+			// Start index and end index should point to the openparen and closeparen, respectively
+			// Add 1 to startIndex and subtract 1 from endIndex to point them to the first and last
+			// actual tokens in the function arguments.
+			var argTokens = tokens.Subset(startIndex + 1, endIndex - 1);
+			var result = new List<FunctionArgument>();
+
+			// Easy case: if the closeparen is right after the openparen, there are no arguments.
+			if (startIndex + 1 == endIndex) { return result; }
+
+			var args = argTokens.SplitOnComma();
+
+			// A function argument is either "type name" or "type* name" or "type * name"
+			// (with however many asterisks, of course)
+
+			foreach (var arg in args)
+			{
+				if (arg.Count < 2 || arg.Count > 3)
+				{
+					throw new ASTException($"There are {arg.Count} token(s) in a function argument. There should be 2 or 3.");
+				}
+
+				Token typeNameToken = arg[0];
+				Token argNameToken = arg.Last();
+				Token separatePointerToken = (arg.Count == 3) ? arg[1] : null;
+
+				// Look up the type name in the name table to check if it's real.
+				string typeName = typeNameToken.Word.TrimAsterisks();
+				if (!NameTable.Instance.Names.ContainsKey(typeName))
+				{
+					throw new ASTException($"A function argument was declared with return type {typeName}. No type by that name exists.");
+				}
+
+				string argName = argNameToken.Word;
+				if (!argName.IsIdentifier())
+				{
+					throw new ASTException($"A function argument had the invalid name \"{argName}\".");
+				}
+
+				if (separatePointerToken != null && separatePointerToken.Type != TokenType.Indeterminate)
+				{
+					string argDeclaration = $"{typeName} {separatePointerToken.Word} {argName}";
+					throw new ASTException($"The function argument \"${argDeclaration}\" is not valid.");
+				}
+
+				int pointerLevel = 0;
+				if (separatePointerToken != null) { pointerLevel = separatePointerToken.Word.Length; }
+				else { pointerLevel = typeNameToken.Word.SeparateTypeNameAndPointerLevel().Item2; }
+
+				// Look up the data type in the name table.
+				DataType argType = GetDataTypeFromNameTable(typeName).WithPointerLevel(pointerLevel);
+
+				result.Add(new FunctionArgument(argType, argName));
+			}
+
+			return result;
 		}
 	}
 }

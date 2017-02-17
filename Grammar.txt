@@ -109,6 +109,7 @@ type-name:
 
 pointer-type-name:
 	type-name then
+	Zero or more whitespaces then
 	One or more Asterisks (U+002A)
 
 structure-member-offset:

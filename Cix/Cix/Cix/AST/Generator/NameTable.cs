@@ -41,6 +41,7 @@ namespace Cix.AST.Generator
 			Names.Add("ulong", new DataType("ulong", 0, 8));
 			Names.Add("float", new DataType("float", 0, 4));
 			Names.Add("double", new DataType("double", 0, 8));
+			Names.Add("char", new DataType("char", 0, 2));
 		}
 
 		public static bool IsPrimitiveType(string typeName)
@@ -54,7 +55,8 @@ namespace Cix.AST.Generator
 				   typeName == "long" ||
 				   typeName == "ulong" ||
 				   typeName == "float" ||
-				   typeName == "double";
+				   typeName == "double" ||
+				   typeName == "char";
 		}
 	}
 }

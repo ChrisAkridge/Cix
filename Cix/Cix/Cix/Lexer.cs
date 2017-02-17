@@ -550,6 +550,9 @@ namespace Cix
 				case ParsingContext.Operator:
 					throw new ParseException("Invalid forward slash in root context, directive, or operator.", file, lineNumber, charNumber);
 				case ParsingContext.Whitespace:
+					builder.Append('/');
+					context = ParsingContext.Operator;
+					break;
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:

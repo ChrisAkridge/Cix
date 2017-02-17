@@ -17,6 +17,9 @@ namespace Cix
 		  'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6',
 		  '7', '8', '9', '_', '.' };
 
+		private static readonly char[] invalidFirstIdentifierCharacters = new char[]
+		{ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+
 		internal static readonly string[] reservedKeywords = new string[] 
 		{ "break", "case", "char", "const", "continue", "default", "do",
 		  "double", "else", "float", "for", "goto", "if", "int", "long", 
@@ -40,6 +43,8 @@ namespace Cix
 				// A dot by itself is an OperatorMemberAccess. If it's not by itself, it's part of a numeric literal.
 				return false;
 			}
+
+			// if (invalidFirstIdentifierCharacters.Contains(word[0])) { return false; }
 
 			foreach (char c in word)
 			{
@@ -88,6 +93,8 @@ namespace Cix
 
 			return true;
 		}
+
+		public static bool IsIdentifierOrNumber(this string word) => IsIdentifier(word) || IsNumericLiteral(word);
 
 		public static string RemoveComments(this string input)
 		{
@@ -165,6 +172,18 @@ namespace Cix
 			string typeName = fullTypeName.Substring(0, fullTypeName.Length - pointerLevel);
 
 			return new Tuple<string, int>(typeName, pointerLevel);
+		}
+
+		public static string TrimAsterisks(this string typeName)
+		{
+			if (string.IsNullOrEmpty(typeName))
+			{
+				throw new ArgumentException("The provided type name was null or empty.");
+			}
+
+			int firstAsteriskIndex = typeName.IndexOf('*');
+			if (firstAsteriskIndex == -1) { return typeName; }
+			return typeName.Substring(0, firstAsteriskIndex);
 		}
 
 		private enum CommentKind

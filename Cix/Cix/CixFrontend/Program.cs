@@ -36,7 +36,7 @@ namespace CixFrontend
 
 			string file = File.ReadAllText(filePath);
 
-			Console.Write("Remove comments (C)/Preprocessed (P)/By character (L)/Tokenized (T)/First stage (F)/AST First Pass Stage A (A)/Stage B (B)/Stage C (D)");
+			Console.Write("Remove comments (C)/Preprocessed (P)/By character (L)/Tokenized (T)/First stage (F)/AST First Pass Stage A (A)/Stage B (B)/Stage C (D)/Stage D (E)");
 			char option = char.ToLower((char)Console.Read());
 			Console.WriteLine();
 
@@ -180,6 +180,29 @@ namespace CixFrontend
 				{
 					Console.WriteLine($"Global variable named {global.Name} with type {global.Type.TypeName} {((global.InitialValue != null) ? "with" : "without")} init");
 				}
+			}
+			else if (option == 'e')
+			{
+				file = file.RemoveComments();
+				Preprocessor preprocessor = new Preprocessor(file, filePath);
+				file = preprocessor.Preprocess();
+
+				var words = new Lexer(file).EnumerateWords();
+				var tokenList = new Tokenizer().Tokenize(words);
+				var generator = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList));
+				var intermediateStructs = generator.StageAGenerator();
+				var structs = generator.StageBGenerator(intermediateStructs);
+				var treeWithGlobals = generator.StageCGenerator(structs);
+
+				try
+				{
+					var intermediateFunctions = generator.StageDGenerator();
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine(ex.Message);
+				}
+				
 			}
 			Console.ReadKey();
 		}
