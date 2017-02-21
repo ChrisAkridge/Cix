@@ -8,13 +8,15 @@ namespace Cix.AST
 {
 	public sealed class DoWhileLoop : Element
 	{
-		public Expression Condition { get; private set; }
-		public List<Element> Statements { get; private set; }
+		private List<Element> statements;
+		
+		public Expression Condition { get; }
+		public IReadOnlyList<Element> Statements => statements.AsReadOnly();
 
 		public DoWhileLoop(Expression condition, IEnumerable<Element> statements)
 		{
 			Condition = condition;
-			Statements = statements.ToList();
+			statements = statements.ToList();
 		}
 	}
 }

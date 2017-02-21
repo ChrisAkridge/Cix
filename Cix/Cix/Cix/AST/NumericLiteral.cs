@@ -20,7 +20,7 @@ namespace Cix.AST
 			{
 				if (LiteralType != LiteralType.SignedIntegral)
 				{
-					throw new InvalidOperationException($"This numeric literal was attempted to be accessed as a signed integer, but it is actually a {LiteralType}.");
+					throw new InvalidOperationException($"Tried to read a numeric literal as a signed integer, but it is actually a {LiteralType}.");
 				}
 
 				unchecked
@@ -36,7 +36,7 @@ namespace Cix.AST
 			{
 				if (LiteralType != LiteralType.UnsignedIntegral)
 				{
-					throw new InvalidOperationException($"This numeric literal was attempted to be accessed as an unsigned integer, but it is actually a {LiteralType}.");
+					throw new InvalidOperationException($"Tried to read a numeric literal as an unsigned integer, but it is actually a {LiteralType}.");
 				}
 
 				return integralValue;
@@ -49,7 +49,7 @@ namespace Cix.AST
 			{
 				if (LiteralType != LiteralType.Floating)
 				{
-					throw new InvalidOperationException($"This numeric literal was attempted to be accessed as a floating point number, but it is actually a {LiteralType}.");
+					throw new InvalidOperationException($"Tried to read a numeric literal as a floating point number, but it is actually a {LiteralType}.");
 				}
 
 				return floatingValue;

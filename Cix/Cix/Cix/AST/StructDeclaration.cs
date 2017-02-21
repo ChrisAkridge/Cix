@@ -8,8 +8,10 @@ namespace Cix.AST
 {
 	public sealed class StructDeclaration : Element
 	{
-		public string Name { get; private set; }
-		public List<StructMemberDeclaration> Members { get; private set; }
+		private List<StructMemberDeclaration> members;
+
+		public string Name { get; }
+		public IReadOnlyList<StructMemberDeclaration> Members => members.AsReadOnly();
 
 		public int Size
 		{
@@ -26,7 +28,7 @@ namespace Cix.AST
 		public StructDeclaration(string name, IEnumerable<StructMemberDeclaration> members)
 		{
 			Name = name;
-			Members = members.ToList();
+			this.members = members.ToList();
 		}
 
 		public DataType ToDataType() => new DataType(Name, 0, Size);

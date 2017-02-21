@@ -10,11 +10,12 @@ namespace Cix.AST
 	{
 		// Terminology note: In function declarations (int main(int argc, char** argv), they're called arguments.
 		// In function calls (sort(&array)), they're called parameters.
-		public DataType ParameterType { get; private set; }
-		public Expression ValueExpression { get; private set; }
-		public ExpressionElementSequence Sequence { get; private set; }
+		public DataType ParameterType { get; }
+		public Expression ValueExpression { get; }
+		public ExpressionElementSequence Sequence { get; }
 
-		public ExpressionFunctionParameter(DataType parameterType, Expression valueExpression, ExpressionElementSequence sequence)
+		public ExpressionFunctionParameter(DataType parameterType, Expression valueExpression, 
+			ExpressionElementSequence sequence)
 		{
 			ParameterType = parameterType;
 			ValueExpression = valueExpression;

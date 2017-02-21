@@ -133,7 +133,7 @@ namespace CixFrontend
 
 				var words = new Lexer(file).EnumerateWords();
 				var tokenList = new Tokenizer().Tokenize(words);
-				var intermediateStructs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).StageAGenerator();
+				var intermediateStructs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).GenerateIntermediateStructs();
 				
 				foreach (var intermediateStruct in intermediateStructs)
 				{
@@ -149,16 +149,16 @@ namespace CixFrontend
 
 				var words = new Lexer(file).EnumerateWords();
 				var tokenList = new Tokenizer().Tokenize(words);
-				var intermediateStructs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).StageAGenerator();
-				var structs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).StageBGenerator(intermediateStructs);
+				var intermediateStructs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).GenerateIntermediateStructs();
+				var structs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).GenerateStructTree(intermediateStructs);
 
 				foreach (StructDeclaration structDeclaration in structs)
 				{
 					Console.WriteLine($"Struct named {structDeclaration.Name} with size {structDeclaration.Size} ({structDeclaration.Members.Count} members):");
 					foreach (var member in structDeclaration.Members)
 					{
-						Console.WriteLine($"\tMember of type {member.MemberType.TypeName}{new string('*', member.MemberType.PointerLevel)}");
-						Console.WriteLine($"\tNamed {member.MemberName} with array size {member.ArraySize}.");
+						Console.WriteLine($"\tMember of type {member.Type.TypeName}{new string('*', member.Type.PointerLevel)}");
+						Console.WriteLine($"\tNamed {member.Name} with array size {member.ArraySize}.");
 						Console.WriteLine($"\tOverall size {member.Size} bytes, offset +{member.Offset}.");
 						Console.WriteLine();
 					}
@@ -172,9 +172,9 @@ namespace CixFrontend
 
 				var words = new Lexer(file).EnumerateWords();
 				var tokenList = new Tokenizer().Tokenize(words);
-				var intermediateStructs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).StageAGenerator();
-				var structs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).StageBGenerator(intermediateStructs);
-				var treeWithGlobals = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).StageCGenerator(structs);
+				var intermediateStructs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).GenerateIntermediateStructs();
+				var structs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).GenerateStructTree(intermediateStructs);
+				var treeWithGlobals = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).AddGlobalsToTree(structs);
 
 				foreach (GlobalVariableDeclaration global in treeWithGlobals.Where(e => e is GlobalVariableDeclaration))
 				{
@@ -190,13 +190,13 @@ namespace CixFrontend
 				var words = new Lexer(file).EnumerateWords();
 				var tokenList = new Tokenizer().Tokenize(words);
 				var generator = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList));
-				var intermediateStructs = generator.StageAGenerator();
-				var structs = generator.StageBGenerator(intermediateStructs);
-				var treeWithGlobals = generator.StageCGenerator(structs);
+				var intermediateStructs = generator.GenerateIntermediateStructs();
+				var structs = generator.GenerateStructTree(intermediateStructs);
+				var treeWithGlobals = generator.AddGlobalsToTree(structs);
 
 				try
 				{
-					var intermediateFunctions = generator.StageDGenerator();
+					var intermediateFunctions = generator.GenerateIntermediateFunctions();
 				}
 				catch (Exception ex)
 				{

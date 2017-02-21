@@ -8,8 +8,8 @@ namespace Cix.AST
 {
 	public sealed class VariableDeclaration : Element
 	{
-		public DataType Type { get; private set; }
-		public string Name { get; private set; }
+		public DataType Type { get; }
+		public string Name { get; }
 
 		public VariableDeclaration(DataType type, string name)
 		{

@@ -8,9 +8,9 @@ namespace Cix.AST
 {
 	public sealed class DataType : Element
 	{
-		public string TypeName { get; private set; }
-		public int PointerLevel { get; private set; }
-		public int TypeSize { get; private set; }
+		public string TypeName { get; }
+		public int PointerLevel { get; }
+		public int TypeSize { get; }
 
 		public DataType(string typeName, int pointerLevel, int typeSize)
 		{
@@ -43,9 +43,9 @@ namespace Cix.AST
 
 			switch (TypeName)
 			{
-				case "char":
+				case "byte":
 					return typeof(byte);
-				case "schar":
+				case "sbyte":
 					return typeof(sbyte);
 				case "short":
 					return typeof(short);
@@ -63,6 +63,8 @@ namespace Cix.AST
 					return typeof(float);
 				case "double":
 					return typeof(double);
+				case "char":
+					return typeof(char);
 				case "void":
 					return typeof(void);
 				default:

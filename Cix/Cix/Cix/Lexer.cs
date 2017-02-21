@@ -518,6 +518,7 @@ namespace Cix
 				case ParsingContext.Operator:
 					if (last == '*')
 					{
+						AddWordToList();
 						builder.Append('*');
 					}
 					else

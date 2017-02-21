@@ -9,17 +9,19 @@ namespace Cix.AST.Generator.IntermediateForms
 	public sealed class IntermediateStruct : Element
 	{
 		public string Name { get; }
-		public int Size { get; set; }
+		public int Size { get; }
 
-		public int FirstDefinitionTokenIndex { get; set; }
-		public int LastTokenIndex { get; set; }
+		public int FirstDefinitionTokenIndex { get; }
+		public int LastTokenIndex { get; }
 
-		public List<IntermediateStructMember> Members { get; set; }
+		public List<IntermediateStructMember> Members { get; }
 
-		public IntermediateStruct(string name)
+		public IntermediateStruct(string name, int firstTokenIndex, int lastTokenIndex)
 		{
 			Name = name;
 			Members = new List<IntermediateStructMember>();
+			FirstDefinitionTokenIndex = firstTokenIndex;
+			LastTokenIndex = lastTokenIndex;
 		}
 	}
 }

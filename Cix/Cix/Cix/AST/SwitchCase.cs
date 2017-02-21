@@ -8,15 +8,18 @@ namespace Cix.AST
 {
 	public sealed class SwitchCase : Element
 	{
-		public ExpressionConstant CaseConstant { get; private set; }
-		public bool IsDefaultCase { get; private set; }
-		public List<Element> Statements { get; private set; }
+		private List<Element> statements;
 
-		public SwitchCase(ExpressionConstant caseConstant, bool isDefaultCase, IEnumerable<Element> statements)
+		public ExpressionConstant CaseConstant { get; }
+		public bool IsDefaultCase { get; }
+		public IReadOnlyList<Element> Statements => statements.AsReadOnly();
+
+		public SwitchCase(ExpressionConstant caseConstant, bool isDefaultCase, 
+			IEnumerable<Element> statements)
 		{
 			CaseConstant = caseConstant;
 			IsDefaultCase = isDefaultCase;
-			Statements = statements.ToList();
+			this.statements = statements.ToList();
 		}
 	}
 }

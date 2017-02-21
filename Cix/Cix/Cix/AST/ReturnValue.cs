@@ -8,7 +8,7 @@ namespace Cix.AST
 {
 	public sealed class ReturnValue : Element
 	{
-		public Expression ReturnExpression { get; private set; }
+		public Expression ReturnExpression { get; }
 
 		public ReturnValue(Expression returnExpression)
 		{

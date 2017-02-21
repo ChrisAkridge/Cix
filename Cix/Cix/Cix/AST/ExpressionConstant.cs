@@ -20,14 +20,6 @@ namespace Cix.AST
 
 		// Note: never mind, user-defined types can't be constants
 
-		[Obsolete]
-		public ExpressionConstant(DataType type)
-		{
-			// Use this constructor for user-defined types
-			Type = type;
-			value = new byte[type.TypeSize];
-		}
-
 		public ExpressionConstant(bool value)
 		{
 			Type = new DataType("byte", 0, 1);

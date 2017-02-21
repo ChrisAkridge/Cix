@@ -618,5 +618,10 @@ namespace Cix
 			Type = type;
 			Word = word;
 		}
+
+		public override string ToString()
+		{
+			return $"\"{Word}\" ({Type})";
+		}
 	}
 }

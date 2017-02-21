@@ -8,8 +8,8 @@ namespace Cix.AST
 {
 	public sealed class FunctionArgument : Element
 	{
-		public DataType Type { get; private set; }
-		public string ArgumentName { get; private set; }
+		public DataType Type { get; }
+		public string ArgumentName { get; }
 
 		public FunctionArgument(DataType type, string argumentName)
 		{

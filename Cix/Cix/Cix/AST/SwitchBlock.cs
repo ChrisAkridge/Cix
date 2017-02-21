@@ -8,13 +8,15 @@ namespace Cix.AST
 {
 	public sealed class SwitchBlock : Element
 	{
-		public Expression SwitchExpression { get; private set; }
-		public List<SwitchCase> SwitchCases { get; private set; }
+		private List<SwitchCase> switchCases;
+
+		public Expression SwitchExpression { get; }
+		public IReadOnlyList<SwitchCase> SwitchCases => switchCases.AsReadOnly();
 
 		public SwitchBlock(Expression switchExpression, IEnumerable<SwitchCase> switchCases)
 		{
 			SwitchExpression = switchExpression;
-			SwitchCases = switchCases.ToList();
+			this.switchCases = switchCases.ToList();
 		}
 	}
 }

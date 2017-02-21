@@ -8,7 +8,7 @@ namespace Cix.AST
 {
 	public sealed class ExpressionMemberAccess : ExpressionElement
 	{
-		public string Name { get; private set; }
+		public string Name { get; }
 
 		public ExpressionMemberAccess(string name)
 		{

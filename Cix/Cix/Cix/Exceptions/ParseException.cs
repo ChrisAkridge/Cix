@@ -17,7 +17,7 @@ namespace Cix.Exceptions
 		{
 			get
 			{
-				return string.Format("At line {0} position {1}", lineNumber, charNumber);
+				return $"At line {lineNumber} position {charNumber}";
 			}
 		}
 
@@ -35,7 +35,8 @@ namespace Cix.Exceptions
 			this.charNumber = charNumber;
 		}
 		
-		public ParseException(string message, Exception innerException, string sourceFile, int lineNumber, int charNumber) : base(message, innerException)
+		public ParseException(string message, Exception innerException, string sourceFile, 
+			int lineNumber, int charNumber) : base(message, innerException)
 		{
 			this.sourceFile = sourceFile;
 			this.lineNumber = lineNumber;

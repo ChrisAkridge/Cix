@@ -16,12 +16,14 @@ namespace Cix.Exceptions
 			this.failedWord = failedWord;
 		}
 
-		public TokenException(string failedWord, string message) : base(string.Format("Invalid word {0} in tokenization: {1}", failedWord, message))
+		public TokenException(string failedWord, string message) : 
+			base(string.Format("Invalid word {0} in tokenization: {1}", failedWord, message))
 		{
 			this.failedWord = failedWord;
 		}
 
-		public TokenException(string failedWord, string message, Exception innerException) : base(string.Format("Invalid word {0} in tokenization: {1}", failedWord, message), innerException)
+		public TokenException(string failedWord, string message, Exception innerException) : 
+			base(string.Format("Invalid word {0} in tokenization: {1}", failedWord, message), innerException)
 		{
 			this.failedWord = failedWord;
 		}

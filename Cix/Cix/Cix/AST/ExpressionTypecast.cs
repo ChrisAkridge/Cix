@@ -12,7 +12,7 @@ namespace Cix.AST
 
 		public ExpressionTypecast(DataType resultType)
 		{
-			this.ResultType = resultType;
+			ResultType = resultType;
 		}
 	}
 }

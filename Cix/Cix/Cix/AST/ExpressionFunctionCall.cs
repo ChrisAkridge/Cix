@@ -9,20 +9,19 @@ namespace Cix.AST
 {
 	public sealed class ExpressionFunctionCall : ExpressionElement
 	{
-		public string FunctionName { get; private set; }
-		public DataType FunctionReturnType { get; private set; }
-		public List<ExpressionFunctionParameter> Parameters { get; }
+		private List<ExpressionFunctionParameter> parameters;
 
-		public ExpressionFunctionCall(string functionName, DataType functionReturnType, params ExpressionFunctionParameter[] parameters)
+		public string FunctionName { get; }
+		public DataType FunctionReturnType { get; }
+		public IReadOnlyList<ExpressionFunctionParameter> Parameters => parameters.AsReadOnly();
+
+		public ExpressionFunctionCall(string functionName, 
+			DataType functionReturnType, params ExpressionFunctionParameter[] parameters)
 		{
 			FunctionName = functionName;
 			FunctionReturnType = functionReturnType;
 
-			this.Parameters = new List<ExpressionFunctionParameter>();
-			foreach (var parameter in parameters)
-			{
-				this.Parameters.Add(parameter);
-			}
+			this.parameters = parameters.ToList();
 		}
 	}
 }

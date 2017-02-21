@@ -3,15 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Cix.Exceptions;
 
 namespace Cix.AST
 {
 	public sealed class ConditionalBlock
 	{
 		private Expression blockCondition;
-		public List<Element> BlockStatements { get; private set; }
+		private List<Element> blockStatements;
 
-		public ConditionalBlockType BlockType { get; private set; }
+		public IReadOnlyList<Element> BlockStatements => blockStatements.AsReadOnly();
+
+		public ConditionalBlockType BlockType { get; }
 		
 		public Expression BlockCondition
 		{
@@ -23,7 +26,7 @@ namespace Cix.AST
 				}
 				else
 				{
-					throw new InvalidOperationException("There is no conditional statement for an Else block.");
+					throw new ASTException("There is no conditional statement for an Else block.");
 				}
 			}
 		}
@@ -32,7 +35,7 @@ namespace Cix.AST
 		{
 			BlockType = blockType;
 			this.blockCondition = blockCondition;
-			BlockStatements = statements.ToList();
+			blockStatements = statements.ToList();
 		}
 	}
 

@@ -12,11 +12,12 @@ namespace Cix.AST
 	/// </summary>
 	public sealed class Expression : ExpressionElement
 	{
-		public List<ExpressionElement> Elements;
+		private List<ExpressionElement> elements;
+		public IReadOnlyList<ExpressionElement> Elements => elements.AsReadOnly();
 
 		public Expression(IEnumerable<ExpressionElement> elements)
 		{
-			Elements = elements.ToList();
+			this.elements = elements.ToList();
 		}
 
 		public static IEnumerable<ExpressionElement> FromTokenStream(TokenEnumerator enumerator)

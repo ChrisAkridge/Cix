@@ -22,8 +22,7 @@ namespace Cix.AST.Generator
 			}
 			set
 			{
-				if (!Names.ContainsKey(key)) Names.Add(key, value);
-				else Names[key] = value;
+				Names[key] = value;
 			}
 		}
 

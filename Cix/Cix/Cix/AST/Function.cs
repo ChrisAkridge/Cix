@@ -8,17 +8,21 @@ namespace Cix.AST
 {
 	public sealed class Function : Element
 	{
-		public DataType ReturnType { get; private set; }
-		public string Name { get; private set; }
-		public List<FunctionArgument> Arguments;
-		public List<Expression> Statements;
+		private List<FunctionArgument> arguments;
+		private List<Expression> statements;
 
-		public Function(DataType returnType, string name, IEnumerable<FunctionArgument> arguments, IEnumerable<Expression> statements)
+		public DataType ReturnType { get; }
+		public string Name { get; }
+		public IReadOnlyList<FunctionArgument> Arguments => arguments.AsReadOnly();
+		public IReadOnlyList<Expression> Statements => statements.AsReadOnly();
+
+		public Function(DataType returnType, string name, IEnumerable<FunctionArgument> arguments, 
+			IEnumerable<Expression> statements)
 		{
 			ReturnType = returnType;
 			Name = name;
-			Arguments = arguments.ToList();
-			Statements = statements.ToList();
+			this.arguments = arguments.ToList();
+			this.statements = statements.ToList();
 		}
 	}
 }

@@ -13,11 +13,13 @@ namespace Cix.Exceptions
 		{
 		}
 
-		public PreprocessingException(string message) : base(string.Format("An exception has occurred in the preprocessor: {0}", message))
+		public PreprocessingException(string message) : 
+			base(string.Format("An exception has occurred in the preprocessor: {0}", message))
 		{
 		}
 
-		public PreprocessingException(string message, Exception innerException) : base(string.Format("An exception has occurred in the preprocessor: {0}", message), innerException)
+		public PreprocessingException(string message, Exception innerException) : 
+			base(string.Format("An exception has occurred in the preprocessor: {0}", message), innerException)
 		{
 		}
 	}

@@ -8,17 +8,17 @@ namespace Cix.AST
 {
 	public sealed class StructMemberDeclaration : Element
 	{
-		public DataType MemberType { get; private set; }
-		public string MemberName { get; private set; }
-		public int ArraySize { get; private set; }
-		public int Offset { get; private set; }
+		public DataType Type { get; }
+		public string Name { get; }
+		public int ArraySize { get; }
+		public int Offset { get; }
 
-		public int Size => MemberType.TypeSize * ArraySize;
+		public int Size => Type.TypeSize * ArraySize;
 
-		public StructMemberDeclaration(DataType memberType, string memberName, int arraySize, int offset)
+		public StructMemberDeclaration(DataType type, string name, int arraySize, int offset)
 		{
-			MemberType = memberType;
-			MemberName = memberName;
+			Type = type;
+			Name = name;
 			ArraySize = arraySize;
 			Offset = offset;
 		}

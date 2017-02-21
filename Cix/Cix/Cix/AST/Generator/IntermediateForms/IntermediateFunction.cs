@@ -8,9 +8,11 @@ namespace Cix.AST.Generator.IntermediateForms
 {
 	public sealed class IntermediateFunction : Element
 	{
+		private List<FunctionArgument> arguments = new List<FunctionArgument>();
+
 		public DataType ReturnType { get; }
 		public string Name { get; }
-		public List<FunctionArgument> Arguments { get; } = new List<FunctionArgument>();
+		public IReadOnlyList<FunctionArgument> Arguments => arguments.AsReadOnly();
 		
 		/// <summary>
 		/// Gets the index of the function's openscope.
@@ -45,12 +47,13 @@ namespace Cix.AST.Generator.IntermediateForms
 			}
 			else if (endTokenIndex <= startTokenIndex)
 			{
-				throw new ArgumentException($"The start token index {startTokenIndex} occurs on or after the end token index {endTokenIndex}");
+				string message = $"The start token index {startTokenIndex} occurs on or after the end token index {endTokenIndex}";
+				throw new ArgumentException(message);
 			}
 
 			ReturnType = returnType;
 			Name = name;
-			Arguments = args.ToList();
+			arguments.AddRange(args);
 			StartTokenIndex = startTokenIndex;
 			EndTokenIndex = endTokenIndex;
 		}
