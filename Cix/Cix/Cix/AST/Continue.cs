@@ -8,5 +8,6 @@ namespace Cix.AST
 {
 	public sealed class Continue : Element
 	{
+		public override string ToString() => "Continue";
 	}
 }

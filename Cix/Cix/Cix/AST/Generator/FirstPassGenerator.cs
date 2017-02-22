@@ -10,11 +10,31 @@ namespace Cix.AST.Generator
 	{
 		private const int MaxStructNestingDepth = 100;
 
+		private bool astGenerated = false;
+		private List<Element> tree = new List<Element>();
+		private List<IntermediateFunction> intermediateFunctions = new List<IntermediateFunction>();
+
+		public IReadOnlyList<Element> Tree => tree.AsReadOnly();
+		public IReadOnlyList<IntermediateFunction> IntermediateFunctions => 
+			intermediateFunctions.AsReadOnly();
+
 		private TokenEnumerator tokens;
 
 		public FirstPassGenerator(TokenEnumerator tokens)
 		{
 			this.tokens = tokens;
+		}
+
+		public void GenerateFirstPassAST()
+		{
+			if (astGenerated) { throw new ASTException("The first pass AST generation has already run."); }
+
+			var intermediateStructs = GenerateIntermediateStructs();
+			tree = GenerateStructTree(intermediateStructs);
+			tree = AddGlobalsToTree(tree);
+			intermediateFunctions = GenerateIntermediateFunctions();
+
+			astGenerated = true;
 		}
 
 		public List<IntermediateStruct> GenerateIntermediateStructs()
@@ -271,22 +291,19 @@ namespace Cix.AST.Generator
 				enumerator.MoveNext();  // start with the first item
 
 				// If this struct member is a pointer...
-				string typeName = enumerator.Current.Word;
-				if (typeName.Contains("*"))
+				memberTypeName = enumerator.Current.Word;
+
+				enumerator.MoveNext();
+				while (enumerator.Current.Word == "*")
 				{
-					memberTypeName = typeName.Remove(typeName.IndexOf('*'));
-					memberPointerLevel = typeName.Count(c => c == '*');
-				}
-				else
-				{
-					if (typeName == "void" || typeName == "lpstring")
-					{
-						throw new ASTException("Members of type void or lpstring may not appear in structs. Use a pointer to that type instead.");
-					}
-					memberTypeName = typeName;
+					memberPointerLevel++;
+					enumerator.MoveNext();
 				}
 
-				enumerator.MoveNext(); // next up is the member name...
+				if ((memberTypeName == "void" || memberTypeName == "lpstring") && memberPointerLevel == 0)
+				{
+					throw new ASTException("Members of type void or lpstring may not appear in structs. Use a pointer to that type instead.");
+				}
 
 				while (enumerator.Current.Word == "*")
 				{

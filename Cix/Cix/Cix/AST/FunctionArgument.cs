@@ -21,5 +21,10 @@ namespace Cix.AST
 			Type = type;
 			ArgumentName = argumentName;
 		}
+
+		public override string ToString()
+		{
+			return $"{Type} {ArgumentName}";
+		}
 	}
 }

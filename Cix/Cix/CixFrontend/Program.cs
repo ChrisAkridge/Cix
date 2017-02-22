@@ -36,7 +36,7 @@ namespace CixFrontend
 
 			string file = File.ReadAllText(filePath);
 
-			Console.Write("Remove comments (C)/Preprocessed (P)/By character (L)/Tokenized (T)/First stage (F)/AST First Pass Stage A (A)/Stage B (B)/Stage C (D)/Stage D (E)");
+			Console.Write("Remove comments (C)/Preprocessed (P)/By character (L)/Tokenized (T)/First stage (F)/AST First Pass Stage A (A)/Stage B (B)/Stage C (D)/Stage D (E)/Full First Stage AST Generation (1)");
 			char option = char.ToLower((char)Console.Read());
 			Console.WriteLine();
 
@@ -202,7 +202,24 @@ namespace CixFrontend
 				{
 					Console.WriteLine(ex.Message);
 				}
-				
+			}
+			else if (option == '1')
+			{
+				file = file.RemoveComments();
+				file = new Preprocessor(file, filePath).Preprocess();
+
+				var words = new Lexer(file).EnumerateWords();
+				var tokenList = new Tokenizer().Tokenize(words);
+				var generator = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList));
+
+				try
+				{
+					generator.GenerateFirstPassAST();
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine(ex.Message);
+				}
 			}
 			Console.ReadKey();
 		}

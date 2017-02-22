@@ -76,5 +76,10 @@ namespace Cix.AST
 		{
 			return new DataType(TypeName, pointerLevel, TypeSize);
 		}
+
+		public override string ToString()
+		{
+			return $"{TypeName}{new String('*', PointerLevel)} ({TypeSize} byte(s))";
+		}
 	}
 }

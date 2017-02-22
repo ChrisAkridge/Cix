@@ -41,6 +41,7 @@ namespace Cix.AST.Generator
 			Names.Add("float", new DataType("float", 0, 4));
 			Names.Add("double", new DataType("double", 0, 8));
 			Names.Add("char", new DataType("char", 0, 2));
+			Names.Add("void", new DataType("void", 0, 1));
 		}
 
 		public static bool IsPrimitiveType(string typeName)

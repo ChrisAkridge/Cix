@@ -8,5 +8,6 @@ namespace Cix.AST
 {
 	public sealed class Break : Element
 	{
+		public override string ToString() => "Break";
 	}
 }

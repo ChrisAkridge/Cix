@@ -342,15 +342,15 @@ namespace Cix
 		{
 			// An asterisk is either a multiplication operator, pointer dereference, or pointer type declarator.
 			// At this point, we cannot distinguish between the multiplication operator or pointer type declarator, so we will add it is Indeterminate.
-			// OpPointerDerefence (*): Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { + - ! ~ & }.
-			//	Succeeding identifier or openparen.
+			// OpPointerDerefence (*): Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { + - ! ~ & * }.
+			//	Succeeding identifier, openparen or *.
 			// OpMultiply (*): Preceding identifier, closeparen, closebracket, one of { ++ -- }.
 			//	Succeeding identifier, one of { + - ! ~ ++ -- & * }.
 			// Pointer data type: Preceding identifier.
 
-			if (last.IsOneOfString(";", "}", "(", ",", "+", "-", "!", "~", "&") || IsBinaryTernaryOperator(last))
+			if (last.IsOneOfString(";", "}", "(", ",", "+", "-", "!", "~", "&", "*") || IsBinaryTernaryOperator(last))
 			{
-				if (next.IsIdentifier() || next.IsOneOfString("(", ")"))
+				if (next.IsIdentifier() || next.IsOneOfString("(", ")", "*"))
 				{
 					AddToken(TokenType.OpPointerDereference, "*");
 				}
