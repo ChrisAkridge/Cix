@@ -69,7 +69,7 @@ compile-time-substitution:
 compile-time-substution-to-replace:
 	identifier
 
-compile-time-substituion-replacement:
+compile-time-substitution-replacement:
 	One or more characters from {ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghihjklmnopqrstuvwxyz0123456789_}
 
 local-include-path:

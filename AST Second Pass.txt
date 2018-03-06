@@ -1,0 +1,101 @@
+Cix AST Second Pass Generator
+
+I. Introduction
+	The second pass AST generator receives both a token sequence (representing the code of the program), a tree of AST elements (which contains struct definitions and global variable definitions), and a list of intermediate functions. Each intermediate functions defines, among other things, the index of the first and last token of the function in the token sequence. These are the tokens of the first openscope (left curly bracket) and last closescope (right curly bracket) of the function.
+
+	Functions are composed of zero or more statements. There are three kinds of statements:
+		1. Standard statements: Statements like conditional and loop headers, variable declarations, and return statements.
+			Examples:
+				if (i % 2 == 0)
+				while (i + j < 25)
+				return;
+		2. Statement blocks: A group of statements, beginning with an openscope and ending with a closescope, that are executed in sequence.
+			Examples:
+				{
+					int i;
+					i = j + k;
+				}
+		3. Expression statements: Statements consisting entirely of an expression, such as function calls.
+			Examples:
+				SomeFunction(f, j, qx);
+				2 + 2;
+		
+	Each kind of statement can be used and substituted in any place where statements appear. Below is a list of each possible statement in Cix and what kind of statement it is:
+		- Break: Standard statement, ends in ;.
+		- If Block: Standard statement, ends in ).
+		- Else If Block: Standard statement, ends in ).
+		- Else Block: Standard statement made from one token. No ending token is defined or required.
+		- Continue: Standard statement, ends in ;.
+		- DoWhileLoop: Standard statement, ends in ).
+		- ForLoop: Standard statement, ends in ).
+		- Return: Standard statement, ends in ;.
+		- ReturnValue: Standard statement, ends in ;.
+		- SwitchBlock: Standard statement, ends in ).
+		- SwitchCase: Standard statement, ends in :.
+		- VariableDeclaration: Standard statement, ends in ;.
+		- VariableDeclarationWithInitialization: Standard statement, ends in ;.
+		- WhileLoop: Standard statement, ends in ).
+	The If Block, ElseIf Block, Else Block, DoWhileLoop, ForLoop, SwitchBlock, SwitchCase, and WhileLoop statements are all considered "block-header" statements, in that they all need to be followed by another statement or block statement. The statement that follows a block-header statement is always considered "owned" by the block-header statement:
+		if (condition)
+		{
+			// this block is "owned" by the Conditional Statement above
+		}
+
+	Statements are separated from each other in five ways:
+		1. By semicolon: Most statements are terminated with a semicolon. This includes expression statements and standard statements such as return, continue, or break.
+		2. By closescope: Statement blocks are completed by a closescope token. Statements inside the block must still terminate with their normal terminators.
+		3. By closeparen: Statements which "own" other statements (for example, conditionals and the statement to execute), are completed with a close parentheses.
+		4. By colon: Switch cases (case 0:) end in colons.
+        5. By KeyElse: The Else block-header statement is its own terminator.
+	
+II. Separating Statements
+	Given a flat token sequence, the sequence can be split into a collection of individual statements or statement blocks. Upon separation, the result is a tree of statements, where each node either contains a statement and has no child nodes, or has no statement and a list of child nodes. There is no defined bound on how many statements can be nested in nodes.
+    
+    The statement tree begins with a root tree node that is a block containing all statements in the function.
+    
+    Each tree node will have the following members:
+    {
+        IReadOnlyList<Token> Statements;        // Must be null (not just empty) if this node represents a block.
+        IReadOnlyList<TreeNode> Children;       // Must be null (not just empty) if this node represents a single statement.
+        
+        TreeNode Parent;                        // Points to the node that owns this node.
+        TreeNode Previous;                      // Points to the previous statement. Should be null if this is the first statement in the block.
+        TreeNode Next;                          // Points to the next statement. Should be null if this is the last statement in the block.
+        
+        TreeNode()                              // Constructs a node representing an initially-empty block.
+        TreeNode(IEnumerable<Token> statements) // Constructs a node representing a single statement.
+        void AddChild(TreeNode node)            // Adds a child to a node representing a block. Throws if the block is a statement block.
+    }
+    
+    The process to append an existing statement or block to a tree node representing a block is as follows:
+        1. Construct a TreeNode containing the statement or block.
+        2. Call AddChild(TreeNode) with your node.
+        3. AddChild automatically sets the Previous and Next properties accordingly.
+    
+	The process to separate a token stream into a statement tree is as follows:
+		1. Start from the beginning of the sequence.
+        2. Construct a tree with a single root node that has no statement. This will become the tree of statements of the function.
+		2. Create a variable to keep track of whether we're inside a block.
+        3. Create a variable to keep track of the type of statement we're in. The variable can be one of:
+            a. BlockHeaderStatement: Any statement that starts with if, else if, do, for, switch, or while.
+            b. SwitchCaseStatement: Any statement that starts with case.
+            c. OtherStatement: Any statement that is not of the above two.
+        4. Create a variable that keeps track of the current tree node we're adding statements to.
+		5. Perform the following loop over each token in the sequence.
+			a. Read the current token.
+            b. Is it one of { if, do, for, switch, while }? If so, set the statement type to BlockHeaderStatement.
+            c. Is it else?
+                d. If so, is the next token if? If so, set the statement type to BlockHeaderStatement.
+                e. If not, this is an else keyword by itself. Separate it into the statement sequence.
+            d. Is it case? If so, set the statement type to SwitchCaseStatement.
+            After performing the above checks...
+			f. Is it a semicolon? If so, the statement has been completed iff the current statement is not a block-header statement or has no other tokens.
+                Note: A semicolon immediately after a block-header statement (i.e. if (condition);) is legal in other languages but not in Cix - the empty statement can only be a pair of curly brackets { }, never a semicolon by itself.
+			g. Is it a closescope? If so, a block has been completed iff there is a block being constructed. Be sure to set the current tree node we're in to its parent.
+			h. Is it a closeparen? If so, the statement has been completed iff the current statement is a block-header statement that is not an Else block.
+            i. Is it a colon? If so, the statement has been completed iff the current statement is a switch case.
+            j. Is it an open-scope? If so, we're starting a new block. Create a new block and add it to the current tree node.
+        6. Set the current statement type to OtherStatement. It will be properly set on the next token if necessary.
+        7. If the statement is completed, create a new tree node with the statement and add it to the current tree node.
+        
+Once complete, the result is a tree node that contains all the statements and block statements in the tree. Each statement is represented as a sequence of tokens.
