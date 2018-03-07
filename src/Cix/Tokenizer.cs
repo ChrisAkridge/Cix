@@ -143,7 +143,7 @@ namespace Cix
 			TokenType tokenType;
 			if (!Enum.TryParse(tokenEnumValue, true, out tokenType))
 			{
-				throw new TokenException(current, "Invalid keyword. (how did you get here anyway)");
+				throw new TokenException(current, "Invalid keyword. (how did you get here anyway)"); /* UNREACHABLE CODE EXCEPTION */
 			}
 			AddToken(tokenType, current);
 		}

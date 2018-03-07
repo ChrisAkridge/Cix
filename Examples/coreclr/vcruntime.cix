@@ -1,3 +1,0 @@
-// vcruntime.cix
-
-#define uint64 size_t

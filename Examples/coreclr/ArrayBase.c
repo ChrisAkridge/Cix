@@ -1,8 +1,0 @@
-// object.cix
-
-
-
-struct ArrayBase
-{
-	
-}
