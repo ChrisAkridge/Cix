@@ -6,6 +6,14 @@ using Cix.AST.Generator.IntermediateForms;
 
 namespace Cix.AST.Generator
 {
+	/// <summary>
+	/// Performs the first pass of generation of the abstract syntax tree, given a tokenized Cix
+	/// file.
+	/// </summary>
+	/// <remarks>
+	/// This stage creates a tree containing the complete declaration of all structures
+	/// and global variables, and the headers and locations of all functions.
+	/// </remarks>
 	public sealed class FirstPassGenerator
 	{
 		private const int MaxStructNestingDepth = 100;
@@ -14,17 +22,31 @@ namespace Cix.AST.Generator
 		private List<Element> tree = new List<Element>();
 		private List<IntermediateFunction> intermediateFunctions = new List<IntermediateFunction>();
 
+		/// <summary>
+		/// Gets a read-only list of elements representing the AST.
+		/// </summary>
 		public IReadOnlyList<Element> Tree => tree.AsReadOnly();
+
+		/// <summary>
+		/// Gets a read-only list of the intermediate functions in the tree.
+		/// </summary>
 		public IReadOnlyList<IntermediateFunction> IntermediateFunctions => 
 			intermediateFunctions.AsReadOnly();
 
 		private TokenEnumerator tokens;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FirstPassGenerator"/> class.
+		/// </summary>
+		/// <param name="tokens">The tokens of the Cix file to generate a tree for.</param>
 		public FirstPassGenerator(TokenEnumerator tokens)
 		{
 			this.tokens = tokens;
 		}
 
+		/// <summary>
+		/// Generates the first pass of the abstract syntax tree.
+		/// </summary>
 		public void GenerateFirstPassAST()
 		{
 			if (astGenerated) { throw new ASTException("The first pass AST generation has already run."); }
@@ -37,6 +59,11 @@ namespace Cix.AST.Generator
 			astGenerated = true;
 		}
 
+		/// <summary>
+		/// Parses the token stream to find a list of intermediate structs, containing each
+		/// struct's name, start token index and end token index.
+		/// </summary>
+		/// <returns>A list of intermediate structs.</returns>
 		public List<IntermediateStruct> GenerateIntermediateStructs()
 		{
 			// Take every struct header into an intermediate definition of
@@ -72,6 +99,14 @@ namespace Cix.AST.Generator
 			return result;
 		}
 
+		/// <summary>
+		/// Converts a list of intermediate structs into a fully generated tree of the structs and
+		/// all their members.
+		/// </summary>
+		/// <param name="intermediateStructs">
+		/// The intermediate structures for which to generate a tree.
+		/// </param>
+		/// <returns>A tree containing the complete struct definitions.</returns>
 		public List<Element> GenerateStructTree(List<IntermediateStruct> intermediateStructs)
 		{
 			// Part 1: Get intermediate forms for all the struct members where types are just named 

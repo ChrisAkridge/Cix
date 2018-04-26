@@ -14,12 +14,6 @@ namespace Cix.AST
 		private byte[] value;
 		private DataType Type;
 
-		// Note: when emitting assembly for dealing with user-defined types, 
-		// access to the value is going to be handled differently than with
-		// BCL-analogous types.
-
-		// Note: never mind, user-defined types can't be constants
-
 		public ExpressionConstant(bool value)
 		{
 			Type = new DataType("byte", 0, 1);

@@ -163,7 +163,7 @@ The lexer's context is its state. The context can be set by the character most r
 * In NumericLiteralSuffix: Yield and clear the builder. Append to builder and change context to Operator.
 * In StringLiteral: Append to builder.
 
-### Greater-Than Sign
+### Greater-Than Sign (>)
 * In Root: INVALID. Add an error to the error list.
 * In Whitespace: Append to builder and switch context to Operator.
 * In Comment: Ignore.
@@ -281,6 +281,18 @@ The lexer's context is its state. The context can be set by the character most r
 * In NumericLiteral: Same as in Root.
 * In NumericLiteralFraction: Same as in Root.
 * In NumericLiteralSuffix: Same as in Root.
+* In StringLiteral: Append to builder.
+
+### At Sign (@)
+* In Root: Starts an identifier to be treated as an intrinsic. Switch context to Word and append to builder.
+* In Whitespace: Starts an identifier to be treated as an intrinsic. Switch context to Word and append to builder.
+* In Comment: Ignore.
+* In Word: INVALID. At signs only appear at the start of intrinsic identifiers. Add an error to the error list.
+* In Directive: INVALID. Add an error to the error list.
+* In Operator: Yield and clear the builder. Append to builder and change context to Word.
+* In NumericLiteral: Is it {u l f d}? Switch to NumericLiteralSuffix and append to builder. No? INVALID. No other letters appear within numeric literals. Add an error to the error list.
+* In NumericLiteralFraction: Same as in NumericLiteral.
+* In NumericLiteralSuffix: Is it l and the last letter u? Append to builder and yield. No? INVALID. No other character appears after u and no other character is used as a second character. Throw
 * In StringLiteral: Append to builder.
 
 ### Any Other Character

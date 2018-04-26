@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Text;
-using System.Text.RegularExpressions; // wow I don't use this one often
+using System.Text.RegularExpressions;	// not as true any more
 using Cix.Exceptions;
 
 namespace Cix
 {
+	/// <summary>
+	/// Performs preprocessing on a single Cix file, including token substitution and loading of
+	/// included files.
+	/// </summary>
     public sealed class Preprocessor
 	{
 		private string file;										// the contents of the file itself
@@ -17,6 +21,11 @@ namespace Cix
 		private Dictionary<string, string> definedSubstitutions;	// a list of all defined substitutions (i.e. #define THIS THAT)
 		private List<string> includedFilePaths;						// paths to all files included by #include
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Preprocessor"/> class.
+		/// </summary>
+		/// <param name="file">The text of the Cix file to preprocess.</param>
+		/// <param name="filePath">The path of the Cix file to preprocess, used to load #includes.</param>
 		public Preprocessor(string file, string filePath)
 		{
 			this.file = file;
@@ -26,7 +35,14 @@ namespace Cix
 			definedSubstitutions = new Dictionary<string, string>();
 			includedFilePaths = new List<string>();
 		}
-
+		
+		/// <summary>
+		/// Performs preprocessing on the provided Cix file.
+		/// </summary>
+		/// <returns>
+		/// A string containing the preprocessed file, including any token substitutions, code
+		/// that was conditionally included, and any #included files.
+		/// </returns>
 		public string Preprocess()
 		{
 			StringBuilder resultBuilder = new StringBuilder();	// we'll append every preprocessed line to this builder
@@ -107,6 +123,7 @@ namespace Cix
 					else if (trimmedLine.StartsWith("#undefine"))
 					{
 						// #undefine <identifier>: Undefines a defined constant.
+						// TODO: Make #undefine support undefining substitutions
 
 						string[] words = line.Split(' ');
 						if (words.Length == 1 || words.Length > 2)
@@ -190,12 +207,19 @@ namespace Cix
 			return resultBuilder.ToString();
 		}
 
+		/// <summary>
+		/// Loads and preprocesses the text of a Cix file named in an #include statement.
+		/// </summary>
+		/// <param name="fileName">The path of the file to load.</param>
+		/// <returns>The text of the Cix file at that para, preprocessed.</returns>
 		public string LoadIncludeFile(string fileName)
 		{
 			// For now, we'll just make #include "file" and #include <file> do the same thing
 			// They'll look in the current dir for the file to include
 			// Then they'll load and preprocess the file
 			// And then return it.
+
+			// TODO: ensure there are no cycles in the inclusion tree
 
 			string filePath = Path.Combine(basePath, fileName);
 			if (!File.Exists(filePath))

@@ -57,6 +57,11 @@ namespace Cix
 
 		private List<Token> tokenList = new List<Token>();
 
+		/// <summary>
+		/// Associates words in a lexed Cix file with the kind of token they are.
+		/// </summary>
+		/// <param name="words">A list of strings containing each word of the Cix file.</param>
+		/// <returns>A list of tokens made from the words and their token types.</returns>
 		public List<Token> Tokenize(List<string> words)
 		{
 			int wordCount = words.Count;
@@ -522,6 +527,9 @@ namespace Cix
 		}
 	}
 
+	/// <summary>
+	/// Enumerates the kinds of tokens in a Cix file.
+	/// </summary>
 	public enum TokenType
 	{
 		Invalid,
@@ -605,20 +613,48 @@ namespace Cix
 		KeyUShort,
 		KeyVoid,
 		KeyWhile,
-		Indeterminate	// int* x; is a declaration, but x * y is a multiplication
+
+		/// <summary>
+		/// An asterisk whose purpose cannot be determined at this stage of compilation.
+		/// </summary>
+		/// <remarks>
+		/// An asterisk between two identifiers is either multiplication (x * y) or
+		/// the declaration of a pointer to a value (int* y). It's the latter only if the identifier
+		/// to the left of the asterisk is a type name.
+		/// </remarks>
+		Indeterminate
 	}
 
+	/// <summary>
+	/// Represents a word and the type of token it is.
+	/// </summary>
 	public sealed class Token
 	{
+		/// <summary>
+		/// Gets the type of token this token is.
+		/// </summary>
 		public TokenType Type { get; private set; }
+
+		/// <summary>
+		/// Gets the word of this token.
+		/// </summary>
 		public string Word { get; private set; }
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Token"/> class.
+		/// </summary>
+		/// <param name="type">The type of token this token is.</param>
+		/// <param name="word">The word of this token.</param>
 		public Token(TokenType type, string word)
 		{
 			Type = type;
 			Word = word;
 		}
 
+		/// <summary>
+		/// Returns a string representation of this token.
+		/// </summary>
+		/// <returns>A string representation of this token</returns>
 		public override string ToString()
 		{
 			return $"\"{Word}\" ({Type})";

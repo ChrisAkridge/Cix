@@ -54,6 +54,7 @@ Each struct, global, or function declaration should be parsed as far as possible
 * PR009: "{includeLine}" isn't valid; must be "#include "file"" or "#include <file>"
 * PR010: The include file {file} doesn't exist or has an invalid path.
 * PR011: The include file {file} couldn't be opened for reading.
+* PR012: The include file {file} already includes previously included file {file}.
 
 ### Lexer Errors:
 * LX001: Invalid character '{char}'.

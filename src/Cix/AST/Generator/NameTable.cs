@@ -6,13 +6,29 @@ using System.Threading.Tasks;
 
 namespace Cix.AST.Generator
 {
+	/// <summary>
+	/// Associates names with the thing they represent.
+	/// </summary>
 	public class NameTable
 	{
 		private static NameTable instance = new NameTable();
 
+		/// <summary>
+		/// Gets a dictionary where the key is the name and the value is the thing the name
+		/// represents.
+		/// </summary>
 		public Dictionary<string, Element> Names { get; private set; }
+
+		/// <summary>
+		/// Gets the singleton instance of this class.
+		/// </summary>
 		public static NameTable Instance => instance;  // ♥
 
+		/// <summary>
+		/// Gets an element by its name.
+		/// </summary>
+		/// <param name="key">The name of the element.</param>
+		/// <returns>The element identified by that name.</returns>
 		public Element this[string key]
 		{
 			get
@@ -44,6 +60,11 @@ namespace Cix.AST.Generator
 			Names.Add("void", new DataType("void", 0, 1));
 		}
 
+		/// <summary>
+		/// Checks if a given name is the name of a primitive type.
+		/// </summary>
+		/// <param name="typeName">The name of the type to check.</param>
+		/// <returns>True if the name identifies a primitive type, false if it does not.</returns>
 		public static bool IsPrimitiveType(string typeName)
 		{
 			return typeName == "byte" ||

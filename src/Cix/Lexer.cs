@@ -9,7 +9,8 @@ using Cix.Exceptions;
 namespace Cix
 {
 	/// <summary>
-	/// Divides a source file into individual words by scanning each character.
+	/// Divides a preproccesed source file with comments removed into individual words by scanning
+	/// each character.
 	/// </summary>
 	public sealed class Lexer
 	{
@@ -29,7 +30,7 @@ namespace Cix
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Lexer"/> class.
 		/// </summary>
-		/// <param name="filePath">The path to the file to be lexed.</param>
+		/// <param name="file">The text of the file to be lexed.</param>
 		public Lexer(string file)
 		{
 			this.file = file;

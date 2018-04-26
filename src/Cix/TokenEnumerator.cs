@@ -52,12 +52,7 @@ namespace Cix
 
 		public TokenEnumerator(List<Token> tokens)
 		{
-			if (tokens == null)
-			{
-				throw new ArgumentNullException("Cannot create a token enumerator with no tokens.");
-			}
-
-			this.tokens = tokens;
+			this.tokens = tokens ?? throw new ArgumentNullException("Cannot create a token enumerator with no tokens.");
 			CurrentIndex = 0;
 		}
 
