@@ -14,8 +14,8 @@ namespace Cix.Tests
         [TestMethod()]
         public void IsOneOfStringTest()
         {
-            string a = "Hello";
-            string[] b = new string[] { "Hello", "World" };
+            const string a = "Hello";
+            var b = new[] { "Hello", "World" };
 
             Assert.IsTrue(a.IsOneOfString(b));
         }

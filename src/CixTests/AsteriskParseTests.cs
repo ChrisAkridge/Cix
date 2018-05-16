@@ -144,8 +144,8 @@ namespace CixTests
 			//	int** _8;
 			// }
 
-			Func<Element, bool> predicate = e => e is StructDeclaration && ((StructDeclaration)e).Name == "s";
-			if (!tree.Any(predicate))
+			bool ElementIsStructNamedS(Element e) => e is StructDeclaration declaration && declaration.Name == "s";
+			if (!tree.Any(ElementIsStructNamedS))
 			{
 				Assert.Fail($"No struct named \"s\" exists.");
 			}

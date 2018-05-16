@@ -6,14 +6,17 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
+	// Probably will remove in favor of ExpressionConstant
 	public sealed class NumericLiteral : ExpressionElement
 	{
 		private ulong integralValue;
 		private double floatingValue;
 
+		// TODO: store the text of the literal instead of the value
+		// we can get the value on demand
 		public LiteralType LiteralType { get; }
 		public Type UnderlyingType { get; }
-		
+
 		public long SignedIntegralValue
 		{
 			get

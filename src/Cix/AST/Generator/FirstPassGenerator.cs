@@ -18,7 +18,7 @@ namespace Cix.AST.Generator
 	{
 		private const int MaxStructNestingDepth = 100;
 
-		private bool astGenerated = false;
+		private bool astGenerated;
 		private List<Element> tree = new List<Element>();
 		private List<IntermediateFunction> intermediateFunctions = new List<IntermediateFunction>();
 
@@ -30,7 +30,7 @@ namespace Cix.AST.Generator
 		/// <summary>
 		/// Gets a read-only list of the intermediate functions in the tree.
 		/// </summary>
-		public IReadOnlyList<IntermediateFunction> IntermediateFunctions => 
+		public IReadOnlyList<IntermediateFunction> IntermediateFunctions =>
 			intermediateFunctions.AsReadOnly();
 
 		private TokenEnumerator tokens;
@@ -109,9 +109,9 @@ namespace Cix.AST.Generator
 		/// <returns>A tree containing the complete struct definitions.</returns>
 		public List<Element> GenerateStructTree(List<IntermediateStruct> intermediateStructs)
 		{
-			// Part 1: Get intermediate forms for all the struct members where types are just named 
+			// Part 1: Get intermediate forms for all the struct members where types are just names
 			// and pointer levels are considered. Here, we'll ensure that void- and
-			// lpstring -typed members may only appear as pointer members.
+			// lpstring-typed members may only appear as pointer members.
 
 			foreach (var intermediateStruct in intermediateStructs)
 			{
@@ -130,19 +130,17 @@ namespace Cix.AST.Generator
 			// Part 2: Create the fully-formed definitions for all structs.
 			// Loop through every intermediate struct and define all its members.
 			// If a member is a struct that isn't defined yet, define it.
-			var tree = new List<Element>();
+			var structsTree = new List<Element>();
 
-			foreach (var intermediateStruct in intermediateStructs)
+			foreach (IntermediateStruct intermediateStruct in intermediateStructs)
 			{
-				if (NameTable.Instance[intermediateStruct.Name] is IntermediateStruct)
-				{
-					int depthLevel = 0;
-					CreateStructDeclaration(intermediateStruct, ref depthLevel);
-				}
+				if (!(NameTable.Instance[intermediateStruct.Name] is IntermediateStruct)) { continue; }
+				int depthLevel = 0;
+				CreateStructDeclaration(intermediateStruct, ref depthLevel);
 			}
 
-			tree.AddRange(NameTable.Instance.Names.Where(n => n.Value is StructDeclaration).Select(kvp => kvp.Value));
-			return tree;
+			structsTree.AddRange(NameTable.Instance.Names.Where(n => n.Value is StructDeclaration).Select(kvp => kvp.Value));
+			return structsTree;
 		}
 
 		/// <summary>
@@ -169,7 +167,7 @@ namespace Cix.AST.Generator
 				}
 				else if (tokens.Current.Word == "global" && nestingDepth == 0)
 				{
-					var globalStatement = tokens.MoveStatement();
+					var globalStatement = tokens.MoveNextStatement();
 					globalVariables.Add(GetGlobalVariableDeclaration(globalStatement));
 				}
 				tokens.MoveNext();
@@ -182,7 +180,6 @@ namespace Cix.AST.Generator
 		/// <summary>
 		/// Parses the token stream to find function headers and their start/end token indices.
 		/// </summary>
-		/// <param name="tree">A tree containing everything up to the stage C generation.</param>
 		/// <returns>A tree with the function information.</returns>
 		public List<IntermediateFunction> GenerateIntermediateFunctions()
 		{
@@ -210,7 +207,7 @@ namespace Cix.AST.Generator
 				}
 				else if (tokens.Current.Word == "global")
 				{
-					tokens.MoveStatement();
+					tokens.MoveNextStatement();
 				}
 				else if (nestingDepth == 0 && tokens.Current.Type != TokenType.KeyStruct &&
 					tokens.Current.Word != "global")
@@ -383,6 +380,7 @@ namespace Cix.AST.Generator
 					// ...it still acts like a one-member array.
 				}
 
+				enumerator.Dispose();
 				intermediateStruct.Members.Add(new IntermediateStructMember(memberTypeName, memberName, memberPointerLevel, memberArraySize));
 			}
 		}
@@ -392,8 +390,8 @@ namespace Cix.AST.Generator
 			string structName = intermediateStruct.Name;
 			List<StructMemberDeclaration> members = new List<StructMemberDeclaration>();
 			int offsetCounter = 0;
-			
-			foreach (var member in intermediateStruct.Members)
+
+			foreach (IntermediateStructMember member in intermediateStruct.Members)
 			{
 				// Resolve the type.
 				if (!NameTable.Instance.Names.ContainsKey(member.TypeName))
@@ -402,22 +400,20 @@ namespace Cix.AST.Generator
 				}
 				var typeEntry = NameTable.Instance[member.TypeName];
 
-				if (typeEntry is DataType)
+				if (typeEntry is DataType baseType1)
 				{
 					// Scenario 1: Member has a primitive type or is a pointer to a primitive type
-					DataType baseType = (DataType)typeEntry;
-					DataType fullType = baseType.WithPointerLevel(member.PointerLevel);
+					DataType fullType = baseType1.WithPointerLevel(member.PointerLevel);
 					var memberDeclaration = new StructMemberDeclaration(fullType, member.Name, member.ArraySize, offsetCounter);
 					members.Add(memberDeclaration);
 					offsetCounter += memberDeclaration.Type.TypeSize * member.ArraySize;
 				}
-				else if (typeEntry is StructDeclaration)
+				else if (typeEntry is StructDeclaration baseType)
 				{
 					// Scenario 2: Member has a struct type or is a pointer to a struct type
-					var baseType = (StructDeclaration)typeEntry;
 					members.Add(GetDeclarationOfStructMember(baseType, member, ref offsetCounter));
 				}
-				else if (typeEntry is IntermediateStruct)
+				else if (typeEntry is IntermediateStruct @struct)
 				{
 					// Scenario 3: Member has a struct type which is not fully defined
 					depthLevel++;
@@ -428,14 +424,14 @@ namespace Cix.AST.Generator
 						throw new ASTException("Too many nested struct members. Consider refactoring or look for circular struct members.");
 					}
 
-					var newlyDefinedStruct = CreateStructDeclaration((IntermediateStruct)typeEntry, ref depthLevel);
+					var newlyDefinedStruct = CreateStructDeclaration(@struct, ref depthLevel);
 					members.Add(GetDeclarationOfStructMember(newlyDefinedStruct, member, ref offsetCounter));
 				}
 				else if (typeEntry == null && member.Name == "void" && member.PointerLevel > 0)
 				{
 					// Scenario 4: Pointer to void
-					var voidPtrMember = 
-						new StructMemberDeclaration(new DataType("void", member.PointerLevel, 8), 
+					var voidPtrMember =
+						new StructMemberDeclaration(new DataType("void", member.PointerLevel, 8),
 						member.Name, member.ArraySize, offsetCounter);
 					members.Add(voidPtrMember);
 				}
@@ -456,7 +452,7 @@ namespace Cix.AST.Generator
 			return result;
 		}
 
-		private GlobalVariableDeclaration GetGlobalVariableDeclaration(List<Token> globalStatement)
+		private static GlobalVariableDeclaration GetGlobalVariableDeclaration(List<Token> globalStatement)
 		{
 			// Valid global variable definitions
 			//  global T name;
@@ -532,13 +528,19 @@ namespace Cix.AST.Generator
 			}
 		}
 
-		private List<FunctionArgument> ParseFunctionArguments(int startIndex, int endIndex)
+		private IEnumerable<FunctionArgument> ParseFunctionArguments(int startIndex, int endIndex)
 		{
 			// Start index and end index should point to the openparen and closeparen, respectively
 			// Add 1 to startIndex and subtract 1 from endIndex to point them to the first and last
 			// actual tokens in the function arguments.
+
 			var argTokens = tokens.Subset(startIndex + 1, endIndex - 1);
 			var result = new List<FunctionArgument>();
+			if (argTokens.Current == null)
+			{
+				// No arguments
+				return result;
+			}
 
 			// Easy case: if the closeparen is right after the openparen, there are no arguments.
 			if (startIndex + 1 == endIndex) { return result; }
@@ -582,13 +584,13 @@ namespace Cix.AST.Generator
 			return result;
 		}
 
-		private bool ValidateFunctionArgumentTokens(List<Token> tokens)
+		private static bool ValidateFunctionArgumentTokens(List<Token> tokens)
 		{
 			if (tokens == null || !tokens.Any())
 			{
 				return false;
 			}
-			
+
 			// The first token must be an identifier
 			if (!tokens[0].Word.IsIdentifier(true))
 			{
@@ -603,7 +605,7 @@ namespace Cix.AST.Generator
 
 			// There must be either no tokens in between or all tokens in between must be asterisks
 			if (tokens.Count == 2) { return true; }
-			
+
 			for (int i = 1; i < tokens.Count - 2; i++)
 			{
 				if (tokens[i].Word != "*") { return false; }

@@ -17,9 +17,13 @@ whitespace:
 	
 decimal-numeric-constant:
 	One or more characters from {0123456789}
+	
+hexadecimal-numeric-constant:
+	"0x" or "0X" then
+	One or more characters from {0123456789ABCDEF}
 
 numeric-literal:
-	decimal-numeric-constant then
+	decimal-numeric-constant or hexadecimal-numeric-constant then
 	Zero or one of { u ul f d }
 
 string-literal:
@@ -111,8 +115,29 @@ structure-member-declaration:
 	One or more whitespaces or line terminators
 
 type-name:
-	identifier
-
+	identifier or
+	funcptr-type
+	
+funcptr-type:
+	At Sign (U+0040) then
+	"funcptr" then
+	Less-Than Sign (U+003C) then
+	Zero or more whitespaces then
+	funcptr-returnonly-type or funcptr-type-list then
+	Zero or more whitespaces then
+	Greater-Than Sign (U+003E)
+	
+funcptr-returnonly-type:
+	type-name
+	
+funcptr-type-list:
+	Two or more of funcptr-type
+	
+funcptr-type:
+	type-name or pointer-type-name then
+	Comma (U+002C) if not the last type in the list
+	Zero or more whitespaces
+	
 pointer-type-name:
 	type-name then
 	Zero or more whitespaces then

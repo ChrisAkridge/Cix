@@ -15,7 +15,7 @@ namespace Cix.AST
 		public IReadOnlyList<Element> BlockStatements => blockStatements.AsReadOnly();
 
 		public ConditionalBlockType BlockType { get; }
-		
+
 		public Expression BlockCondition
 		{
 			get

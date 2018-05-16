@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Cix.Exceptions;
 
 namespace Cix
@@ -12,20 +11,23 @@ namespace Cix
 	/// </summary>
 	public sealed class Tokenizer
 	{
-		private static readonly string[] unaryPrefixOperators = new string[] { "+", "-", "!", "~", "++", "--", "*", "&" };
-		private static readonly string[] unaryPostfixOperators = new string[] { "++", "--" };
-		private static readonly string[] binaryTernaryOperators = new string[]
-		{ ".", "->", "*", "/", "%", "+", "-", "<<", ">>", "<", "<=", ">", ">=", 
+		private static readonly string[] UnaryPrefixOperators = { "+", "-", "!", "~", "++", "--", "*", "&" };
+		private static readonly string[] UnaryPostfixOperators = { "++", "--" };
+
+		// TODO: remove ternary operator
+		private static readonly string[] BinaryTernaryOperators =
+		{ ".", "->", "*", "/", "%", "+", "-", "<<", ">>", "<", "<=", ">", ">=",
 		  "==", "!=", "&", "|", "^", "&&", "||", "=", "+=", "-=", "*=", "/=",
 		  "%=", "<<=", ">>=", "<<=", "&=", "|=", "^=", "?", ":" };
 
-		private static readonly string[] reservedKeywords = new string[] 
+		// TODO: replace char with byte, schar with sbyte
+		private static readonly string[] ReservedKeywords =
 		{ "break", "case", "char", "const", "continue", "default", "do",
-		  "double", "else", "float", "for", "goto", "if", "int", "long", 
-		  "return", "schar", "short", "sizeof", "struct", "switch", "uint", 
+		  "double", "else", "float", "for", "goto", "if", "int", "long",
+		  "return", "schar", "short", "sizeof", "struct", "switch", "uint",
 		  "ulong", "ushort", "void", "while" };
 
-		private Dictionary<string, TokenType> unambiguousBinaryOperatorTokens = new Dictionary<string,TokenType>()
+		private readonly Dictionary<string, TokenType> unambiguousBinaryOperatorTokens = new Dictionary<string,TokenType>()
 		{
 				{"/", TokenType.OpDivide},
 				{"%", TokenType.OpModulusDivide},
@@ -55,7 +57,7 @@ namespace Cix
 				{"?", TokenType.OpTernaryAfterCondition}
 			};
 
-		private List<Token> tokenList = new List<Token>();
+		private readonly List<Token> tokenList = new List<Token>();
 
 		/// <summary>
 		/// Associates words in a lexed Cix file with the kind of token they are.
@@ -80,7 +82,7 @@ namespace Cix
 				else if (current == "[") { AddToken(TokenType.OpenBracket, "["); }
 				else if (current == "]") { AddToken(TokenType.CloseBracket, "]"); }
 				else if (current == ",") { AddToken(TokenType.Comma, ","); }
-				else if (reservedKeywords.Contains(current.ToLower()))
+				else if (ReservedKeywords.Contains(current.ToLower()))
 				{
 					ProcessReservedWord(current);
 				}
@@ -133,6 +135,10 @@ namespace Cix
 					// Two or more asterisks, but only asterisks
 					ProcessMultipleAsterisks(current, last, next);
 				}
+				else if (current.StartsWith("\"") && current.EndsWith("\""))
+				{
+					ProcessStringLiteral(current);
+				}
 				else
 				{
 					throw new TokenException(current, $"Unidentifiable word {current}");
@@ -145,8 +151,7 @@ namespace Cix
 		private void ProcessReservedWord(string current)
 		{
 			string tokenEnumValue = string.Concat("Key", current);
-			TokenType tokenType;
-			if (!Enum.TryParse(tokenEnumValue, true, out tokenType))
+			if (!Enum.TryParse(tokenEnumValue, true, out TokenType tokenType))
 			{
 				throw new TokenException(current, "Invalid keyword. (how did you get here anyway)"); /* UNREACHABLE CODE EXCEPTION */
 			}
@@ -156,36 +161,39 @@ namespace Cix
 		private void ProcessPlusSign(string last, string next)
 		{
 			// A plus sign can be either unary prefix identity or binary addition.
-			// OpIdentity (+) requires: Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { - ! ~ }. 
-			//	Succeeding identifier, or one of { - ! ~ * & }.
-			// OpAdd (+): Preceding identifier, closeparen, closebracket, one of { ++ -- }. 
-			//	Succeeding identifier, one of { - ! ~ -- & * }.
+			// OpIdentity (+) requires: Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { - ! ~ }.
+			//	Succeeding identifier, openparen, or one of { - ! ~ * & }.
+			// OpAdd (+): Preceding identifier, closeparen, closebracket, one of { ++ -- }.
+			//	Succeeding identifier, openparen, or one of { - ! ~ -- & * }.
 
 			if (last == ";" || last == "}" || last == "(" || last == "," || IsBinaryTernaryOperator(last) || last.IsOneOfString("-", "!", "~"))
 			{
-				if (next.IsIdentifier() || next.IsOneOfString("-", "!", "~", "*", "&"))
+				if (next.IsIdentifier() || next.IsOneOfString("(", "-", "!", "~", "*", "&"))
 				{
 					AddToken(TokenType.OpIdentity, "+");
 				}
 				else
 				{
-					throw new TokenException("+", string.Format("Invalid unary identity operator. Preceded by {0}, succeeded by {1}.", last, next));
+					throw new TokenException("+",
+						$"Invalid unary identity operator. Preceded by {last}, succeeded by {next}.");
 				}
 			}
 			else if (last.IsIdentifier() || last == ")" || last == "]" || last.IsOneOfString("++", "--"))
 			{
-				if (next.IsIdentifier() || next.IsOneOfString("-", "!", "~", "--", "&", "*"))
+				if (next.IsIdentifier() || next.IsOneOfString("(", "-", "!", "~", "--", "&", "*"))
 				{
 					AddToken(TokenType.OpAdd, "+");
 				}
 				else
 				{
-					throw new TokenException("+", string.Format("Invalid addition operator. Preceded by {0}, succeeded by {1}.", last, next));
+					throw new TokenException("+",
+						$"Invalid addition operator. Preceded by {last}, succeeded by {next}.");
 				}
 			}
 			else
 			{
-				throw new TokenException("+", string.Format("Invalid plus sign token. Preceded by {0}, succeeded by {1}.", last, next));
+				throw new TokenException("+",
+					$"Invalid plus sign token. Preceded by {last}, succeeded by {next}.");
 			}
 		}
 
@@ -193,19 +201,20 @@ namespace Cix
 		{
 			// A minus sign is either a unary prefix inverse operator, or a binary subtraction operator.
 			// OpInverse (-) requires: Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { + ! ~ }.
-			//	Succeeding identifier, or one of { + ! ~ * & }.
+			//	Succeeding identifier, openparen, or one of { + ! ~ * & }.
 			// OpSubtract (-): Preceding identifier, closeparen, closebracket, one of { ++ -- }.
-			//	Succeeding identifier, one of { + ! ~ ++ & * }.
+			//	Succeeding identifier, openparen, or one of { + ! ~ ++ & * }.
 
 			if (last.IsOneOfString(";", "}", "(", ",", "+", "!", "~") || IsBinaryTernaryOperator(last))
 			{
-				if (next.IsIdentifier() || next.IsOneOfString("+", "!", "~", "*", "&"))
+				if (next.IsIdentifier() || next.IsOneOfString("(", "+", "!", "~", "*", "&"))
 				{
 					AddToken(TokenType.OpInverse, "-");
 				}
 				else
 				{
-					throw new TokenException("-", string.Format("Invalid unary inverse operator. Preceded by {0}, succeeded by {1}.", last, next));
+					throw new TokenException("-",
+						$"Invalid unary inverse operator. Preceded by {last}, succeeded by {next}.");
 				}
 			}
 			else if (last.IsIdentifier() || last.IsOneOfString(")", "]", "++", "--"))
@@ -216,12 +225,14 @@ namespace Cix
 				}
 				else
 				{
-					throw new TokenException("-", string.Format("Invalid subtraction operator. Preceded by {0}, succeeded by {1}.", last, next));
+					throw new TokenException("-",
+						$"Invalid subtraction operator. Preceded by {last}, succeeded by {next}.");
 				}
 			}
 			else
 			{
-				throw new TokenException("-", string.Format("Invalid minus sign token. Preceded by {0}, succeeded by {1}.", last, next));
+				throw new TokenException("-",
+					$"Invalid minus sign token. Preceded by {last}, succeeded by {next}.");
 			}
 		}
 
@@ -229,22 +240,24 @@ namespace Cix
 		{
 			// An exclamation mark is a unary prefix logical NOT.
 			// OpLogicalNOT (!) requires: Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { + - ! ~ }.
-			//	Succeeding identifier, or one of { + - ! ~ * & }.
+			//	Succeeding identifier, openparen, or one of { + - ! ~ * & }.
 
 			if (last.IsOneOfString(";", "}", "(", ",", "+", "-", "!", "~") || IsBinaryTernaryOperator(last))
 			{
-				if (next.IsIdentifier() || next.IsOneOfString("+", "-", "!", "~", "*", "&"))
+				if (next.IsIdentifier() || next.IsOneOfString("(", "+", "-", "!", "~", "*", "&"))
 				{
 					AddToken(TokenType.OpLogicalNOT, "!");
 				}
 				else
 				{
-					throw new TokenException("!", string.Format("Invalid unary logical NOT operator. Preceded by {0}, succeeded by {1}.", last, next));
+					throw new TokenException("!",
+						$"Invalid unary logical NOT operator. Preceded by {last}, succeeded by {next}.");
 				}
 			}
 			else
 			{
-				throw new TokenException("!", string.Format("Invalid exclamation mark token. Preceded by {0}, succeeded by {1}.", last, next));
+				throw new TokenException("!",
+					$"Invalid exclamation mark token. Preceded by {last}, succeeded by {next}.");
 			}
 		}
 
@@ -252,31 +265,32 @@ namespace Cix
 		{
 			// A tilde is a unary prefix bitwise NOT operator.
 			// OpBitwiseNOT (~) requires: Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { + - ! ~ }.
-			//	Succeeding identifier, or one of { + - ! ~ * & }.
+			//	Succeeding identifier, openparen, or one of { + - ! ~ * & }.
 
 			if (last.IsOneOfString(";", "}", "(", ",", "+", "-", "!", "~") || IsBinaryTernaryOperator(last))
 			{
-				if (next.IsIdentifier() || next.IsOneOfString("+", "-", "!", "~", "*", "&"))
+				if (next.IsIdentifier() || next.IsOneOfString("(", "+", "-", "!", "~", "*", "&"))
 				{
 					AddToken(TokenType.OpBitwiseAND, "~");
 				}
 				else
 				{
-					throw new TokenException("~", string.Format("Invalid bitwise NOT operator. Preceded by {0}, succeeded by {1}.", last, next));
+					throw new TokenException("~",
+						$"Invalid bitwise NOT operator. Preceded by {last}, succeeded by {next}.");
 				}
 			}
 			else
 			{
-				throw new TokenException("~", string.Format("Invalid tilde token. Preceded by {0}, succeeded by {1}.", last, next));
+				throw new TokenException("~", $"Invalid tilde token. Preceded by {last}, succeeded by {next}.");
 			}
 		}
 
 		private void ProcessDoublePlus(string last, string next)
 		{
 			// A double plus sign is either a preincrement or postincrement.
-			// OpPreincrement (++) requires: Preceding semicolon, closescope, openparen, comma, or binary/ternary operator. 
+			// OpPreincrement (++) requires: Preceding semicolon, closescope, openparen, comma, or binary/ternary operator.
 			//	Succeeding identifier.
-			// OpPostincrement (++) requires: Preceding identifier or closebracket. 
+			// OpPostincrement (++) requires: Preceding identifier or closebracket.
 			//	Succeeding binary/ternary operator or semicolon.
 
 			if (last.IsOneOfString(";", "}", "(", ",") || IsBinaryTernaryOperator(last))
@@ -287,7 +301,8 @@ namespace Cix
 				}
 				else
 				{
-					throw new TokenException("++", string.Format("Invalid preincrement operator. Preceded by {0}, succeeded by {1}.", last, next));
+					throw new TokenException("++",
+						$"Invalid preincrement operator. Preceded by {last}, succeeded by {next}.");
 				}
 			}
 			else if (last.IsIdentifier() || last == "}")
@@ -298,21 +313,23 @@ namespace Cix
 				}
 				else
 				{
-					throw new TokenException("++", string.Format("Invalid postincrement operator. Preceded by {0}, succeeded by {1}.", last, next));
+					throw new TokenException("++",
+						$"Invalid postincrement operator. Preceded by {last}, succeeded by {next}.");
 				}
 			}
 			else
 			{
-				throw new TokenException("++", string.Format("Invalid double plus sign token. Preceded by {0}, succeeded by {1}.", last, next));
+				throw new TokenException("++",
+					$"Invalid double plus sign token. Preceded by {last}, succeeded by {next}.");
 			}
 		}
 
 		private void ProcessDoubleMinus(string last, string next)
 		{
 			// A double minus sign is either a predecrement or postdecrement.
-			// OpPredecrement (--) requires: Preceding semicolon, closescope, openparen, comma, or binary/ternary operator. 
+			// OpPredecrement (--) requires: Preceding semicolon, closescope, openparen, comma, or binary/ternary operator.
 			//	Succeeding identifier.
-			// OpPostdecrement (--) requires: Preceding identifier or closebracket. 
+			// OpPostdecrement (--) requires: Preceding identifier or closebracket.
 			//	Succeeding binary/ternary operator or semicolon.
 
 			if (last.IsOneOfString(";", "}", "(", ",") || IsBinaryTernaryOperator(last))
@@ -323,7 +340,8 @@ namespace Cix
 				}
 				else
 				{
-					throw new TokenException("--", string.Format("Invalid predecrement operator. Preceded by {0}, succeeded by {1}.", last, next));
+					throw new TokenException("--",
+						$"Invalid predecrement operator. Preceded by {last}, succeeded by {next}.");
 				}
 			}
 			else if (last.IsIdentifier() || last == "}")
@@ -334,12 +352,14 @@ namespace Cix
 				}
 				else
 				{
-					throw new TokenException("--", string.Format("Invalid postdecrement operator. Preceded by {0}, succeeded by {1}.", last, next));
+					throw new TokenException("--",
+						$"Invalid postdecrement operator. Preceded by {last}, succeeded by {next}.");
 				}
 			}
 			else
 			{
-				throw new TokenException("--", string.Format("Invalid double minus sign token. Preceded by {0}, succeeded by {1}.", last, next));
+				throw new TokenException("--",
+					$"Invalid double minus sign token. Preceded by {last}, succeeded by {next}.");
 			}
 		}
 
@@ -361,7 +381,8 @@ namespace Cix
 				}
 				else
 				{
-					throw new TokenException("*", string.Format("Invalid pointer dereference operator. Preceded by {0}, succeeded by {1}.", last, next));
+					throw new TokenException("*",
+						$"Invalid pointer dereference operator. Preceded by {last}, succeeded by {next}.");
 				}
 			}
 			else if (last.IsIdentifier(true))
@@ -377,50 +398,54 @@ namespace Cix
 			}
 			else
 			{
-				throw new TokenException("*", string.Format("Invalid asterisk token. Preceded by {0}, succeeded by {1}.", last, next));
+				throw new TokenException("*",
+					$"Invalid asterisk token. Preceded by {last}, succeeded by {next}.");
 			}
 		}
 
 		private void ProcessAmpersand(string last, string next)
 		{
 			// The ampersand indicates either a variable dereference or a bitwise AND operator.
-			// OpVariableDerefence (&): Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { + - ! ~ & }. 
-			//	Succeeding identifier or one of { & * }.
-			// OpBitwiseAnd (&): Preceding identifier, closeparen, closebracket, one of { ++ -- }. 
-			//	Succeeding identifier, one of { + - ! ~ ++ -- * }.
+			// OpVariableDerefence (&): Preceding semicolon, closescope, openparen, comma, binary/ternary operator, or one of { + - ! ~ & }.
+			//	Succeeding identifier, openparen, or one of { & * }.
+			// OpBitwiseAnd (&): Preceding identifier, closeparen, closebracket, one of { ++ -- }.
+			//	Succeeding identifier, openparen, one of { + - ! ~ ++ -- * }.
 
 			if (last.IsOneOfString(";", "}", "(", ",", "+", "-", "!", "~", "&") || IsBinaryTernaryOperator(last))
 			{
-				if (next.IsIdentifier() || next.IsOneOfString("*", "&"))
+				if (next.IsIdentifier() || next.IsOneOfString("(", "*", "&"))
 				{
 					AddToken(TokenType.OpVariableDereference, "&");
 				}
 				else
 				{
-					throw new TokenException("&", string.Format("Invalid variable dereference operator. Preceded by {0}, succeeded by {1}.", last, next));
+					throw new TokenException("&",
+						$"Invalid variable dereference operator. Preceded by {last}, succeeded by {next}.");
 				}
 			}
 			else if (last.IsIdentifier() || last.IsOneOfString(")", "]", "++", "--"))
 			{
-				if (next.IsIdentifier() || next.IsOneOfString("+", "-", "!", "~", "++", "--", "*"))
+				if (next.IsIdentifier() || next.IsOneOfString("(", "+", "-", "!", "~", "++", "--", "*"))
 				{
 					AddToken(TokenType.OpBitwiseAND, "&");
 				}
 				else
 				{
-					throw new TokenException("&", string.Format("Invalid bitwise AND operator. Preceded by {0}, succeeded by {1}.", last, next));
+					throw new TokenException("&",
+						$"Invalid bitwise AND operator. Preceded by {last}, succeeded by {next}.");
 				}
 			}
 			else
 			{
-				throw new TokenException("&", string.Format("Invalid ampersand token. Preceded by {0}, succeeded by {1}.", last, next));
+				throw new TokenException("&",
+					$"Invalid ampersand token. Preceded by {last}, succeeded by {next}.");
 			}
 		}
 
 		private void ProcessDot(string last, string next)
 		{
 			// A dot by itself indicates a member access operator.
-			// OpMemberAccess (.): Preceding identifier, closeparen, closebracket. 
+			// OpMemberAccess (.): Preceding identifier, closeparen, closebracket.
 			//	Succeeding identifier.
 
 			if (last.IsIdentifier() || last.IsOneOfString(")", "]"))
@@ -431,19 +456,20 @@ namespace Cix
 				}
 				else
 				{
-					throw new TokenException(".", string.Format("Invalid member access operator. Preceded by {0}, succeeded by {1}.", last, next));
+					throw new TokenException(".",
+						$"Invalid member access operator. Preceded by {last}, succeeded by {next}.");
 				}
 			}
 			else
 			{
-				throw new TokenException(".", string.Format("Invalid dot token. Preceded by {0}, succeeded by {1}.", last, next));
+				throw new TokenException(".", $"Invalid dot token. Preceded by {last}, succeeded by {next}.");
 			}
 		}
 
 		private void ProcessArrow(string last, string next)
 		{
 			// An arrow is a pointer access operator.
-			// OpPointerAccess (->): Preceding identifier, closeparen, closebracket. 
+			// OpPointerAccess (->): Preceding identifier, closeparen, closebracket.
 			//	Succeeding identifier.
 
 			if (last.IsIdentifier() || last.IsOneOfString(")", "]"))
@@ -454,35 +480,38 @@ namespace Cix
 				}
 				else
 				{
-					throw new TokenException("->", string.Format("Invalid pointer member access operator. Preceded by {0}, succeeded by {1}.", last, next));
+					throw new TokenException("->",
+						$"Invalid pointer member access operator. Preceded by {last}, succeeded by {next}.");
 				}
 			}
 			else
 			{
-				throw new TokenException("->", string.Format("Invalid arrow token. Preceded by {0}, succeeded by {1}.", last, next));
+				throw new TokenException("->", $"Invalid arrow token. Preceded by {last}, succeeded by {next}.");
 			}
 		}
 
 		private void ProcessOperator(string current, string last, string next)
 		{
-			// All Other Binary Operators and the Ternary Aftercondition (?): 
-			//	Preceding identifier, closeparen, closebracket, one of { ++ -- }. 
-			//	Succeeding identifier, one of { + - ! ~ ++ -- & * }.
+			// All Other Binary Operators and the Ternary Aftercondition (?):
+			//	Preceding identifier, closeparen, closebracket, one of { ++ -- }.
+			//	Succeeding identifier, openparen, or one of { + - ! ~ ++ -- & * }.
 
 			if (last.IsIdentifierOrNumber() || last.IsOneOfString(")", "]", "++", "--"))
 			{
-				if (next.IsIdentifierOrNumber() || next.IsOneOfString("+", "-", "!", "~", "++", "--", "&", "*"))
+				if (next.IsIdentifierOrNumber() || next.IsOneOfString("+", "-", "!", "~", "++", "--", "&", "*", "("))
 				{
 					AddToken(unambiguousBinaryOperatorTokens[current], current);
 				}
 				else
 				{
-					throw new TokenException(current, string.Format("Invalid operator {0}. Preceded by {1}, succeeded by {2}.", current, last, next));
+					throw new TokenException(current,
+						$"Invalid operator {current}. Preceded by {last}, succeeded by {next}.");
 				}
 			}
 			else
 			{
-				throw new TokenException(current, string.Format("Invalid token {0}. Preceded by {1}, succeeded by {2}.", current, last, next));
+				throw new TokenException(current,
+					$"Invalid token {current}. Preceded by {last}, succeeded by {next}.");
 			}
 		}
 
@@ -500,13 +529,21 @@ namespace Cix
 				}
 				else
 				{
-					throw new TokenException(current, string.Format("Invalid pointer type declaration. Preceded by {0}, succeeded by {1}.", last, next));
+					throw new TokenException(current,
+						$"Invalid pointer type declaration. Preceded by {last}, succeeded by {next}.");
 				}
 			}
 			else
 			{
-				throw new TokenException(current, string.Format("Invalid sequence of asterisks. Preceded by {0}, succeeded by {1}.", last, next));
+				throw new TokenException(current,
+					$"Invalid sequence of asterisks. Preceded by {last}, succeeded by {next}.");
 			}
+		}
+
+		private void ProcessStringLiteral(string current)
+		{
+			// A word beginning and ending in double quotes.
+			AddToken(TokenType.StringLiteral, current);
 		}
 
 		private void AddToken(TokenType type, string word)
@@ -523,7 +560,7 @@ namespace Cix
 
 		private static bool IsBinaryTernaryOperator(string word)
 		{
-			return binaryTernaryOperators.Contains(word);
+			return BinaryTernaryOperators.Contains(word);
 		}
 	}
 
@@ -622,7 +659,8 @@ namespace Cix
 		/// the declaration of a pointer to a value (int* y). It's the latter only if the identifier
 		/// to the left of the asterisk is a type name.
 		/// </remarks>
-		Indeterminate
+		Indeterminate,
+		StringLiteral
 	}
 
 	/// <summary>
@@ -633,12 +671,12 @@ namespace Cix
 		/// <summary>
 		/// Gets the type of token this token is.
 		/// </summary>
-		public TokenType Type { get; private set; }
+		public TokenType Type { get; }
 
 		/// <summary>
 		/// Gets the word of this token.
 		/// </summary>
-		public string Word { get; private set; }
+		public string Word { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Token"/> class.
@@ -655,9 +693,6 @@ namespace Cix
 		/// Returns a string representation of this token.
 		/// </summary>
 		/// <returns>A string representation of this token</returns>
-		public override string ToString()
-		{
-			return $"\"{Word}\" ({Type})";
-		}
+		public override string ToString() => $"\"{Word}\" ({Type})";
 	}
 }

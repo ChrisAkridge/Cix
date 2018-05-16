@@ -8,10 +8,7 @@ namespace Cix
 {
 	public static class CharExtensions
 	{
-		public static bool IsOneOfCharacter(this char check, params char[] values)
-		{
-			HashSet<char> hash = new HashSet<char>(values);
-			return hash.Contains(check);
-		}
+		public static bool IsOneOfCharacter(this char check, params char[] values) =>
+			new HashSet<char>(values).Contains(check);
 	}
 }

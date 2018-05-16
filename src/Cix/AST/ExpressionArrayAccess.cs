@@ -13,7 +13,8 @@ namespace Cix.AST
 
 		public ExpressionElementSequence Sequence { get; }
 
-		public ExpressionArrayAccess(IEnumerable<ExpressionElement> elements, 
+		// TODO: this should own an expression, not a list of elements
+		public ExpressionArrayAccess(IEnumerable<ExpressionElement> elements,
 			ExpressionElementSequence sequence)
 		{
 			this.elements = elements.ToList();

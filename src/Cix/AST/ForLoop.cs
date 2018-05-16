@@ -10,15 +10,15 @@ namespace Cix.AST
 	{
 		private List<Element> statements;
 
-		public Expression Initializor { get; private set; }
+		public Expression Initializer { get; private set; }
 		public Expression Condition { get; private set; }
 		public Expression Iterator { get; private set; }
 		public IReadOnlyList<Element> Statements => statements.AsReadOnly();
 
-		public ForLoop(Expression initializor, Expression condition, Expression iterator, 
+		public ForLoop(Expression initializer, Expression condition, Expression iterator, 
 			IEnumerable<Element> statements)
 		{
-			Initializor = initializor;
+			Initializer = initializer;
 			Condition = condition;
 			Iterator = iterator;
 			this.statements = statements.ToList();

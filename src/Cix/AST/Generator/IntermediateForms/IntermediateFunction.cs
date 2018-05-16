@@ -2,18 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Cix.AST.Generator.IntermediateForms
 {
 	public sealed class IntermediateFunction : Element
 	{
-		private List<FunctionArgument> arguments = new List<FunctionArgument>();
+		private readonly List<FunctionArgument> arguments = new List<FunctionArgument>();
 
 		public DataType ReturnType { get; }
 		public string Name { get; }
 		public IReadOnlyList<FunctionArgument> Arguments => arguments.AsReadOnly();
-		
+
 		/// <summary>
 		/// Gets the index of the function's openscope.
 		/// </summary>

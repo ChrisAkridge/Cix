@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Cix
 {
 	public sealed class TokenEnumerator
 	{
-		private List<Token> tokens;
+		private readonly List<Token> tokens;
 		public int CurrentIndex { get; private set; }
 
 		public Token Previous
@@ -21,7 +20,6 @@ namespace Cix
 				return tokens[CurrentIndex - 1];
 			}
 		}
-
 
 		public Token Current
 		{
@@ -52,7 +50,7 @@ namespace Cix
 
 		public TokenEnumerator(List<Token> tokens)
 		{
-			this.tokens = tokens ?? throw new ArgumentNullException("Cannot create a token enumerator with no tokens.");
+			this.tokens = tokens ?? throw new ArgumentNullException(nameof(tokens), "Cannot create a token enumerator with no tokens.");
 			CurrentIndex = 0;
 		}
 
@@ -62,7 +60,7 @@ namespace Cix
 			{
 				throw new ArgumentOutOfRangeException($"The start and/or end indices are out of range. Start index: {startIndex}, end index: {endIndex}, valid range is [0-{tokens.Count}).");
 			}
-			
+
 			if (startIndex > endIndex)
 			{
 				throw new ArgumentOutOfRangeException($"The start index of {startIndex} is greater than the end index of {endIndex}.");
@@ -102,7 +100,10 @@ namespace Cix
 				}
 			} while (MoveNext());
 
-			if (currentStatement.Any()) result.Add(currentStatement);
+			if (currentStatement.Any())
+			{
+				result.Add(currentStatement);
+			}
 			return result;
 		}
 
@@ -141,7 +142,7 @@ namespace Cix
 			return true;
 		}
 
-		public bool MoveLast()
+		public bool MovePrevious()
 		{
 			if (CurrentIndex == 0)
 			{
@@ -152,9 +153,9 @@ namespace Cix
 			return true;
 		}
 
-		public List<Token> MoveStatement()
+		public List<Token> MoveNextStatement()
 		{
-			List<Token> result = new List<Token>();
+			var result = new List<Token>();
 
 			if (CurrentIndex >= tokens.Count)
 			{
@@ -179,23 +180,42 @@ namespace Cix
 		public void SkipBlock()
 		{
 			// First finds the next openscope and then skips to after the next closescope on that level
-			if (CurrentIndex >= tokens.Count) return;
+			if (CurrentIndex >= tokens.Count)
+			{
+				return;
+			}
 
 			while (Current.Type != TokenType.OpenScope)
 			{
 				// Find the first openscope
-				if (!MoveNext()) return;
+				if (!MoveNext())
+				{
+					return;
+				}
 			}
 
 			int scopeLevel = 1;
-			if (!MoveNext()) return;
+			if (!MoveNext())
+			{
+				return;
+			}
 
 			while (Current.Type != TokenType.CloseScope && scopeLevel > 0)
 			{
-				if (Current.Type == TokenType.OpenScope) scopeLevel++;
-				else if (Current.Type == TokenType.CloseScope && scopeLevel > 0) scopeLevel--;
+				switch (Current.Type)
+				{
+					case TokenType.OpenScope:
+						scopeLevel++;
+						break;
+					case TokenType.CloseScope when scopeLevel > 0:
+						scopeLevel--;
+						break;
+				}
 
-				if (!MoveNext()) return;
+				if (!MoveNext())
+				{
+					return;
+				}
 			}
 
 			MoveNext();
@@ -219,14 +239,21 @@ namespace Cix
 			}
 			else if (Current.Type != expected)
 			{
-				throw new ArgumentException(String.Format("Invalid token type, expected type {0}, got type {1} (word: \"{2}\"", expected, Current.Type, Current.Word));
+				throw new ArgumentException(
+					$"Invalid token type, expected type {expected}, got type {Current.Type} (word: \"{Current.Word}\"");
 			}
 		}
 
 		public void ValidateNot(TokenType notExpected)
 		{
-			if (Current == null) throw new ArgumentOutOfRangeException(nameof(tokens), "Encountered beginning or end of stream too early");
-			else if (Current.Type == notExpected) throw new ArgumentException($"Invalid token type, expected anything but {notExpected}, but got it (word: \"{Current.Word}\"");
+			if (Current == null)
+			{
+				throw new ArgumentOutOfRangeException(nameof(tokens), "Encountered beginning or end of stream too early");
+			}
+			else if (Current.Type == notExpected)
+			{
+				throw new ArgumentException($"Invalid token type, expected anything but {notExpected}, but got it (word: \"{Current.Word}\"");
+			}
 		}
 
 		public bool MoveNextValidate(TokenType expected)
@@ -243,9 +270,7 @@ namespace Cix
 			return result;
 		}
 
-		private static bool IsStatementTerminator(Token token)
-		{
-			return token.Type == TokenType.OpenScope || token.Type == TokenType.CloseScope || token.Type == TokenType.Semicolon;
-		}
+		private static bool IsStatementTerminator(Token token) =>
+			token.Type == TokenType.OpenScope || token.Type == TokenType.CloseScope || token.Type == TokenType.Semicolon;
 	}
 }

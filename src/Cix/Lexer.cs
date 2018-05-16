@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Cix.Exceptions;
 
 namespace Cix
@@ -14,7 +12,7 @@ namespace Cix
 	/// </summary>
 	public sealed class Lexer
 	{
-		private string file;				// The actual text of the file.
+		private readonly string file;		// The actual text of the file.
 		private StringBuilder builder;		// A builder holding the current word.
 		private ParsingContext context;		// The context of the lexing; roughly, what the last scanned character was part of
 		private List<string> wordList;		// A list of lexed words.
@@ -22,19 +20,18 @@ namespace Cix
 		private int charNumber;				// The current character number where the scanning is. Used to make ParseExceptions.
 		private bool withinDirective;		// Set when the lexer finds a # character in Root context and cleared when it then finds a newline.
 
+/*
 		/// <summary>
 		/// Gets the path to the file being lexed.
 		/// </summary>
 		public string FilePath { get; private set; }
+*/
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Lexer"/> class.
 		/// </summary>
 		/// <param name="file">The text of the file to be lexed.</param>
-		public Lexer(string file)
-		{
-			this.file = file;
-		}
+		public Lexer(string file) => this.file = file;
 
 		/// <summary>
 		/// Lexes the source file and returns its words.
@@ -55,123 +52,106 @@ namespace Cix
 			for (int i = 0; i < file.Length; i++)
 			{
 				charNumber++;
-				char current = '\0';
 				char last = '\0';
 				char next = '\0';
 
-				current = file[i];
+				char current = file[i];
 				last = (i > 0) ? file[i - 1] : '\0';
 				next = (i < file.Length - 1) ? file[i + 1] : '\0';
 
 				if (char.IsWhiteSpace(current))
 				{
-					ProcessWhitespace(current, last, next);
+					ProcessWhitespace(current, last);
 				}
 				else if (current.IsOneOfCharacter('{', '}', '[', ']', '(', ')'))
 				{
-					ProcessBraceBracketOrParentheses(current, last, next);
+					ProcessBraceBracketOrParentheses(current);
 				}
 				else if (char.IsLetter(current) || current == '_')
 				{
-					ProcessLetterOrUnderscore(current, last, next);
+					ProcessLetterOrUnderscore(current, last);
 				}
 				else if (char.IsDigit(current))
 				{
-					ProcessNumber(current, last, next);
-				}
-				else if (current == '"')
-				{
-					ProcessQuotationMark(last, next);
-				}
-				else if (current == '+')
-				{
-					ProcessPlusSign(last, next);
-				}
-				else if (current == '-')
-				{
-					ProcessMinusSign(last, next);
-				}
-				else if (current == '!')
-				{
-					ProcessExclamationMark(last, next);
-				}
-				else if (current == '~')
-				{
-					ProcessTilde(last, next);
-				}
-				else if (current == '*')
-				{
-					ProcessAsterisk(last, next);
-				}
-				else if (current == '/')
-				{
-					ProcessForwardSlash(last, next);
-				}
-				else if (current == '%')
-				{
-					ProcessPercentSign(last, next);
-				}
-				else if (current == '<')
-				{
-					ProcessLessThanSign(last, next);	
-				}
-				else if (current == '>')
-				{
-					ProcessGreaterThanSign(last, next);	
-				}
-				else if (current == '&')
-				{
-					ProcessAmpersand(last, next);
-				}
-				else if (current == '|')
-				{
-					ProcessVerticalLine(last, next);
-				}
-				else if (current == '^')
-				{
-					ProcessCaret(last, next);
-				}
-				else if (current == '.')
-				{
-					ProcessDot(last, next);
-				}
-				else if (current == '?')
-				{
-					ProcessQuestionMark(last, next);
-				}
-				else if (current == ':')
-				{
-					ProcessColon(last, next);
-				}
-				else if (current == '=')
-				{
-					ProcessEqualsSign(last, next);
-				}
-				else if (current == '\\')
-				{
-					ProcessBackslash(last, next);
-				}
-				else if (current == ';')
-				{
-					ProcessSemicolon(last, next);
-				}
-				else if (current == ',')
-				{
-					ProcessComma(last, next);
-				}
-				else if (current == '#')
-				{
-					ProcessNumberSign(last, next);
+					ProcessNumber(current);
 				}
 				else
 				{
-					if (context == ParsingContext.StringLiteral)
+					switch (current)
 					{
-						builder.Append(current);
-					}
-					else
-					{
-						throw new ParseException(string.Format("Invalid character {0}.", current), file, lineNumber, charNumber);
+						case '"':
+							ProcessQuotationMark(last);
+							break;
+						case '+':
+							ProcessPlusSign(last);
+							break;
+						case '-':
+							ProcessMinusSign(last);
+							break;
+						case '!':
+							ProcessExclamationMark(next);
+							break;
+						case '~':
+							ProcessTilde(next);
+							break;
+						case '*':
+							ProcessAsterisk(last);
+							break;
+						case '/':
+							ProcessForwardSlash();
+							break;
+						case '%':
+							ProcessPercentSign();
+							break;
+						case '<':
+							ProcessLessThanSign(last);
+							break;
+						case '>':
+							ProcessGreaterThanSign(last);
+							break;
+						case '&':
+							ProcessAmpersand(last);
+							break;
+						case '|':
+							ProcessVerticalLine(last);
+							break;
+						case '^':
+							ProcessCaret();
+							break;
+						case '.':
+							ProcessDot();
+							break;
+						case '?':
+							ProcessQuestionMark();
+							break;
+						case ':':
+							ProcessColon();
+							break;
+						case '=':
+							ProcessEqualsSign(last);
+							break;
+						case '\\':
+							ProcessBackslash();
+							break;
+						case ';':
+							ProcessSemicolon();
+							break;
+						case ',':
+							ProcessComma();
+							break;
+						case '#':
+							ProcessNumberSign();
+							break;
+						default:
+							if (context == ParsingContext.StringLiteral)
+							{
+								builder.Append(current);
+							}
+							else
+							{
+								throw new ParseException($"Invalid character {current}.", file, lineNumber, charNumber);
+							}
+							break;
 					}
 				}
 			}
@@ -179,7 +159,7 @@ namespace Cix
 			return wordList;
 		}
 
-		private void ProcessWhitespace(char current, char last, char next)
+		private void ProcessWhitespace(char current, char last)
 		{
 			bool isLineTerminator = current.IsOneOfCharacter('\r', '\n');
 
@@ -188,6 +168,7 @@ namespace Cix
 				lineNumber++;
 				charNumber = 0;
 
+				// TODO: the preprocessor runs before the lexer, so we can get rid of this
 				if (withinDirective)
 				{
 					withinDirective = false;
@@ -208,6 +189,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					if (builder.Length > 0) { AddWordToList(); }
 					context = ParsingContext.Whitespace;
 					break;
@@ -221,12 +203,10 @@ namespace Cix
 						builder.Append(current);
 					}
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessBraceBracketOrParentheses(char current, char last, char next)
+		private void ProcessBraceBracketOrParentheses(char current)
 		{
 			switch (context)
 			{
@@ -242,6 +222,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					AddWordToList();
 					context = ParsingContext.Whitespace;
 					builder.Append(current);
@@ -255,12 +236,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append(current);
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessLetterOrUnderscore(char current, char last, char next)
+		private void ProcessLetterOrUnderscore(char current, char last)
 		{
 			switch (context)
 			{
@@ -292,9 +271,15 @@ namespace Cix
 						context = ParsingContext.NumericLiteralSuffix;
 						builder.Append(current);
 					}
+					else if (char.ToLower(current) == 'x' && char.IsNumber(last))
+					{
+						// We're in a hexadecimal literal.
+						context = ParsingContext.HexadecimalNumericLiteral;
+						builder.Append(current);
+					}
 					else
 					{
-						throw new ParseException(string.Format("Invalid letter {0} in numeric literal.", current), file, lineNumber, charNumber);
+						throw new ParseException($"Invalid letter {current} in numeric literal.", file, lineNumber, charNumber);
 					}
 					break;
 				case ParsingContext.NumericLiteralSuffix:
@@ -306,18 +291,27 @@ namespace Cix
 					}
 					else
 					{
-						throw new ParseException(string.Format("Invalid letter {0} in numeric literal suffix.", current), file, lineNumber, charNumber);
+						throw new ParseException($"Invalid letter {current} in numeric literal suffix.", file, lineNumber, charNumber);
+					}
+					break;
+				case ParsingContext.HexadecimalNumericLiteral:
+					if (char.ToLower(current).IsOneOfCharacter('a', 'b', 'c', 'd', 'e', 'f'))
+					{
+						builder.Append(current);
+					}
+					else
+					{
+						throw new ParseException($"Invalid letter {current} in hexadecimal numeric literal.", file,
+							lineNumber, charNumber);
 					}
 					break;
 				case ParsingContext.StringLiteral:
 					builder.Append(current);
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessQuotationMark(char last, char next)
+		private void ProcessQuotationMark(char last)
 		{
 			switch (context)
 			{
@@ -332,6 +326,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					throw new ParseException("Invalid quotation mark in word, directive, or numeric literal.", file, lineNumber, charNumber);
 				case ParsingContext.Operator:
 					AddWordToList();
@@ -350,12 +345,10 @@ namespace Cix
 						context = ParsingContext.Whitespace;
 					}
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessPlusSign(char last, char next)
+		private void ProcessPlusSign(char last)
 		{
 			switch (context)
 			{
@@ -386,6 +379,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					AddWordToList();
 					context = ParsingContext.Operator;
 					builder.Append('+');
@@ -393,12 +387,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append('+');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessMinusSign(char last, char next)
+		private void ProcessMinusSign(char last)
 		{
 			switch (context)
 			{
@@ -413,6 +405,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					AddWordToList();
 					builder.Append('-');
 					context = ParsingContext.Operator;
@@ -430,12 +423,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append('-');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessExclamationMark(char last, char next)
+		private void ProcessExclamationMark(char next)
 		{
 			switch (context)
 			{
@@ -451,6 +442,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					if (next == '=')
 					{
 						AddWordToList();
@@ -465,12 +457,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append('!');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessTilde(char last, char next)
+		private void ProcessTilde(char next)
 		{
 			switch (context)
 			{
@@ -486,6 +476,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					if (next == '=')
 					{
 						AddWordToList();
@@ -500,12 +491,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append('~');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessAsterisk(char last, char next)
+		private void ProcessAsterisk(char last)
 		{
 			switch (context)
 			{
@@ -531,6 +520,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					AddWordToList();
 					builder.Append('*');
 					context = ParsingContext.Operator;
@@ -538,12 +528,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append('*');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessForwardSlash(char last, char next)
+		private void ProcessForwardSlash()
 		{
 			switch (context)
 			{
@@ -559,6 +547,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					AddWordToList();
 					builder.Append('/');
 					context = ParsingContext.Operator;
@@ -566,12 +555,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append('/');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessPercentSign(char last, char next)
+		private void ProcessPercentSign()
 		{
 			switch (context)
 			{
@@ -587,6 +574,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					AddWordToList();
 					builder.Append('%');
 					context = ParsingContext.Operator;
@@ -594,12 +582,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append('%');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessLessThanSign(char last, char next)
+		private void ProcessLessThanSign(char last)
 		{
 			switch (context)
 			{
@@ -624,6 +610,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					AddWordToList();
 					builder.Append('<');
 					context = ParsingContext.Operator;
@@ -631,12 +618,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append('<');
 					break;
-				default:
-					break;
 			}
 		}
-		
-		private void ProcessGreaterThanSign(char last, char next)
+
+		private void ProcessGreaterThanSign(char last)
 		{
 			switch (context)
 			{
@@ -661,6 +646,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					AddWordToList();
 					builder.Append('>');
 					context = ParsingContext.Operator;
@@ -668,12 +654,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append('>');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessAmpersand(char last, char next)
+		private void ProcessAmpersand(char last)
 		{
 			switch (context)
 			{
@@ -699,6 +683,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					AddWordToList();
 					builder.Append('&');
 					context = ParsingContext.Operator;
@@ -706,12 +691,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append('&');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessVerticalLine(char last, char next)
+		private void ProcessVerticalLine(char last)
 		{
 			switch (context)
 			{
@@ -736,6 +719,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					AddWordToList();
 					builder.Append('|');
 					context = ParsingContext.Operator;
@@ -743,12 +727,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append('|');
 					break;
-				default:
-					break;
 			}
 		}
-		
-		private void ProcessCaret(char last, char next)
+
+		private void ProcessCaret()
 		{
 			switch (context)
 			{
@@ -764,6 +746,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					AddWordToList();
 					builder.Append('^');
 					context = ParsingContext.Operator;
@@ -771,12 +754,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append('^');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessDot(char last, char next)
+		private void ProcessDot()
 		{
 			switch (context)
 			{
@@ -786,7 +767,10 @@ namespace Cix
 				case ParsingContext.Operator:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
-					throw new ParseException("Invalid dot in root context, whitespace context, directive, operator, or numeric literal fraction/suffix.", file, lineNumber, charNumber);
+				case ParsingContext.HexadecimalNumericLiteral:
+					throw new ParseException(
+						"Invalid dot in root context, whitespace context, directive, operator, hexadecimal numeric literal, or numeric literal fraction/suffix.",
+						file, lineNumber, charNumber);
 				case ParsingContext.Word:
 					AddWordToList();
 					builder.Append('.');
@@ -799,12 +783,11 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append('.');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessQuestionMark(char last, char next)
+		[Obsolete]
+		private void ProcessQuestionMark()
 		{
 			switch (context)
 			{
@@ -820,6 +803,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					AddWordToList();
 					builder.Append('?');
 					context = ParsingContext.Operator;
@@ -827,12 +811,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append('?');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessColon(char last, char next)
+		private void ProcessColon()
 		{
 			switch (context)
 			{
@@ -848,6 +830,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					AddWordToList();
 					builder.Append(':');
 					context = ParsingContext.Operator;
@@ -855,12 +838,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append(':');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessEqualsSign(char last, char next)
+		private void ProcessEqualsSign(char last)
 		{
 			switch (context)
 			{
@@ -886,6 +867,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					AddWordToList();
 					builder.Append('=');
 					context = ParsingContext.Operator;
@@ -893,12 +875,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append('=');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessBackslash(char last, char next)
+		private void ProcessBackslash()
 		{
 			switch (context)
 			{
@@ -910,16 +890,15 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					throw new ParseException("Invalid backslash in most contexts.", file, lineNumber, charNumber);
 				case ParsingContext.StringLiteral:
 					builder.Append('\\');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessSemicolon(char last, char next)
+		private void ProcessSemicolon()
 		{
 			switch (context)
 			{
@@ -930,6 +909,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					if (builder.Length > 0) { AddWordToList(); }
 					builder.Append(';');
 					AddWordToList();
@@ -940,12 +920,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append(';');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessComma(char last, char next)
+		private void ProcessComma()
 		{
 			switch (context)
 			{
@@ -961,6 +939,7 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					AddWordToList();
 					builder.Append(',');
 					AddWordToList();
@@ -969,12 +948,10 @@ namespace Cix
 				case ParsingContext.StringLiteral:
 					builder.Append(',');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessNumberSign(char last, char next)
+		private void ProcessNumberSign()
 		{
 			switch (context)
 			{
@@ -990,16 +967,15 @@ namespace Cix
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
 				case ParsingContext.NumericLiteralSuffix:
+				case ParsingContext.HexadecimalNumericLiteral:
 					throw new ParseException("Invalid number sign in directive, word, operator, or numeric literal.", file, lineNumber, charNumber);
 				case ParsingContext.StringLiteral:
 					builder.Append('#');
 					break;
-				default:
-					break;
 			}
 		}
 
-		private void ProcessNumber(char current, char last, char next)
+		private void ProcessNumber(char current)
 		{
 			switch (context)
 			{
@@ -1019,10 +995,9 @@ namespace Cix
 				case ParsingContext.Word:
 				case ParsingContext.NumericLiteral:
 				case ParsingContext.NumericLiteralFraction:
+				case ParsingContext.HexadecimalNumericLiteral:
 				case ParsingContext.StringLiteral:
 					builder.Append(current);
-					break;
-				default:
 					break;
 			}
 		}
@@ -1046,7 +1021,8 @@ namespace Cix
 			NumericLiteral,
 			NumericLiteralFraction,
 			NumericLiteralSuffix,
-			StringLiteral
+			HexadecimalNumericLiteral,
+			StringLiteral,
 		}
 	}
 }

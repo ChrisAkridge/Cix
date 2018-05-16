@@ -11,5 +11,6 @@ namespace Cix.AST
 	/// </summary>
 	public sealed class VarargsFunctionArgument : Element
 	{
+		// TODO: this should derive from FunctionArgument, probably
 	}
 }

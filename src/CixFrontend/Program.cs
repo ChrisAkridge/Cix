@@ -6,13 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 using Cix;
 using Cix.AST;
+using Cix.AST.Generator;
+using Cix.AST.Generator.IntermediateForms;
 using Cix.Exceptions;
 
 namespace CixFrontend
 {
-	class Program
+	internal class Program
 	{
-		static void Main(string[] args)
+		private static void Main(string[] args)
 		{
 			Console.WriteLine("Cix Platform");
 			Console.WriteLine("Copyright © 2014 Chris Akridge.");
@@ -49,7 +51,7 @@ namespace CixFrontend
 				Preprocessor preprocessor = new Preprocessor(file, filePath);
 				//try
 				//{
-				foreach (string line in preprocessor.Preprocess().Split(new string[] { "\r", "\r\n"}, StringSplitOptions.RemoveEmptyEntries))
+				foreach (string line in preprocessor.Preprocess().Split(new[] { "\r", "\r\n"}, StringSplitOptions.RemoveEmptyEntries))
 				{
 					Console.WriteLine(line);
 				}
@@ -78,27 +80,27 @@ namespace CixFrontend
 			{
 				try
 				{
-					Tokenizer tokenizer = new Tokenizer();
-					var tokenList = tokenizer.Tokenize(new Lexer(filePath).EnumerateWords());
+					var tokenizer = new Tokenizer();
+					List<Token> tokenList = tokenizer.Tokenize(new Lexer(filePath).EnumerateWords());
 
-					foreach (var token in tokenList)
+					foreach (Token token in tokenList)
 					{
 						Console.WriteLine("{0}: {1}", token.Type, token.Word);
 					}
 				}
 				catch (Exception ex)
 				{
-					if (ex is ParseException)
+					switch (ex)
 					{
-						Console.WriteLine("Parse exception: {0} ({1})", ex.Message, ((ParseException)ex).ErrorLocation);
-					}
-					else if (ex is TokenException)
-					{
-						Console.WriteLine("Token exception: {0}", ex.Message);
-					}
-					else
-					{
-						Console.Write("{0}: {1}", ex.GetType().Name, ex.Message);
+						case ParseException _:
+							Console.WriteLine("Parse exception: {0} ({1})", ex.Message, ((ParseException)ex).ErrorLocation);
+							break;
+						case TokenException _:
+							Console.WriteLine("Token exception: {0}", ex.Message);
+							break;
+						default:
+							Console.Write("{0}: {1}", ex.GetType().Name, ex.Message);
+							break;
 					}
 				}
 			}
@@ -111,10 +113,10 @@ namespace CixFrontend
 					Preprocessor preprocessor = new Preprocessor(file, filePath);
 					file = preprocessor.Preprocess();
 
-					var words = new Lexer(file).EnumerateWords();
-					var tokenList = new Tokenizer().Tokenize(words);
+					List<string> words = new Lexer(file).EnumerateWords();
+					List<Token> tokenList = new Tokenizer().Tokenize(words);
 
-					foreach (var token in tokenList)
+					foreach (Token token in tokenList)
 					{
 						Console.WriteLine("{0}: {1}", token.Type, token.Word);
 					}
@@ -128,14 +130,14 @@ namespace CixFrontend
 			{
 				file = file.RemoveComments();
 
-				Preprocessor preprocessor = new Preprocessor(file, filePath);
+				var preprocessor = new Preprocessor(file, filePath);
 				file = preprocessor.Preprocess();
 
-				var words = new Lexer(file).EnumerateWords();
-				var tokenList = new Tokenizer().Tokenize(words);
-				var intermediateStructs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).GenerateIntermediateStructs();
-				
-				foreach (var intermediateStruct in intermediateStructs)
+				List<string> words = new Lexer(file).EnumerateWords();
+				List<Token> tokenList = new Tokenizer().Tokenize(words);
+				List<IntermediateStruct> intermediateStructs = new FirstPassGenerator(new TokenEnumerator(tokenList)).GenerateIntermediateStructs();
+
+				foreach (IntermediateStruct intermediateStruct in intermediateStructs)
 				{
 					Console.WriteLine($"Struct named {intermediateStruct.Name}, starting at index {intermediateStruct.FirstDefinitionTokenIndex}, ending at index {intermediateStruct.LastTokenIndex}.");
 				}
@@ -144,18 +146,18 @@ namespace CixFrontend
 			{
 				file = file.RemoveComments();
 
-				Preprocessor preprocessor = new Preprocessor(file, filePath);
+				var preprocessor = new Preprocessor(file, filePath);
 				file = preprocessor.Preprocess();
 
-				var words = new Lexer(file).EnumerateWords();
-				var tokenList = new Tokenizer().Tokenize(words);
-				var intermediateStructs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).GenerateIntermediateStructs();
-				var structs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).GenerateStructTree(intermediateStructs);
+				List<string> words = new Lexer(file).EnumerateWords();
+				List<Token> tokenList = new Tokenizer().Tokenize(words);
+				List<IntermediateStruct> intermediateStructs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).GenerateIntermediateStructs();
+				List<Element> structs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).GenerateStructTree(intermediateStructs);
 
 				foreach (StructDeclaration structDeclaration in structs)
 				{
 					Console.WriteLine($"Struct named {structDeclaration.Name} with size {structDeclaration.Size} ({structDeclaration.Members.Count} members):");
-					foreach (var member in structDeclaration.Members)
+					foreach (StructMemberDeclaration member in structDeclaration.Members)
 					{
 						Console.WriteLine($"\tMember of type {member.Type.TypeName}{new string('*', member.Type.PointerLevel)}");
 						Console.WriteLine($"\tNamed {member.Name} with array size {member.ArraySize}.");
@@ -170,11 +172,11 @@ namespace CixFrontend
 				Preprocessor preprocesor = new Preprocessor(file, filePath);
 				file = preprocesor.Preprocess();
 
-				var words = new Lexer(file).EnumerateWords();
-				var tokenList = new Tokenizer().Tokenize(words);
-				var intermediateStructs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).GenerateIntermediateStructs();
-				var structs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).GenerateStructTree(intermediateStructs);
-				var treeWithGlobals = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).AddGlobalsToTree(structs);
+				List<string> words = new Lexer(file).EnumerateWords();
+				List<Token> tokenList = new Tokenizer().Tokenize(words);
+				List<IntermediateStruct> intermediateStructs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).GenerateIntermediateStructs();
+				List<Element> structs = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).GenerateStructTree(intermediateStructs);
+				List<Element> treeWithGlobals = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList)).AddGlobalsToTree(structs);
 
 				foreach (GlobalVariableDeclaration global in treeWithGlobals.Where(e => e is GlobalVariableDeclaration))
 				{
@@ -187,16 +189,16 @@ namespace CixFrontend
 				Preprocessor preprocessor = new Preprocessor(file, filePath);
 				file = preprocessor.Preprocess();
 
-				var words = new Lexer(file).EnumerateWords();
-				var tokenList = new Tokenizer().Tokenize(words);
-				var generator = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList));
-				var intermediateStructs = generator.GenerateIntermediateStructs();
-				var structs = generator.GenerateStructTree(intermediateStructs);
-				var treeWithGlobals = generator.AddGlobalsToTree(structs);
+				List<string> words = new Lexer(file).EnumerateWords();
+				List<Token> tokenList = new Tokenizer().Tokenize(words);
+				FirstPassGenerator generator = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList));
+				List<IntermediateStruct> intermediateStructs = generator.GenerateIntermediateStructs();
+				List<Element> structs = generator.GenerateStructTree(intermediateStructs);
+				List<Element> treeWithGlobals = generator.AddGlobalsToTree(structs);
 
 				try
 				{
-					var intermediateFunctions = generator.GenerateIntermediateFunctions();
+					List<IntermediateFunction> intermediateFunctions = generator.GenerateIntermediateFunctions();
 				}
 				catch (Exception ex)
 				{
@@ -208,18 +210,18 @@ namespace CixFrontend
 				file = file.RemoveComments();
 				file = new Preprocessor(file, filePath).Preprocess();
 
-				var words = new Lexer(file).EnumerateWords();
-				var tokenList = new Tokenizer().Tokenize(words);
-				var generator = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList));
+				List<string> words = new Lexer(file).EnumerateWords();
+				List<Token> tokenList = new Tokenizer().Tokenize(words);
+				FirstPassGenerator generator = new Cix.AST.Generator.FirstPassGenerator(new TokenEnumerator(tokenList));
 
-				try
-				{
+				//try
+				//{
 					generator.GenerateFirstPassAST();
-				}
-				catch (Exception ex)
-				{
-					Console.WriteLine(ex.Message);
-				}
+				//}
+				//catch (Exception ex)
+				//{
+				//	Console.WriteLine(ex.Message);
+				//}
 			}
 			Console.ReadKey();
 		}

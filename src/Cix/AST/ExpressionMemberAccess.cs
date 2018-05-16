@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
+	// why do we have this
 	public sealed class ExpressionMemberAccess : ExpressionElement
 	{
 		public string Name { get; }

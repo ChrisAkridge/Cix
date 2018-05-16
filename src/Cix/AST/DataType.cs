@@ -21,12 +21,12 @@ namespace Cix.AST
 
 			if (pointerLevel < 0)
 			{
-				throw new ArgumentException(string.Format("Invalid pointer level {0}.", pointerLevel));
+				throw new ArgumentException($"Invalid pointer level {pointerLevel}.");
 			}
 
 			if (typeSize <= 0)
 			{
-				throw new ArgumentException(string.Format("Invalid type size {0}.", typeSize));
+				throw new ArgumentException($"Invalid type size {typeSize}.");
 			}
 
 			TypeName = typeName;
@@ -68,7 +68,7 @@ namespace Cix.AST
 				case "void":
 					return typeof(void);
 				default:
-					throw new InvalidOperationException(string.Format("The Cix type {0} does not have an analogous BCL type.", TypeName));
+					throw new InvalidOperationException($"The Cix type {TypeName} does not have an analogous BCL type.");
 			}
 		}
 
@@ -79,7 +79,7 @@ namespace Cix.AST
 
 		public override string ToString()
 		{
-			return $"{TypeName}{new String('*', PointerLevel)} ({TypeSize} byte(s))";
+			return $"{TypeName}{new string('*', PointerLevel)} ({TypeSize} byte(s))";
 		}
 	}
 }

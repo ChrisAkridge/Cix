@@ -6,7 +6,6 @@ The lexer scans over a preprocessed Cix file character-by-character and is the s
 
 The lexer's context is its state. The context can be set by the character most recently scanned. The contexts are:
 
-
 * Root: No context has been set yet.
 * Whitespace: The last character was a whitespace or line terminator.
 * Comment: A // or /* sequence not inside a string literal was found and no line terminator or */ sequence has been reached yet.
@@ -16,6 +15,7 @@ The lexer's context is its state. The context can be set by the character most r
 * NumericLiteral: A number after whitespace not inside a string literal was found, and no . character, {u l f d} character, or whitespace has been reached yet.
 * NumericLiteralFraction. A . character was found during a NumericLiteral context, and no {u l f d} character or whitespace has been reached yet.
 * NumericLiteralSuffix: A {u l f d} character was found during a NumericLiteral or NumericLiteralFraction context, and no whitespace has been reached yet.
+* HexadecimalNumericLiteral: An 'x' character was found during a NumericLiteral context, and no whitespace has been reached yet.
 * StringLiteral: An unescaped " character not inside a string literal was found, and no matching unescaped " character has been reached yet.
 
 ## What to Do for Each Character

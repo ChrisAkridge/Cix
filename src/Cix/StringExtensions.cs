@@ -2,34 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Cix
 {
 	public static class StringExtensions
 	{
-		private static readonly char[] validIdentifierCharacters = new char[]
-		{ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 
-		  'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 
+		private static readonly char[] ValidIdentifierCharacters =
+		{ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+		  'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
 		  'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c',
 		  'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-		  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 
+		  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
 		  'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6',
 		  '7', '8', '9', '_', '.' };
 
-		private static readonly char[] invalidFirstIdentifierCharacters = new char[]
+		private static readonly char[] InvalidFirstIdentifierCharacters =
 		{ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
 
-		internal static readonly string[] reservedKeywords = new string[] 
+		internal static readonly string[] ReservedKeywords =
 		{ "break", "case", "char", "const", "continue", "default", "do",
-		  "double", "else", "float", "for", "goto", "if", "int", "long", 
-		  "return", "schar", "short", "sizeof", "struct", "switch", "uint", 
+		  "double", "else", "float", "for", "goto", "if", "int", "long",
+		  "return", "schar", "short", "sizeof", "struct", "switch", "uint",
 		  "ulong", "ushort", "void", "while" };
 
 		public static bool IsOneOfString(this string check, params string[] values)
-		{
-			return new HashSet<string>(values).Contains(check);
-		}
+			=> new HashSet<string>(values).Contains(check);
 
 		public static bool IsIdentifier(this string word, bool allowReservedWords = false)
 		{
@@ -48,24 +45,13 @@ namespace Cix
 
 			foreach (char c in word)
 			{
-				if (!c.IsOneOfCharacter(validIdentifierCharacters))
+				if (!c.IsOneOfCharacter(ValidIdentifierCharacters))
 				{
 					return false;
 				}
 			}
 
-			if (!allowReservedWords)
-			{
-				string lower = word.ToLower();
-				foreach (string reservedWord in reservedKeywords)
-				{
-					if (word == reservedWord)
-					{
-						return false;
-					}
-				}
-			}
-			return true;
+			return allowReservedWords || ReservedKeywords.All(r => word.ToLower() != r);
 		}
 
 		public static bool IsNumericLiteral(this string word)
@@ -107,63 +93,50 @@ namespace Cix
 				char last = (i > 0) ? input[i - 1] : '\0';
 				char next = (i < input.Length - 1) ? input[i + 1] : '\0';
  
-				if (current == '/')
+				switch (current)
 				{
-					if (last == '/' || last == '*')
-					{
+					case '/' when last == '/' || last == '*':
 						continue;
-					}
-					else if (next == '/')
-					{
+					case '/' when next == '/':
 						currentCommentKind = CommentKind.SingleLine;
-					}
-					else if (next == '*')
-					{
+						break;
+					case '/' when next == '*':
 						currentCommentKind = CommentKind.MultipleLines;
-					}
-					else
-					{
+						break;
+					case '/':
 						result.Append(current);
-					}
-				}
-				else if (current == '*')
-				{
-					if (last == '/')
-					{
+						break;
+					case '*' when last == '/':
 						continue;
-					}
-					else if (next == '/')
-					{
+					case '*' when next == '/':
 						currentCommentKind = CommentKind.NoComment;
-					}
-					else
-					{
+						break;
+					case '*' when currentCommentKind == CommentKind.NoComment:
 						result.Append(current);
-					}
-				}
-				else if (current == '\r' || current == '\n')
-				{
-					if (currentCommentKind == CommentKind.SingleLine)
-					{
-						currentCommentKind = CommentKind.NoComment;
-					}
-					result.Append(current);
-				}
-				else
-				{
-					if (currentCommentKind == CommentKind.NoComment)
-					{
+						break;
+					case '\r':
+					case '\n':
+						if (currentCommentKind == CommentKind.SingleLine)
+						{
+							currentCommentKind = CommentKind.NoComment;
+						}
 						result.Append(current);
-					}
+						break;
+					default:
+						if (currentCommentKind == CommentKind.NoComment)
+						{
+							result.Append(current);
+						}
+						break;
 				}
 			}
-			
+
 			return result.ToString();
 		}
 
 		public static Tuple<string, int> SeparateTypeNameAndPointerLevel(this string fullTypeName)
 		{
-			if (!fullTypeName.Any(c => c == '*'))
+			if (fullTypeName.All(c => c != '*'))
 			{
 				return new Tuple<string, int>(fullTypeName, 0);
 			}
@@ -182,8 +155,7 @@ namespace Cix
 			}
 
 			int firstAsteriskIndex = typeName.IndexOf('*');
-			if (firstAsteriskIndex == -1) { return typeName; }
-			return typeName.Substring(0, firstAsteriskIndex);
+			return (firstAsteriskIndex == -1) ? typeName : typeName.Substring(0, firstAsteriskIndex);
 		}
 
 		private enum CommentKind
