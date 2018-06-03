@@ -1,0 +1,25 @@
+// RemoveCommentTests.cix
+// Various odd comment constructs to test how the comment remover handles them
+
+int main(int argc, byte** argv)	// end of line comment
+{
+	/* multiline comment but on one line */
+	argc = 0; /* multiline comment with code on both sides */ argv[0][0] = 0;
+	/* multiline comment with code on the end */ argc = 2 + 5;
+	/* multiline comment with */ argv += 2; /* code sandwiched in between */
+	/* multiple kinds of comments */ argv = (byte**)&argc; // on one line
+}
+
+// nested // comments // are // here //
+//////////////// line with many slashes
+
+/* true
+multiline
+* comment
+		*/ void* malloc(uint size) { return /* calloc(size) */ 0; } /*
+																	 *
+																	 */
+																	 
+/************
+* flowerbox *
+************/

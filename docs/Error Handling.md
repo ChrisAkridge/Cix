@@ -18,6 +18,9 @@ Each stage of compilation can encouter errors any time during the stage. Each st
 ### I/O Stage
 No special considerations.
 
+### Comment Stage
+Certain comment-like constructs, like single forward slashes at the end of a line, are not valid.
+
 ### Preprocessor
 Preprocessing is performed line-by-line. Thus, when an error is encountered, skip to the next line and continue the preprocessing from there.
 
@@ -41,6 +44,9 @@ Each struct, global, or function declaration should be parsed as far as possible
 * IO003: File {file} could not be opened for reading. Check permissions or if the file is already opened.
 * IO004: File {file} is blank or empty.
 * IO005: I/O exception occurred. (include exception details)
+
+## Comment Remover Errors:
+* CR001: Single forward slash at end of line is not a valid comment.
 
 ### Preprocessor Errors:
 * PR001: "{defineLine}" isn't valid; must be "#define SYMBOL" or "#define THIS THAT".

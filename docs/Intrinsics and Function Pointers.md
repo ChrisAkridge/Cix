@@ -14,7 +14,7 @@ Intrinsic keywords should be lexed as one word: `@hwcall`, not `@` then `hwcall`
 
 In Cix, a function pointer is a pointer to any defined function. Functions can be derefenced to produce function pointers, and these pointers can be invoked to execute a function and return a result. A function pointer has special, generic-like syntax that names its return type and any argument types.
 
-The type of a function pointer should be written as `@funcptr<ReturnType, Arg1Type, Arg2Type, ...>`. This generic-like syntax is only valid for the function pointer type; it cannot be used anywhere else. The return and argument types can be any Cix type, including primitives like `int` and `byte`, user-defined structures, pointers, arrays, variadic argument lists (`@funcptr<int, ...>`), or even other function pointers. When defining a function pointer to a function that takes or returns a function pointer, you must use the `@` symbol before every `funcptr`: `@funcptr<int, @funcptr<int, long, ulong>>`.
+The type of a function pointer should be written as `@funcptr<ReturnType, Arg1Type, Arg2Type, ...>`. This generic-like syntax is only valid for the function pointer type; it cannot be used anywhere else. The return and argument types can be any Cix type, including primitives like `int` and `byte`, user-defined structures, pointers, arrays, or even other function pointers. When defining a function pointer to a function that takes or returns a function pointer, you must use the `@` symbol before every `funcptr`: `@funcptr<int, @funcptr<int, long, ulong>>`.
 
 A function pointer type can be used in any place any other type can be used: as the type of global and local variables, the type of function arguments, and the type of a structure member.
 
@@ -60,7 +60,7 @@ Invocation involves simply calling the address stored in the function pointer:
 	# Given a function int max(int a, int b),
 	# @funcptr<int, int, int> maxPtr = &max
 	push QWORD max
-	
+
 	# maxPtr(5, 3)
 	stackargs
 	push DWORD 3

@@ -28,7 +28,6 @@ The types of elements are as follows:
 * Struct Member Declaration: Contains the name and type of the member, along with its array size (1 if the member isn't an array) and the offset in bytes of the member in the struct.
 * Switch Block: Contains a list of the cases in the Switch block.
 * Switch Case: Contains a constant value for the case, a flag indicating if this switch case is the default, and the statements of the case.
-* Varargs Function Argument: Represents an argument in a function that indicates this function accepts any number of arguments after the normal arguments.
 * Variable Declaration: Contains the name and type of the variable.
 * Variable Declaration with Initialization: Contains the name, type, and initializer expression.
 * While Loop: Represents a loop that runs code if a condition is true, and then continues to run the code while the condition is true. Contains the condition and the statements.
@@ -63,7 +62,7 @@ This can be accomplished in any number of ways, so I'll just describe the result
 * Intermediate definitions of every function
 	* Contains the name of the function
 	* Contains the return type of the function
-	* Contains the full definition of every function argument (last argument can be the Varargs Function Argument)
+	* Contains the full definition of every function argument
 		* Contains the name and type of the argument
 	* Contains the start token index, the index of the function's openscope (the first opening left curly brace of the function)
 	* Contains the end token index, the index of the function's closescope (the last closing right curly brace of the function)
