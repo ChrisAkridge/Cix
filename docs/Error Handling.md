@@ -61,6 +61,9 @@ Each struct, global, or function declaration should be parsed as far as possible
 * PR010: The include file {file} doesn't exist or has an invalid path.
 * PR011: The include file {file} couldn't be opened for reading.
 * PR012: The include file {file} already includes previously included file {file}.
+* PR013: An #else was found without a matching #ifdef or #ifndef.
+* PR014: An #endif was found without a matching #ifdef or #ifndef.
+* PR015: File "file.cix" was already included.
 
 ### Lexer Errors:
 * LX001: Invalid character '{char}'.

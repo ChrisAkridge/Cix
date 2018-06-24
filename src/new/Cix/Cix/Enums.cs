@@ -13,7 +13,7 @@ namespace Cix
 					throw new ArgumentException("An error was created with no specified source.", nameof(source));
 				case ErrorSource.IO: return "IO";
 				case ErrorSource.CommentRemover: return "CR";
-				case ErrorSource.Preprocesor: return "PR";
+				case ErrorSource.Preprocessor: return "PR";
 				case ErrorSource.Lexer: return "LX";
 				case ErrorSource.Tokenizer: return "TK";
 				case ErrorSource.FirstPassASTGenerator: return "AA";
@@ -24,6 +24,13 @@ namespace Cix
 			}
 		}
 	}
+
+	public enum ConditionalInclusionState
+	{
+		NotInConditional,
+		ConditionalTrue,
+		ConditionalFalse
+	}
 }
 
 namespace Cix.Errors
@@ -33,7 +40,7 @@ namespace Cix.Errors
 		Invalid,
 		IO,
 		CommentRemover,
-		Preprocesor,
+		Preprocessor,
 		Lexer,
 		Tokenizer,
 		FirstPassASTGenerator,

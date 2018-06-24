@@ -35,7 +35,7 @@ namespace CixTests
 		    var lines = new[] {new Line(original, "file.cix", 1)};
 		    IEnumerable<Line> withoutComments = CommentRemover.RemoveComments(lines);
 
-			Assert.IsTrue(ErrorContext.Errors.Count == 1);
+			Assert.AreEqual(1, ErrorContext.Errors.Count);
 		    Assert.AreEqual(ErrorSource.CommentRemover, ErrorContext.Errors[0].Source);
 			Assert.AreEqual(1, ErrorContext.Errors[0].Number);
 

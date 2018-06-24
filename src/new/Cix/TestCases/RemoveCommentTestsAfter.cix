@@ -1,5 +1,6 @@
 
 
+
 int main(int argc, byte** argv)	
 {
 
@@ -8,6 +9,8 @@ argc = 0;  argv[0][0] = 0;
 argv += 2; 
 argv = (byte**)&argc; 
 }
+
+
 
 
 

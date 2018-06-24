@@ -25,7 +25,7 @@ namespace Cix.Text
 
 		public Line(IEnumerable<LineSegment> segments, string filePath, int lineNumber)
 		{
-			this.segments = segments.ToList();
+			this.segments = segments.Where(s => !string.IsNullOrEmpty(s.Text)).ToList();
 			FilePath = filePath;
 			LineNumber = lineNumber;
 		}

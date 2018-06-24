@@ -1,0 +1,28 @@
+#define SYMBOL
+
+#ifdef SYMBOL
+int main() { return 0; }
+#else
+void main() {}
+#endif
+
+#ifndef NOT_DEFINED
+void shouldnt_be_present() {}
+#endif
+
+#define CONSTANT 12
+
+int func()
+{
+	return CONSTANT / 4;
+}
+
+#undefine CONSTANT
+
+void noConstant()
+{
+	int q = CONSTANT;
+}
+
+#include <preprocessor_include1.cix>
+#include "preprocessor_include2.cix"
