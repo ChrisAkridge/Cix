@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.Exceptions
 {
-	[Serializable]
+	[Serializable, Obsolete]
 	public sealed class TokenException : Exception
 	{
 		private string failedWord;

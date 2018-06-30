@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.Exceptions
 {
-	[Serializable]
+	[Serializable, Obsolete]
 	public sealed class PreprocessingException : Exception
 	{
 		public PreprocessingException() : base("An exception has occurred in the preprocessor.")

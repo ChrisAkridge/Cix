@@ -41,7 +41,7 @@ namespace Cix
 				return false;
 			}
 
-			// if (invalidFirstIdentifierCharacters.Contains(word[0])) { return false; }
+			if (InvalidFirstIdentifierCharacters.Contains(word[0])) { return false; }
 
 			foreach (char c in word)
 			{
@@ -82,6 +82,7 @@ namespace Cix
 
 		public static bool IsIdentifierOrNumber(this string word) => IsIdentifier(word) || IsNumericLiteral(word);
 
+		[Obsolete]
 		public static string RemoveComments(this string input)
 		{
 			StringBuilder result = new StringBuilder();				// Stores the uncommented version of the file.
@@ -156,6 +157,12 @@ namespace Cix
 
 			int firstAsteriskIndex = typeName.IndexOf('*');
 			return (firstAsteriskIndex == -1) ? typeName : typeName.Substring(0, firstAsteriskIndex);
+		}
+
+		public static string Substring(this string s, int startIndex, int endIndex)
+		{
+			int length = endIndex - startIndex;
+			return s.Substring(startIndex, length);
 		}
 
 		private enum CommentKind

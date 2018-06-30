@@ -29,14 +29,7 @@ namespace Cix.AST.Generator
 		/// <returns>The element identified by that name.</returns>
 		public Element this[string key]
 		{
-			get
-			{
-				if (!Names.ContainsKey(key))
-				{
-					return null;
-				}
-				return Names[key];
-			}
+			get => !Names.ContainsKey(key) ? null : Names[key];
 			set => Names[key] = value;
 		}
 

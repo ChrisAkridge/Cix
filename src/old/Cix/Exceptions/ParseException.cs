@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.Exceptions
 {
-	[Serializable]
+	[Serializable, Obsolete]
 	public sealed class ParseException : Exception
 	{
 		private string sourceFile;

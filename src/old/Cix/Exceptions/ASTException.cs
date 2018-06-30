@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Cix.Exceptions
 {
-	[Serializable]
+	[Serializable, Obsolete]
 	public sealed class ASTException : Exception
 	{
 		public ASTException() : base("A semantically invalid portion of code has been passed to the AST generator.") { }

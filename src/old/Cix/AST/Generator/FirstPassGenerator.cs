@@ -51,7 +51,7 @@ namespace Cix.AST.Generator
 		{
 			if (astGenerated) { throw new ASTException("The first pass AST generation has already run."); }
 
-			var intermediateStructs = GenerateIntermediateStructs();
+			List<IntermediateStruct> intermediateStructs = GenerateIntermediateStructs();
 			tree = GenerateStructTree(intermediateStructs);
 			tree = AddGlobalsToTree(tree);
 			intermediateFunctions = GenerateIntermediateFunctions();
@@ -157,18 +157,17 @@ namespace Cix.AST.Generator
 			int nestingDepth = 0;
 			do
 			{
-				if (tokens.Current.Type == TokenType.OpenScope)
+				switch (tokens.Current.Type)
 				{
-					nestingDepth++;
-				}
-				else if (tokens.Current.Type == TokenType.CloseScope)
-				{
-					nestingDepth--;
-				}
-				else if (tokens.Current.Word == "global" && nestingDepth == 0)
-				{
-					var globalStatement = tokens.MoveNextStatement();
-					globalVariables.Add(GetGlobalVariableDeclaration(globalStatement));
+					case TokenType.OpenScope: nestingDepth++; break;
+					case TokenType.CloseScope: nestingDepth--; break;
+					default:
+						if (tokens.Current.Word == "global" && nestingDepth == 0)
+						{
+							List<Token> globalStatement = tokens.MoveNextStatement();
+							globalVariables.Add(GetGlobalVariableDeclaration(globalStatement));
+						}
+						break;
 				}
 				tokens.MoveNext();
 			} while (!tokens.AtEnd);

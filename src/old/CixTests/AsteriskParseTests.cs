@@ -8,6 +8,7 @@ using Cix;
 using Cix.AST;
 using Cix.AST.Generator;
 using Cix.AST.Generator.IntermediateForms;
+using Cix.Parser;
 
 namespace CixTests
 {

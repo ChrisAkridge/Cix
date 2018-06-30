@@ -9,6 +9,14 @@
 // Color mode is RGB 3:3:2
 // Uses 307,200 bytes (base to 0x49FFF)
 
+/*
+ * Tetris: A block-stacking game. Tetriminoes, made of four squares connected
+ * on their edges, fall from the top of the board. Rotate and drop them to
+ * fill and clear lines. The more lines you clear at once, the more points
+ * you get!
+ *
+ */
+
 global void* vgaBase;
 
 #define COLOR_CYAN 0x03 // I
@@ -152,7 +160,7 @@ Tetrimino* CreateZ()
 	return result;
 }
 
-global /* Func<Tetrimino*>* */ void* tetriminoFunctions;
+global /* @funcptr<Tetrimino*>* */ void* tetriminoFunctions;
 
 Tetrimino* RandomTetrimino()
 {
