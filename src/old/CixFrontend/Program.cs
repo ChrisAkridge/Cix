@@ -8,6 +8,7 @@ using Cix;
 using Cix.AST;
 using Cix.AST.Generator;
 using Cix.AST.Generator.IntermediateForms;
+using Cix.Errors;
 using Cix.Exceptions;
 using Cix.Parser;
 using Cix.Text;
@@ -31,13 +32,24 @@ namespace CixFrontend
 
 			string filePath = args[0];
 			var compilation = new Compilation(filePath);
-			compilation.LoadInputFile();
-			compilation.RemoveComments();
-			compilation.Preprocess();
-			compilation.Lex();
 
-			foreach (LexedWord word in compilation.LexedFile) { Console.WriteLine(word); }
-			
+			try
+			{
+				compilation.LoadInputFile();
+				compilation.RemoveComments();
+				compilation.Preprocess();
+				compilation.Lex();
+				compilation.Tokenize();
+			}
+			catch (ErrorsEncounteredException ex)
+			{
+				foreach (Error error in ex.Errors) { Console.WriteLine(error); }
+				Console.ReadKey();
+				return;
+			}
+
+			foreach (var token in compilation.TokenizedFile) { Console.WriteLine(token); }
+
 			Console.ReadKey();
 		}
 	}

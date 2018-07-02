@@ -20,10 +20,11 @@ namespace Cix
 		{ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
 
 		internal static readonly string[] ReservedKeywords =
-		{ "break", "case", "char", "const", "continue", "default", "do",
-		  "double", "else", "float", "for", "goto", "if", "int", "long",
-		  "return", "schar", "short", "sizeof", "struct", "switch", "uint",
-		  "ulong", "ushort", "void", "while" };
+		{
+			"break", "case", "char", "const", "continue", "default", "do", "double", "else", "float", "for", "global",
+			"goto", "if", "int", "long", "return", "schar", "short", "sizeof", "struct", "switch", "uint",
+			"ulong", "ushort", "void", "while"
+		};
 
 		public static bool IsOneOfString(this string check, params string[] values)
 			=> new HashSet<string>(values).Contains(check);
@@ -80,7 +81,21 @@ namespace Cix
 			return true;
 		}
 
-		public static bool IsIdentifierOrNumber(this string word) => IsIdentifier(word) || IsNumericLiteral(word);
+		public static bool IsHexadecimalNumericLiteral(this string word)
+		{
+			word = word.ToLowerInvariant();
+			if (!word.StartsWith("0x")) { return false; }
+
+			foreach (char c in word.Substring(2))
+			{
+				if (!(c >= '0' && c <= '9') || !(c >= 'a' && c <= 'f')) { return false; }
+			}
+
+			return true;
+		}
+
+		public static bool IsIdentifierOrLiteral(this string word, bool allowReservedWords = false)
+			=> word.IsIdentifier(allowReservedWords) || word.IsNumericLiteral() || word.IsHexadecimalNumericLiteral();
 
 		[Obsolete]
 		public static string RemoveComments(this string input)

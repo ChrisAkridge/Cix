@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Cix.Text;
@@ -23,6 +24,15 @@ namespace Cix.Errors
 			LineNumber = line.LineNumber;
 		}
 
+		public Error(ErrorSource source, int errorNumber, string message, string filePath, int lineNumber)
+		{
+			Source = source;
+			ErrorNumber = errorNumber;
+			Message = message;
+			FilePath = filePath;
+			LineNumber = lineNumber;
+		}
+
 		private static string GetErrorSourceAbbreviation(ErrorSource source)
 		{
 			switch (source)
@@ -39,6 +49,9 @@ namespace Cix.Errors
 				default: throw new ArgumentOutOfRangeException(nameof(source), source, null);
 			}
 		}
+
+		public override string ToString()
+			=> $"{GetErrorSourceAbbreviation(Source)}{ErrorNumber:D3}: {Message} ({Path.GetFileName(FilePath)}:{LineNumber + 1})";
 	}
 
 	public enum ErrorSource

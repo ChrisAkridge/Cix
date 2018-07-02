@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Cix.Parser;
 
 namespace Cix.AST
 {
@@ -15,9 +16,9 @@ namespace Cix.AST
 			List<ExpressionElement> result = new List<ExpressionElement>();
 			foreach (Token token in tokens)
 			{
-				if (token.Word.IsNumericLiteral())
+				if (token.Text.IsNumericLiteral())
 				{
-					result.Add(NumericLiteral.Parse(token.Word));
+					result.Add(NumericLiteral.Parse(token.Text));
 					continue;
 				}
 
@@ -172,10 +173,10 @@ namespace Cix.AST
 					case TokenType.OpBitwiseXORAssign:
 						result.Add(new ExpressionOperator(ExpressionOperators.BinaryXORAssign));
 						break;
-					case TokenType.OpTernaryAfterCondition:
-						throw new ArgumentException("The ternary conditional operators are not supported.");
-					case TokenType.OpTernaryAfterTrueExpression:
-						throw new ArgumentException("The ternary conditional operators are not supported.");
+//					case TokenType.OpTernaryAfterCondition:
+//						throw new ArgumentException("The ternary conditional operators are not supported.");
+//					case TokenType.OpTernaryAfterTrueExpression:
+//						throw new ArgumentException("The ternary conditional operators are not supported.");
 					case TokenType.Indeterminate:
 						// WYLO: YOU MUST IMPLEMENT
 					default:

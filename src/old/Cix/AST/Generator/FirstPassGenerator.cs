@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Cix.Exceptions;
 using Cix.AST.Generator.IntermediateForms;
+using Cix.Parser;
 
 namespace Cix.AST.Generator
 {
@@ -86,7 +87,7 @@ namespace Cix.AST.Generator
 				}
 
 				tokens.MoveNextValidate(TokenType.Identifier);
-				string structName = tokens.Current.Word;
+				string structName = tokens.Current.Text;
 				tokens.MoveNextValidate(TokenType.OpenScope);
 				int firstTokenIndex = tokens.CurrentIndex + 1;
 				tokens.SkipBlock();
@@ -162,7 +163,7 @@ namespace Cix.AST.Generator
 					case TokenType.OpenScope: nestingDepth++; break;
 					case TokenType.CloseScope: nestingDepth--; break;
 					default:
-						if (tokens.Current.Word == "global" && nestingDepth == 0)
+						if (tokens.Current.Text == "global" && nestingDepth == 0)
 						{
 							List<Token> globalStatement = tokens.MoveNextStatement();
 							globalVariables.Add(GetGlobalVariableDeclaration(globalStatement));
@@ -204,16 +205,16 @@ namespace Cix.AST.Generator
 					tokens.SkipBlock();
 					continue;
 				}
-				else if (tokens.Current.Word == "global")
+				else if (tokens.Current.Text == "global")
 				{
 					tokens.MoveNextStatement();
 				}
 				else if (nestingDepth == 0 && tokens.Current.Type != TokenType.KeyStruct &&
-					tokens.Current.Word != "global")
+					tokens.Current.Text != "global")
 				{
 					// We've found a type name! Probably! Let's find it in the nametable before we
 					// get too excited.
-					string possibleTypeName = tokens.Current.Word;
+					string possibleTypeName = tokens.Current.Text;
 					if (!NameTable.Instance.Names.ContainsKey(possibleTypeName.TrimAsterisks()))
 					{
 						throw new ASTException($"A function was declared with return type {possibleTypeName}. No type by that name exists.");
@@ -226,7 +227,7 @@ namespace Cix.AST.Generator
 					tokens.MoveNext();
 
 					int pointerLevel = 0;
-					while (tokens.Current.Word == "*")
+					while (tokens.Current.Text == "*")
 					{
 						pointerLevel++;
 						tokens.MoveNext();
@@ -234,7 +235,7 @@ namespace Cix.AST.Generator
 
 					returnType = returnType.WithPointerLevel(pointerLevel);
 
-					string name = tokens.Current.Word;
+					string name = tokens.Current.Text;
 					if (!name.IsIdentifier())
 					{
 						throw new ASTException($"The function name \"{name}\" is not valid.");
@@ -244,7 +245,7 @@ namespace Cix.AST.Generator
 					tokens.MoveNext();
 					if (tokens.Current.Type != TokenType.OpenParen)
 					{
-						throw new ASTException($"Expected a left paren, found {tokens.Current.Word}");
+						throw new ASTException($"Expected a left paren, found {tokens.Current.Text}");
 					}
 					int argsStartIndex = tokens.CurrentIndex;
 					int argsEndIndex = argsStartIndex;
@@ -268,7 +269,7 @@ namespace Cix.AST.Generator
 					// The openscope should be the next token.
 					if (!tokens.MoveNextValidate(TokenType.OpenScope))
 					{
-						throw new ASTException($"Unexpected token \"{tokens.Current.Word}\" between function arguments and function statements.");
+						throw new ASTException($"Unexpected token \"{tokens.Current.Text}\" between function arguments and function statements.");
 					}
 
 					int openScopeIndex = tokens.CurrentIndex;
@@ -322,10 +323,10 @@ namespace Cix.AST.Generator
 				enumerator.MoveNext();  // start with the first item
 
 				// If this struct member is a pointer...
-				memberTypeName = enumerator.Current.Word;
+				memberTypeName = enumerator.Current.Text;
 
 				enumerator.MoveNext();
-				while (enumerator.Current.Word == "*")
+				while (enumerator.Current.Text == "*")
 				{
 					memberPointerLevel++;
 					enumerator.MoveNext();
@@ -336,7 +337,7 @@ namespace Cix.AST.Generator
 					throw new ASTException("Members of type void or lpstring may not appear in structs. Use a pointer to that type instead.");
 				}
 
-				while (enumerator.Current.Word == "*")
+				while (enumerator.Current.Text == "*")
 				{
 					// ...usually. This is a token with one or more asterisks, i.e. "int ** i"
 					memberPointerLevel++;
@@ -347,7 +348,7 @@ namespace Cix.AST.Generator
 				{
 					throw new ASTException($"Expected member name, not a {enumerator.Current.Type}.");
 				}
-				memberName = enumerator.Current.Word;
+				memberName = enumerator.Current.Text;
 
 				if (enumerator.MoveNext() && enumerator.Current.Type == TokenType.OpenBracket)
 				{
@@ -356,14 +357,14 @@ namespace Cix.AST.Generator
 					{
 						throw new ASTException("Expected number of items for array member.");
 					}
-					NumericLiteral arraySizeLiteral = NumericLiteral.Parse(enumerator.Current.Word);
+					NumericLiteral arraySizeLiteral = NumericLiteral.Parse(enumerator.Current.Text);
 					if (arraySizeLiteral.UnderlyingType != typeof(int))
 					{
-						throw new ASTException($"Invalid array size {enumerator.Current.Word}. Array sizes must be of type int.");
+						throw new ASTException($"Invalid array size {enumerator.Current.Text}. Array sizes must be of type int.");
 					}
 					else if (arraySizeLiteral.SignedIntegralValue <= 0)
 					{
-						throw new ASTException($"Invalid array size {enumerator.Current.Word}. Array sizes must be positive.");
+						throw new ASTException($"Invalid array size {enumerator.Current.Text}. Array sizes must be positive.");
 					}
 					memberArraySize = (int)arraySizeLiteral.SignedIntegralValue;
 
@@ -458,22 +459,22 @@ namespace Cix.AST.Generator
 			//  global U primitive = 137;
 			//  global T* ptr;
 
-			int pointerLevel = globalStatement.Count(t => t.Word == "*");
+			int pointerLevel = globalStatement.Count(t => t.Text == "*");
 			if (pointerLevel > 0)
 			{
-				globalStatement.RemoveAll(t => t.Word == "*");
+				globalStatement.RemoveAll(t => t.Text == "*");
 			}
 
-			var typeData = globalStatement[1].Word.SeparateTypeNameAndPointerLevel();
+			var typeData = globalStatement[1].Text.SeparateTypeNameAndPointerLevel();
 			string typeName = typeData.Item1;
 			pointerLevel = (pointerLevel == 0) ? typeData.Item2 : pointerLevel;
 
-			string variableName = globalStatement[2].Word;
+			string variableName = globalStatement[2].Text;
 			NumericLiteral numericLiteral = null;
 
-			if (globalStatement.Any(t => t.Word == "=") && NameTable.IsPrimitiveType(typeName))
+			if (globalStatement.Any(t => t.Text == "=") && NameTable.IsPrimitiveType(typeName))
 			{
-				string numericLiteralToken = globalStatement[4].Word;
+				string numericLiteralToken = globalStatement[4].Text;
 				numericLiteral = NumericLiteral.Parse(numericLiteralToken);
 			}
 
@@ -560,13 +561,13 @@ namespace Cix.AST.Generator
 				Token argNameToken = arg.Last();
 
 				// Look up the type name in the name table to check if it's real.
-				string typeName = typeNameToken.Word.TrimAsterisks();
+				string typeName = typeNameToken.Text.TrimAsterisks();
 				if (!NameTable.Instance.Names.ContainsKey(typeName))
 				{
 					throw new ASTException($"A function argument was declared with return type {typeName}. No type by that name exists.");
 				}
 
-				string argName = argNameToken.Word;
+				string argName = argNameToken.Text;
 				if (!argName.IsIdentifier())
 				{
 					throw new ASTException($"A function argument had the invalid name \"{argName}\".");
@@ -591,7 +592,7 @@ namespace Cix.AST.Generator
 			}
 
 			// The first token must be an identifier
-			if (!tokens[0].Word.IsIdentifier(true))
+			if (!tokens[0].Text.IsIdentifier(true))
 			{
 				return false;
 			}
@@ -607,7 +608,7 @@ namespace Cix.AST.Generator
 
 			for (int i = 1; i < tokens.Count - 2; i++)
 			{
-				if (tokens[i].Word != "*") { return false; }
+				if (tokens[i].Text != "*") { return false; }
 			}
 
 			return true;

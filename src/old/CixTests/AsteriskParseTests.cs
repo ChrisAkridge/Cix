@@ -31,18 +31,12 @@ namespace CixTests
 			if (cachesCreated) { return; }
 
 			testCasePath = Utilities.GetTestCasePath(TestCaseName);
-			testCaseFile = System.IO.File.ReadAllText(testCasePath);
-
-			testCaseFile = testCaseFile.RemoveComments();
-
-			Preprocessor preprocessor = new Preprocessor(testCaseFile, testCasePath);
-			testCaseFile = preprocessor.Preprocess();
-
-			Lexer lexer = new Lexer(testCaseFile);
-			lexedWordCache = lexer.EnumerateWords();
-
-			Tokenizer tokenizer = new Tokenizer();
-			tokenCache = tokenizer.Tokenize(lexedWordCache);
+			var compilation = new Compilation(testCasePath);
+			compilation.LoadInputFile();
+			compilation.RemoveComments();
+			compilation.Preprocess();
+			compilation.Lex();
+			compilation.Tokenize();
 
 			FirstPassGenerator generator = new FirstPassGenerator(new TokenEnumerator(tokenCache));
 			var structs = generator.GenerateIntermediateStructs();
@@ -91,18 +85,18 @@ namespace CixTests
 			CreateCaches();
 
 			// Find _1.
-			int indexOf_1 = tokenCache.IndexOf(tokenCache.First(t => t.Word == "_1"));
+			int indexOf_1 = tokenCache.IndexOf(tokenCache.First(t => t.Text == "_1"));
 
 			// Go back two tokens.
 			int indexOfInt = indexOf_1 - 2;
 
 			// This word should be int.
 			Token t1 = tokenCache[indexOfInt];
-			if (t1.Word != "int") { Assert.Fail($"Token 1: {t1.ToString()}"); }
+			if (t1.Text != "int") { Assert.Fail($"Token 1: {t1.ToString()}"); }
 
 			// The next word should be *.
 			Token t2 = tokenCache[indexOfInt + 1];
-			if (t2.Word != "*") { Assert.Fail($"Token 2: {t2.ToString()}"); }
+			if (t2.Text != "*") { Assert.Fail($"Token 2: {t2.ToString()}"); }
 
 			// The next word should be _1. We already found it per the IndexOf call above, so we
 			// don't need to test this.
@@ -114,22 +108,22 @@ namespace CixTests
 			CreateCaches();
 
 			// Find _3.
-			int indexOf_3 = tokenCache.IndexOf(tokenCache.Find(t => t.Word == "_3"));
+			int indexOf_3 = tokenCache.IndexOf(tokenCache.Find(t => t.Text == "_3"));
 
 			// Go back three tokens. The tokens should be { int, *, *, _3 }.
 			int indexOfInt = indexOf_3 - 3;
 
 			Token t1 = tokenCache[indexOfInt];
-			if (t1.Word != "int") { Assert.Fail($"Token 1: {t1.ToString()}"); }
+			if (t1.Text != "int") { Assert.Fail($"Token 1: {t1.ToString()}"); }
 
 			Token t2 = tokenCache[indexOfInt + 1];
-			if (t2.Word != "*") { Assert.Fail($"Token 2: {t2.ToString()}"); }
+			if (t2.Text != "*") { Assert.Fail($"Token 2: {t2.ToString()}"); }
 
 			Token t3 = tokenCache[indexOfInt + 2];
-			if (t3.Word != "*") { Assert.Fail($"Token 3: {t3.ToString()}"); }
+			if (t3.Text != "*") { Assert.Fail($"Token 3: {t3.ToString()}"); }
 
 			Token t4 = tokenCache[indexOfInt + 3];
-			if (t4.Word != "_3") { Assert.Fail($"Token 4: {t4.ToString()}"); }
+			if (t4.Text != "_3") { Assert.Fail($"Token 4: {t4.ToString()}"); }
 		}
 
 		[TestMethod()]

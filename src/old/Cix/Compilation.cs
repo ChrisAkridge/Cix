@@ -16,9 +16,13 @@ namespace Cix
 		private readonly string initialFilePath;
 		private List<Line> initialFile = new List<Line>();
 		private List<LexedWord> lexedFile;
+		private List<Token> tokenizedFile;
 
 		public IReadOnlyList<Line> InitialFile => initialFile.AsReadOnly();
 		public IReadOnlyList<LexedWord> LexedFile => lexedFile.AsReadOnly() ?? new List<LexedWord>().AsReadOnly();
+
+		public IReadOnlyList<Token> TokenizedFile
+			=> tokenizedFile.AsReadOnly() ?? new List<Token>().AsReadOnly();
 
 		public Compilation(string filePath) => initialFilePath = filePath;
 
@@ -53,11 +57,24 @@ namespace Cix
 			ThrowIfErrors();
 		}
 
+		public void Tokenize()
+		{
+			var tokenizer = new Tokenizer(this);
+			tokenizedFile = tokenizer.Tokenize(lexedFile).ToList();
+			ThrowIfErrors();
+		}
+
 		public void AddError(ErrorSource source, int errorNumber, string message, Line line)
 		{
 			if (line == null) { line = new Line("{none}", 0, "{none}"); }
 
 			errors.Add(new Error(source, errorNumber, message, line));
+		}
+
+		public void AddError(ErrorSource source, int errorNumber, string message, string filePath,
+			int lineNumber)
+		{
+			errors.Add(new Error(source, errorNumber, message, filePath, lineNumber));
 		}
 
 		private void ThrowIfErrors()

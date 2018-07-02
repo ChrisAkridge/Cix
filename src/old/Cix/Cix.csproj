@@ -144,7 +144,7 @@
     <Compile Include="Text\Line.cs" />
     <Compile Include="Text\LineChar.cs" />
     <Compile Include="TokenEnumerator.cs" />
-    <Compile Include="Tokenizer.cs" />
+    <Compile Include="Parser\Tokenizer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AST\NameToBeResolved.cs" />

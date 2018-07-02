@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Cix.Parser;
 
 namespace Cix
 {
@@ -240,7 +241,7 @@ namespace Cix
 			else if (Current.Type != expected)
 			{
 				throw new ArgumentException(
-					$"Invalid token type, expected type {expected}, got type {Current.Type} (word: \"{Current.Word}\"");
+					$"Invalid token type, expected type {expected}, got type {Current.Type} (word: \"{Current.Text}\"");
 			}
 		}
 
@@ -252,7 +253,7 @@ namespace Cix
 			}
 			else if (Current.Type == notExpected)
 			{
-				throw new ArgumentException($"Invalid token type, expected anything but {notExpected}, but got it (word: \"{Current.Word}\"");
+				throw new ArgumentException($"Invalid token type, expected anything but {notExpected}, but got it (word: \"{Current.Text}\"");
 			}
 		}
 
