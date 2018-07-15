@@ -50,7 +50,9 @@ namespace CixFrontend
 
 			foreach (var token in compilation.TokenizedFile) { Console.WriteLine(token); }
 
+			#if DEBUG
 			Console.ReadKey();
+			#endif
 		}
 	}
 }

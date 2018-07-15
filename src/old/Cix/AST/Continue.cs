@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class Continue : Element
+	internal sealed class Continue : Element
 	{
 		public override string ToString() => "Continue";
 	}

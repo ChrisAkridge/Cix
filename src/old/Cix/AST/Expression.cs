@@ -10,7 +10,7 @@ namespace Cix.AST
 	/// A list of expression elements (operators and operands) stored in postfix form.
 	/// For instance, (3 + 2) * 5 becomes 3 2 + 5 *
 	/// </summary>
-	public sealed class Expression : ExpressionElement
+	internal sealed class Expression : ExpressionElement
 	{
 		private List<ExpressionElement> elements;
 		public IReadOnlyList<ExpressionElement> Elements => elements.AsReadOnly();

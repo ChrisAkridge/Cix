@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class ExpressionFunctionCall : ExpressionElement
+	internal sealed class ExpressionFunctionCall : ExpressionElement
 	{
 		private List<ExpressionFunctionParameter> parameters;
 

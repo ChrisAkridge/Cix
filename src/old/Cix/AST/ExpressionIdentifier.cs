@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class Identifier : Element
+	internal sealed class Identifier : Element
 	{
 		public string Name { get; }
 

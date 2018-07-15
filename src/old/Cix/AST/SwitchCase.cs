@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class SwitchCase : Element
+	internal sealed class SwitchCase : Element
 	{
 		private List<Element> statements;
 

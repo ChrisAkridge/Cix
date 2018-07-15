@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class ReturnValue : Element
+	internal sealed class ReturnValue : Element
 	{
 		public Expression ReturnExpression { get; }
 

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Cix.AST
 {
 	// We can probably remove this since ExpressionArrayAccess should cover this
-	public sealed class ExpressionSquareBracket : ExpressionElement
+	internal sealed class ExpressionSquareBracket : ExpressionElement
 	{
 		public ParenthesesType Type { get; }
 

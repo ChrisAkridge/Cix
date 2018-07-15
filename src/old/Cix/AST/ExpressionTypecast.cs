@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class ExpressionTypecast : ExpressionElement
+	internal sealed class ExpressionTypecast : ExpressionElement
 	{
 		public DataType ResultType { get; }
 

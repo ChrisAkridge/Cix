@@ -76,25 +76,27 @@ Each struct, global, or function declaration should be parsed as far as possible
 * TK004: The type "{typeNameWithAsterisks}" must be followed by a name or a close parenthesis.
 * TK005: Multiple asterisks must follow a type name, not "{word}".
 
-### First-Pass AST Generator Errors
-* AA001: AST already generated; did you accidentally call GenerateFirstPassAST again?
-* AA002: There is already a structure named "{struct}".
-* AA003: Return type "{type}" is not defined.
-* AA004: Function name "{name}" is not valid.
-* AA005: Expected "(".
-* AA006: Token "{token}" appears between arguments and openscope of {funcName}.
-* AA007: Function {funcName} has no closescope.
-* AA008: Invalid type for {structName}.{memberName}. lpstring- or void-typed members cannot be in structures. Consider a pointer to these types instead.
-* AA009: Invalid token {token} of type {type} after type.
-* AA010: The size of the array {structAndMember} was not declared.
-* AA011: The size of the array {structAndMember} is out of range ({arraySize}). Array sizes must be between 0 and 2.1 billion.
-* AA012: Expected ']'.
-* AA013: Invalid type for {structAndMember}. Type {type} is not defined.
-* AA014: Maximum struct nesting depth of {depth} reached. Look for circular struct members.
-* AA015: Invalid type for {globalVariableName}. Type "void" is not valid; perhaps you meant "void*"?
-* AA016: Invalid type for {globalVariableName}. "{word}" is a {thing}, not a type.
-* AA017: Invalid type for {globalVariableName}. The type {type} is not defined.
-* AA018: Invalid type for {globalVariableName}. No global may be "lpstring", perhaps you meant "lpstring*"?
-* AA019: Type "{type}" is not defined.
-* AA020: Token "{type}" is not actually a type, it's a {thing}.
-* AA021: 
+### AST Generator Errors
+AG001: AST already generated; did you accidentally call GenerateFirstPassAST again?
+AG002: Expected a token of type {expected}, got a token of type {actual}.
+AG003: Expected a token of type anything except {notExpected}, but got it anyway.
+AG004: Unexpected end of file.
+AG005: There is already a structure named "{struct}".
+AG006: Return type "{type}" is not defined.
+AG007: Function name "{name}" is not valid.
+AG008: Expected "(".
+AG009: Token "{token}" appears between arguments and openscope of {funcName}.
+AG010: Function {funcName} has no closescope.
+AG011: Invalid type for {structName}.{memberName}. lpstring- or void-typed members cannot be in structures. Consider a pointer to these types instead.
+AG012: Invalid token {token} of type {type} after type.
+AG013: The size of the array {structAndMember} was not declared.
+AG014: The size of the array {structAndMember} is out of range ({arraySize}). Array sizes must be between 0 and 2.1 billion.
+AG015: Expected ']'.
+AG016: Invalid type for {structAndMember}. Type {type} is not defined.
+AG017: Maximum struct nesting depth of {depth} reached. Look for circular struct members.
+AG018: Invalid type for {globalVariableName}. Type "void" is not valid; perhaps you meant "void*"?
+AG019: Invalid type for {globalVariableName}. "{word}" is a {thing}, not a type.
+AG020: Invalid type for {globalVariableName}. The type {type} is not defined.
+AG021: Invalid type for {globalVariableName}. No global may be "lpstring", perhaps you meant "lpstring*"?
+AG022: Type "{type}" is not defined.
+AG023: Token "{type}" is not actually a type, it's a {thing}.

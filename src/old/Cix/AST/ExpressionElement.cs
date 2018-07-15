@@ -7,7 +7,7 @@ using Cix.Parser;
 
 namespace Cix.AST
 {
-	public class ExpressionElement : Element
+	internal class ExpressionElement : Element
 	{
 		// this probably should be abstract
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class Break : Element
+	internal sealed class Break : Element
 	{
 		public override string ToString() => "Break";
 	}

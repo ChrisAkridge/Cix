@@ -42,8 +42,7 @@ namespace Cix.Errors
 				case ErrorSource.Preprocessor: return "PR";
 				case ErrorSource.Lexer: return "LX";
 				case ErrorSource.Tokenizer: return "TK";
-				case ErrorSource.ASTFirstPass: return "AA";
-				case ErrorSource.ASTSecondPass: return "AB";
+				case ErrorSource.ASTGenerator: return "AG";
 				case ErrorSource.Lowering: return "LW";
 				case ErrorSource.CodeGeneration: return "CG";
 				default: throw new ArgumentOutOfRangeException(nameof(source), source, null);
@@ -61,8 +60,7 @@ namespace Cix.Errors
 		Preprocessor,
 		Lexer,
 		Tokenizer,
-		ASTFirstPass,
-		ASTSecondPass,
+		ASTGenerator,
 		Lowering,
 		CodeGeneration
 	}

@@ -9,7 +9,7 @@ namespace Cix.AST
 	/// <summary>
 	/// Represents a constant value as an expression element.
 	/// </summary>
-	public sealed class ExpressionConstant : ExpressionElement
+	internal sealed class ExpressionConstant : ExpressionElement
 	{
 		private byte[] value;
 		private DataType Type;

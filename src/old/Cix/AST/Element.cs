@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public abstract class Element
+	internal abstract class Element
 	{
 	}
 }

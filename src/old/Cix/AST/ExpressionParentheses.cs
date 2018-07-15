@@ -8,7 +8,8 @@ namespace Cix.AST
 {
 	// Parentheses aren't used in postfix; maybe we can remove this?
 	// no, no we can't
-	public sealed class ExpressionParentheses : ExpressionElement
+	// ...or can we?
+	internal sealed class ExpressionParentheses : ExpressionElement
 	{
 		public ParenthesesType Type { get; }
 

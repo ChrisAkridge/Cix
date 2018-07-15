@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class ExpressionArrayAccess : ExpressionElement
+	internal sealed class ExpressionArrayAccess : ExpressionElement
 	{
 		private List<ExpressionElement> elements;
 		public IReadOnlyList<ExpressionElement> Elements => elements.AsReadOnly();
@@ -22,7 +22,7 @@ namespace Cix.AST
 		}
 	}
 
-	public enum ExpressionElementSequence
+	internal enum ExpressionElementSequence
 	{
 		Infix,
 		PostFix

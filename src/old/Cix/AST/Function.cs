@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class Function : Element
+	internal sealed class Function : Element
 	{
 		private List<FunctionArgument> arguments;
 		private List<Element> statements;

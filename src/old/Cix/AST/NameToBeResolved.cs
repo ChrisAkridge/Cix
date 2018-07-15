@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Cix.AST
 {
 	[Obsolete]
-    public sealed class NameToBeResolved : Element
+    internal sealed class NameToBeResolved : Element
     {
 		public string Name { get; }
 		public ToBeResolvedType Type { get; }
@@ -19,7 +19,7 @@ namespace Cix.AST
 		}
     }
 
-	public enum ToBeResolvedType
+	internal enum ToBeResolvedType
 	{
 		DataType,
 		Structure,

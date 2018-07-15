@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class DoWhileLoop : Element
+	internal sealed class DoWhileLoop : Element
 	{
 		private List<Element> statements;
 		

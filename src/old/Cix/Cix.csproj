@@ -132,6 +132,7 @@
     <Compile Include="AST\Expression.cs" />
     <Compile Include="AST\NumericLiteral.cs" />
     <Compile Include="Errors\IErrorListProvider.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="IO.cs" />
     <Compile Include="Parser\LexedWord.cs" />
     <Compile Include="Parser\Preprocessor.cs" />

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class WhileLoop : Element
+	internal sealed class WhileLoop : Element
 	{
 		private List<Element> statements;
 

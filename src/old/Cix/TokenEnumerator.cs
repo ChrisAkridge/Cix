@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Cix.Errors;
 using Cix.Parser;
 
 namespace Cix
 {
-	public sealed class TokenEnumerator
+	internal sealed class TokenEnumerator
 	{
 		private readonly List<Token> tokens;
+		private readonly IErrorListProvider errorList;
+
 		public int CurrentIndex { get; private set; }
 
 		public Token Previous
@@ -46,12 +49,15 @@ namespace Cix
 			}
 		}
 
+		public Token this[int index] => tokens[index];
+
 		public bool AtBeginning => CurrentIndex == 0;
 		public bool AtEnd => CurrentIndex == (tokens.Count - 1);
 
-		public TokenEnumerator(List<Token> tokens)
+		public TokenEnumerator(List<Token> tokens, IErrorListProvider errorList)
 		{
 			this.tokens = tokens ?? throw new ArgumentNullException(nameof(tokens), "Cannot create a token enumerator with no tokens.");
+			this.errorList = errorList;
 			CurrentIndex = 0;
 		}
 
@@ -59,20 +65,22 @@ namespace Cix
 		{
 			if ((startIndex < 0 || startIndex >= tokens.Count) || (endIndex < 0 || endIndex >= tokens.Count))
 			{
-				throw new ArgumentOutOfRangeException($"The start and/or end indices are out of range. Start index: {startIndex}, end index: {endIndex}, valid range is [0-{tokens.Count}).");
+				throw new ArgumentOutOfRangeException(
+					$"The start and/or end indices are out of range. Start index: {startIndex}, end index: {endIndex}, valid range is [0-{tokens.Count}).");
 			}
 
 			if (startIndex > endIndex)
 			{
-				throw new ArgumentOutOfRangeException($"The start index of {startIndex} is greater than the end index of {endIndex}.");
+				throw new ArgumentOutOfRangeException(
+					$"The start index of {startIndex} is greater than the end index of {endIndex}.");
 			}
 			else if (startIndex == endIndex)
 			{
-				return new TokenEnumerator(new List<Token>());
+				return new TokenEnumerator(new List<Token>(), errorList);
 			}
 
 			int length = endIndex - startIndex;
-			return new TokenEnumerator(tokens.Skip(startIndex).Take(length).ToList());
+			return new TokenEnumerator(tokens.Skip(startIndex).Take(length).ToList(), errorList);
 		}
 
 		public IEnumerable<List<Token>> SplitOnSemicolon()
@@ -92,7 +100,7 @@ namespace Cix
 				else if (Current.Type == TokenType.OpenScope || Current.Type == TokenType.CloseScope)
 				{
 					result.Add(currentStatement);
-					result.Add(new List<Token>() { Current });
+					result.Add(new List<Token> { Current });
 					currentStatement = new List<Token>();
 				}
 				else
@@ -232,45 +240,55 @@ namespace Cix
 		/// </summary>
 		/// <param name="expected">The expected type of the token.</param>
 		/// <returns>The current token if it is valid.</returns>
-		public void Validate(TokenType expected)
+		public bool Validate(TokenType expected)
 		{
 			if (Current == null)
 			{
-				throw new ArgumentOutOfRangeException(nameof(tokens), "Encountered beginning or end of token stream too early");
+				Token adjacentExistingToken = Previous ?? Next;
+				errorList.AddError(ErrorSource.ASTGenerator, 4, "Unexpected beginning/end of file.",
+					adjacentExistingToken.FilePath, adjacentExistingToken.LineNumber);
+				return false;
 			}
 			else if (Current.Type != expected)
 			{
-				throw new ArgumentException(
-					$"Invalid token type, expected type {expected}, got type {Current.Type} (word: \"{Current.Text}\"");
+				errorList.AddError(ErrorSource.ASTGenerator, 2, $"Expected token of type {expected}, got token of type {Current.Type}.",
+					Current.FilePath, Current.LineNumber);
+				return false;
 			}
+			return true;
 		}
 
-		public void ValidateNot(TokenType notExpected)
+		public bool ValidateNot(TokenType notExpected)
 		{
 			if (Current == null)
 			{
-				throw new ArgumentOutOfRangeException(nameof(tokens), "Encountered beginning or end of stream too early");
+				Token adjacentExistingToken = Previous ?? Next;
+				errorList.AddError(ErrorSource.ASTGenerator, 4, "Unexpected beginning/end of file.",
+					adjacentExistingToken.FilePath, adjacentExistingToken.LineNumber);
+				return false;
 			}
 			else if (Current.Type == notExpected)
 			{
-				throw new ArgumentException($"Invalid token type, expected anything but {notExpected}, but got it (word: \"{Current.Text}\"");
+				errorList.AddError(ErrorSource.ASTGenerator, 3, $"Expected a token of type anything except {notExpected}, but got it anyway.",
+					Current.FilePath, Current.LineNumber);
+				return false;
 			}
+			return true;
 		}
 
 		public bool MoveNextValidate(TokenType expected)
 		{
-			bool result = MoveNext();
-			Validate(expected);
-			return result;
+			MoveNext();
+			return Validate(expected);
 		}
 
 		public bool MoveNextValidateNot(TokenType notExpected)
 		{
-			bool result = MoveNext();
-			ValidateNot(notExpected);
-			return result;
+			MoveNext();
+			return ValidateNot(notExpected);
 		}
 
+		// TODO: this should probably be in the Token class
 		private static bool IsStatementTerminator(Token token) =>
 			token.Type == TokenType.OpenScope || token.Type == TokenType.CloseScope || token.Type == TokenType.Semicolon;
 	}

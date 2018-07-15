@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class ExpressionOperator : ExpressionElement
+	internal sealed class ExpressionOperator : ExpressionElement
 	{
 		public ExpressionOperators Operator { get; }
 
@@ -77,7 +77,7 @@ namespace Cix.AST
 		}
 	}
 
-	public enum ExpressionOperators
+	internal enum ExpressionOperators
 	{
 		UnaryIdentity,
 		UnaryInverse,

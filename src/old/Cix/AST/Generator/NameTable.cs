@@ -9,7 +9,7 @@ namespace Cix.AST.Generator
 	/// <summary>
 	/// Associates names with the thing they represent.
 	/// </summary>
-	public class NameTable
+	internal class NameTable
 	{
 		/// <summary>
 		/// Gets a dictionary where the key is the name and the value is the thing the name

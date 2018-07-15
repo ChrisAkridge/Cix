@@ -7,7 +7,7 @@ using Cix.Exceptions;
 
 namespace Cix.AST
 {
-	public sealed class ConditionalBlock
+	internal sealed class ConditionalBlock
 	{
 		private Expression blockCondition;
 		private List<Element> blockStatements;

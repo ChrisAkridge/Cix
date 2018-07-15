@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Cix.AST
 {
 	// Probably will remove in favor of ExpressionConstant
-	public sealed class NumericLiteral : ExpressionElement
+	internal sealed class NumericLiteral : ExpressionElement
 	{
 		private ulong integralValue;
 		private double floatingValue;
@@ -195,7 +195,7 @@ namespace Cix.AST
 		}
 	}
 
-	public enum LiteralType
+	internal enum LiteralType
 	{
 		SignedIntegral,
 		UnsignedIntegral,
