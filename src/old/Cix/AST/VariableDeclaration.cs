@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	internal sealed class VariableDeclaration : Element
+	public sealed class VariableDeclaration : Element
 	{
 		public DataType Type { get; }
 		public string Name { get; }

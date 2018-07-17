@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	internal sealed class ExpressionFunctionParameter
+	public sealed class ExpressionFunctionParameter
 	{
 		// Terminology note: In function declarations (int main(int argc, char** argv), they're called parameters.
 		// In function calls (sort(&array)), they're called arguments.

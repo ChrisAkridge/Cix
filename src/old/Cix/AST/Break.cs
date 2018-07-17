@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	internal sealed class Break : Element
+	public sealed class Break : Element
 	{
 		public override string ToString() => "Break";
+
+		public override void Print(StringBuilder builder, int depth) =>
+			builder.AppendLineWithIndent(depth, "Break");
 	}
 }

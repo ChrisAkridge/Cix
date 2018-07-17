@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	internal sealed class ForLoop : Element
+	public sealed class ForLoop : Element
 	{
 		private List<Element> statements;
 

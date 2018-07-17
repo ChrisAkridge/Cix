@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	internal sealed class Continue : Element
+	public sealed class Continue : Element
 	{
 		public override string ToString() => "Continue";
+
+		public override void Print(StringBuilder builder, int depth) =>
+			builder.AppendLineWithIndent(depth, "Continue");
 	}
 }

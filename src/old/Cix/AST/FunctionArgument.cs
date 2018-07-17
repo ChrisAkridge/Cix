@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	internal sealed class FunctionArgument : Element
+	public sealed class FunctionArgument : Element
 	{
 		public DataType Type { get; }
 		public string ArgumentName { get; }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	internal sealed class StructMemberDeclaration : Element
+	public sealed class StructMemberDeclaration : Element
 	{
 		public DataType Type { get; }
 		public string Name { get; }

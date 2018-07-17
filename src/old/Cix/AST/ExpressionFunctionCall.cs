@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	internal sealed class ExpressionFunctionCall : ExpressionElement
+	public sealed class ExpressionFunctionCall : ExpressionElement
 	{
+		// TODO: you got this backwards; this is an argument, not a parameter
 		private List<ExpressionFunctionParameter> parameters;
 
 		public string FunctionName { get; }

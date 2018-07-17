@@ -1,47 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Cix.Exceptions;
 using Cix.AST.Generator.IntermediateForms;
 using Cix.Errors;
 using Cix.Parser;
+using JetBrains.Annotations;
 
 namespace Cix.AST.Generator
 {
 	/// <summary>
-	/// Performs the first pass of generation of the abstract syntax tree, given a tokenized Cix
-	/// file.
+	///     Performs the first pass of generation of the abstract syntax tree, given a tokenized Cix
+	///     file.
 	/// </summary>
 	/// <remarks>
-	/// This stage creates a tree containing the complete declaration of all structures
-	/// and global variables, and the headers and locations of all functions.
+	///     This stage creates a tree containing the complete declaration of all structures
+	///     and global variables, and the headers and locations of all functions.
 	/// </remarks>
 	internal sealed class FirstPassGenerator
 	{
 		private const int MaxStructNestingDepth = 100;
 
-		private IErrorListProvider errorList;
+		private readonly TokenEnumerator tokens;
 		private bool astGenerated;
-		private List<Element> tree = new List<Element>();
+
+		private readonly IErrorListProvider errorList;
 		private List<IntermediateFunction> intermediateFunctions = new List<IntermediateFunction>();
+		private List<Element> tree = new List<Element>();
 
 		/// <summary>
-		/// Gets a read-only list of elements representing the AST.
+		///     Gets a read-only list of elements representing the AST.
 		/// </summary>
 		public IReadOnlyList<Element> Tree => tree.AsReadOnly();
 
 		/// <summary>
-		/// Gets a read-only list of the intermediate functions in the tree.
+		///     Gets a read-only list of the intermediate functions in the tree.
 		/// </summary>
 		public IReadOnlyList<IntermediateFunction> IntermediateFunctions =>
 			intermediateFunctions.AsReadOnly();
 
-		private readonly TokenEnumerator tokens;
-
 		/// <summary>
-		/// Initializes a new instance of the <see cref="FirstPassGenerator"/> class.
+		///     Initializes a new instance of the <see cref="FirstPassGenerator" /> class.
 		/// </summary>
 		/// <param name="tokens">The tokens of the Cix file to generate a tree for.</param>
+		/// <param name="errorList">A provider for an error list to add errors to.</param>
 		public FirstPassGenerator(TokenEnumerator tokens, IErrorListProvider errorList)
 		{
 			this.tokens = tokens;
@@ -49,7 +51,7 @@ namespace Cix.AST.Generator
 		}
 
 		/// <summary>
-		/// Generates the first pass of the abstract syntax tree.
+		///     Generates the first pass of the abstract syntax tree.
 		/// </summary>
 		public void GenerateFirstPassAST()
 		{
@@ -70,8 +72,8 @@ namespace Cix.AST.Generator
 		}
 
 		/// <summary>
-		/// Parses the token stream to find a list of intermediate structs, containing each
-		/// struct's name, start token index and end token index.
+		///     Parses the token stream to find a list of intermediate structs, containing each
+		///     struct's name, start token index and end token index.
 		/// </summary>
 		/// <returns>A list of intermediate structs.</returns>
 		public List<IntermediateStruct> GenerateIntermediateStructs()
@@ -105,26 +107,23 @@ namespace Cix.AST.Generator
 				tokens.SkipBlock();
 				int lastTokenIndex = tokens.CurrentIndex - 2;
 
-				var newStruct = new IntermediateStruct(structName, nameTokenIndex, firstTokenIndex, lastTokenIndex);
+				var newStruct =
+					new IntermediateStruct(structName, nameTokenIndex, firstTokenIndex, lastTokenIndex);
 				result.Add(newStruct);
 			}
-
-			// WYLO: man this code was not built with the new error handling in mind
-			// there's some refactoring to do. I'd like intermediate struct members to know
-			// where their starting token indices are as well. SplitOnSemicolon should probably
-			// return TokenEnumerator as opposed to List<Token>, if that's possible.
 
 			return result;
 		}
 
 		/// <summary>
-		/// Converts a list of intermediate structs into a fully generated tree of the structs and
-		/// all their members.
+		///     Converts a list of intermediate structs into a fully generated tree of the structs and
+		///     all their members.
 		/// </summary>
 		/// <param name="intermediateStructs">
-		/// The intermediate structures for which to generate a tree.
+		///     The intermediate structures for which to generate a tree.
 		/// </param>
 		/// <returns>A tree containing the complete struct definitions.</returns>
+		[CanBeNull]
 		public List<Element> GenerateStructTree(List<IntermediateStruct> intermediateStructs)
 		{
 			if (!AllStructNamesUnique(intermediateStructs)) { return null; }
@@ -133,7 +132,7 @@ namespace Cix.AST.Generator
 			// and pointer levels are considered. Here, we'll ensure that void- and
 			// lpstring-typed members may only appear as pointer members.
 
-			foreach (var intermediateStruct in intermediateStructs)
+			foreach (IntermediateStruct intermediateStruct in intermediateStructs)
 			{
 				ParseIntermediateStructMembers(intermediateStruct);
 				NameTable.Instance[intermediateStruct.Name] = intermediateStruct;
@@ -151,20 +150,23 @@ namespace Cix.AST.Generator
 				CreateStructDeclaration(intermediateStruct, ref depthLevel);
 			}
 
-			structsTree.AddRange(NameTable.Instance.Names.Where(n => n.Value is StructDeclaration).Select(kvp => kvp.Value));
+			structsTree.AddRange(NameTable.Instance.Names.Where(n => n.Value is StructDeclaration)
+				.Select(kvp => kvp.Value));
 			return structsTree;
 		}
 
 		private bool AllStructNamesUnique(IEnumerable<IntermediateStruct> structs)
 		{
-			IEnumerable<IGrouping<string, IntermediateStruct>> groupingsByName = structs.GroupBy(s => s.Name);
-			IEnumerable<IGrouping<string, IntermediateStruct>> groupsWithDuplicates = groupingsByName.Where(g => g.Count() > 1);
+			IEnumerable<IGrouping<string, IntermediateStruct>>
+				groupingsByName = structs.GroupBy(s => s.Name);
+			IEnumerable<IGrouping<string, IntermediateStruct>> groupsWithDuplicates =
+				groupingsByName.Where(g => g.Count() > 1);
 
 			if (groupsWithDuplicates.Any())
 			{
-				foreach (var duplicateStructs in groupsWithDuplicates)
+				foreach (IGrouping<string, IntermediateStruct> duplicateStructs in groupsWithDuplicates)
 				{
-					foreach (var duplicateStruct in duplicateStructs)
+					foreach (IntermediateStruct duplicateStruct in duplicateStructs)
 					{
 						Token nameToken = tokens[duplicateStruct.NameTokenIndex];
 						errorList.AddError(ErrorSource.ASTGenerator, 5,
@@ -179,7 +181,7 @@ namespace Cix.AST.Generator
 		}
 
 		/// <summary>
-		/// Parses the token stream to find global variables and add them to the tree.
+		///     Parses the token stream to find global variables and add them to the tree.
 		/// </summary>
 		/// <param name="tree">The abstract syntax tree immediately after stage B generation.</param>
 		/// <returns>The abstract syntax tree containing global variable declarations plus stage B generation.</returns>
@@ -193,17 +195,13 @@ namespace Cix.AST.Generator
 			int nestingDepth = 0;
 			do
 			{
-				switch (tokens.Current.Type)
+				// ReSharper disable once ConvertIfStatementToSwitchStatement
+				if (tokens.Current.Type == TokenType.OpenScope) { nestingDepth++; }
+				else if (tokens.Current.Type == TokenType.CloseScope) { nestingDepth--; }
+				else if (tokens.Current.Text == "global" && nestingDepth == 0)
 				{
-					case TokenType.OpenScope: nestingDepth++; break;
-					case TokenType.CloseScope: nestingDepth--; break;
-					default:
-						if (tokens.Current.Text == "global" && nestingDepth == 0)
-						{
-							List<Token> globalStatement = tokens.MoveNextStatement();
-							globalVariables.Add(GetGlobalVariableDeclaration(globalStatement));
-						}
-						break;
+					List<Token> globalStatement = tokens.MoveNextStatement();
+					globalVariables.Add(GetGlobalVariableDeclaration(globalStatement));
 				}
 				tokens.MoveNext();
 			} while (!tokens.AtEnd);
@@ -213,7 +211,7 @@ namespace Cix.AST.Generator
 		}
 
 		/// <summary>
-		/// Parses the token stream to find function headers and their start/end token indices.
+		///     Parses the token stream to find function headers and their start/end token indices.
 		/// </summary>
 		/// <returns>A tree with the function information.</returns>
 		public List<IntermediateFunction> GenerateIntermediateFunctions()
@@ -226,24 +224,15 @@ namespace Cix.AST.Generator
 			int nestingDepth = 0;
 			do
 			{
-				if (tokens.Current.Type == TokenType.OpenScope)
-				{
-					nestingDepth++;
-				}
-				else if (tokens.Current.Type == TokenType.CloseScope)
-				{
-					nestingDepth--;
-				}
+				if (tokens.Current.Type == TokenType.OpenScope) { nestingDepth++; }
+				else if (tokens.Current.Type == TokenType.CloseScope) { nestingDepth--; }
 				else if (tokens.Current.Type == TokenType.KeyStruct)
 				{
 					// Skip this entire struct definition.
 					tokens.SkipBlock();
 					continue;
 				}
-				else if (tokens.Current.Text == "global")
-				{
-					tokens.MoveNextStatement();
-				}
+				else if (tokens.Current.Text == "global") { tokens.MoveNextStatement(); }
 				else if (nestingDepth == 0 && tokens.Current.Type != TokenType.KeyStruct && tokens.Current.Text != "global")
 				{
 					// We've found a type name! Probably! Let's find it in the nametable before we
@@ -251,7 +240,8 @@ namespace Cix.AST.Generator
 					string possibleTypeName = tokens.Current.Text;
 					if (!NameTable.Instance.Names.ContainsKey(possibleTypeName.TrimAsterisks()))
 					{
-						errorList.AddError(ErrorSource.ASTGenerator, 6, $"Return type {possibleTypeName} is not defined.",
+						errorList.AddError(ErrorSource.ASTGenerator, 6,
+							$"Return type {possibleTypeName} is not defined.",
 							tokens.Current.FilePath, tokens.Current.LineNumber);
 						continue;
 					}
@@ -269,7 +259,8 @@ namespace Cix.AST.Generator
 						if (!tokens.MoveNext()) { break; }
 					}
 
-					returnType = returnType.WithPointerLevel(pointerLevel);
+					if (returnType != null) { returnType = returnType.WithPointerLevel(pointerLevel); }
+					else { continue; }
 
 					string name = tokens.Current.Text;
 					if (!name.IsIdentifier())
@@ -297,7 +288,8 @@ namespace Cix.AST.Generator
 					argsEndIndex += 1;
 
 					// Parse the function arguments.
-					var functionArguments = ParseFunctionArguments(argsStartIndex, argsEndIndex);
+					IEnumerable<FunctionArgument> functionArguments =
+						ParseFunctionArguments(argsStartIndex, argsEndIndex);
 
 					// The openscope should be the next token.
 					if (!tokens.MoveNextValidate(TokenType.OpenScope)) { continue; }
@@ -321,7 +313,8 @@ namespace Cix.AST.Generator
 						}
 					}
 
-					functions.Add(new IntermediateFunction(returnType, name, functionArguments, openScopeIndex, closeScopeIndex));
+					functions.Add(new IntermediateFunction(returnType, name, functionArguments, openScopeIndex,
+						closeScopeIndex));
 				}
 
 				tokens.MoveNext();
@@ -330,12 +323,14 @@ namespace Cix.AST.Generator
 			return functions;
 		}
 
+		[SuppressMessage("ReSharper", "PossibleNullReferenceException")] // no part of the token list should ever be null
 		private void ParseIntermediateStructMembers(IntermediateStruct intermediateStruct)
 		{
-			var statements = tokens.Subset(intermediateStruct.FirstDefinitionTokenIndex, intermediateStruct.LastTokenIndex)
+			IEnumerable<List<Token>> statements = tokens
+				.Subset(intermediateStruct.FirstDefinitionTokenIndex, intermediateStruct.LastTokenIndex)
 				.SplitOnSemicolon();
 
-			foreach (var statement in statements)
+			foreach (List<Token> statement in statements)
 			{
 				// Valid member definitions:
 				// int i;
@@ -344,11 +339,13 @@ namespace Cix.AST.Generator
 				// int array[50];
 				// short* p_array[25];
 
-				int memberPointerLevel = 0;
+				var memberPointerLevel = 0;
 				int memberArraySize;
 
-				var enumerator = statement.GetEnumerator();
-				enumerator.MoveNext();  // start with the first item
+				List<Token>.Enumerator enumerator = statement.GetEnumerator();
+				enumerator.MoveNext(); // start with the first item
+
+				Token typeToken = enumerator.Current; // used for error tracking
 
 				// If this struct member is a pointer...
 				string memberTypeName = enumerator.Current.Text;
@@ -379,7 +376,7 @@ namespace Cix.AST.Generator
 				{
 					errorList.AddError(ErrorSource.ASTGenerator, 12,
 						$"Invalid token {enumerator.Current.Text} of type {enumerator.Current.Type} after type.",
-						enumerator.Current.FilePath, enumerator.Current.LineNumber);
+						typeToken.FilePath, typeToken.LineNumber);
 					continue;
 				}
 				string memberName = enumerator.Current.Text;
@@ -390,8 +387,8 @@ namespace Cix.AST.Generator
 					if (!enumerator.MoveNext() || enumerator.Current.Type != TokenType.Identifier)
 					{
 						errorList.AddError(ErrorSource.ASTGenerator, 13,
-						$"The size of the array {memberName} was not declared.",
-						enumerator.Current.FilePath, enumerator.Current.LineNumber);
+							$"The size of the array {memberName} was not declared.",
+							typeToken.FilePath, typeToken.LineNumber);
 						continue;
 					}
 
@@ -401,23 +398,23 @@ namespace Cix.AST.Generator
 					{
 						errorList.AddError(ErrorSource.ASTGenerator, 14,
 							$"The type of the size of the array {memberName} is not valid; must be int.",
-							enumerator.Current.FilePath, enumerator.Current.LineNumber);
+							typeToken.FilePath, typeToken.LineNumber);
 						continue;
 					}
 					else if (arraySizeLiteral.SignedIntegralValue <= 0)
 					{
 						errorList.AddError(ErrorSource.ASTGenerator, 15,
 							$"The size of the array {memberName} is not valid; must be positive.",
-							enumerator.Current.FilePath, enumerator.Current.LineNumber);
+							typeToken.FilePath, typeToken.LineNumber);
 						continue;
 					}
-					memberArraySize = (int)arraySizeLiteral.SignedIntegralValue;
+					memberArraySize = (int) arraySizeLiteral.SignedIntegralValue;
 
 					if (!enumerator.MoveNext() || enumerator.Current.Type != TokenType.CloseBracket)
 					{
 						errorList.AddError(ErrorSource.ASTGenerator, 16,
 							"Expected closing bracket.",
-							enumerator.Current.FilePath, enumerator.Current.LineNumber);
+							typeToken.FilePath, typeToken.LineNumber);
 						continue;
 					}
 				}
@@ -429,15 +426,17 @@ namespace Cix.AST.Generator
 				}
 
 				enumerator.Dispose();
-				intermediateStruct.Members.Add(new IntermediateStructMember(memberTypeName, memberName, memberPointerLevel, memberArraySize));
+				intermediateStruct.Members.Add(new IntermediateStructMember(memberTypeName, memberName,
+					memberPointerLevel, memberArraySize, typeToken));
 			}
 		}
 
-		private StructDeclaration CreateStructDeclaration(IntermediateStruct intermediateStruct, ref int depthLevel)
+		private StructDeclaration CreateStructDeclaration(IntermediateStruct intermediateStruct,
+			ref int depthLevel)
 		{
 			string structName = intermediateStruct.Name;
-			List<StructMemberDeclaration> members = new List<StructMemberDeclaration>();
-			int offsetCounter = 0;
+			var members = new List<StructMemberDeclaration>();
+			var offsetCounter = 0;
 
 			foreach (IntermediateStructMember member in intermediateStruct.Members)
 			{
@@ -446,16 +445,17 @@ namespace Cix.AST.Generator
 				{
 					errorList.AddError(ErrorSource.ASTGenerator, 16,
 						$"Invalid type {member.TypeName} for {structName}.{member.Name}.",
-						tokens.Current.FilePath, tokens.Current.LineNumber);
+						member.SourceFilePath, member.SourceLineNumber);
 					continue;
 				}
-				var typeEntry = NameTable.Instance[member.TypeName];
+				Element typeEntry = NameTable.Instance[member.TypeName];
 
 				if (typeEntry is DataType baseType1)
 				{
 					// Scenario 1: Member has a primitive type or is a pointer to a primitive type
 					DataType fullType = baseType1.WithPointerLevel(member.PointerLevel);
-					var memberDeclaration = new StructMemberDeclaration(fullType, member.Name, member.ArraySize, offsetCounter);
+					var memberDeclaration =
+						new StructMemberDeclaration(fullType, member.Name, member.ArraySize, offsetCounter);
 					members.Add(memberDeclaration);
 					offsetCounter += memberDeclaration.Type.TypeSize * member.ArraySize;
 				}
@@ -474,11 +474,11 @@ namespace Cix.AST.Generator
 						// why is the user nesting 100 structs
 						errorList.AddError(ErrorSource.ASTGenerator, 17,
 							$"Maximum struct nesting depth of {MaxStructNestingDepth} achieved. Look for circular struct members.",
-							tokens.Current.FilePath, tokens.Current.LineNumber);
+							member.SourceFilePath, member.SourceLineNumber);
 						continue;
 					}
 
-					var newlyDefinedStruct = CreateStructDeclaration(@struct, ref depthLevel);
+					StructDeclaration newlyDefinedStruct = CreateStructDeclaration(@struct, ref depthLevel);
 					members.Add(GetDeclarationOfStructMember(newlyDefinedStruct, member, ref offsetCounter));
 				}
 				else if (typeEntry == null && member.Name == "void" && member.PointerLevel > 0)
@@ -486,7 +486,7 @@ namespace Cix.AST.Generator
 					// Scenario 4: Pointer to void
 					var voidPtrMember =
 						new StructMemberDeclaration(new DataType("void", member.PointerLevel, 8),
-						member.Name, member.ArraySize, offsetCounter);
+							member.Name, member.ArraySize, offsetCounter);
 					members.Add(voidPtrMember);
 				}
 			}
@@ -496,17 +496,18 @@ namespace Cix.AST.Generator
 			return result;
 		}
 
-		private StructMemberDeclaration GetDeclarationOfStructMember(StructDeclaration memberType, 
+		private static StructMemberDeclaration GetDeclarationOfStructMember(StructDeclaration memberType,
 			IntermediateStructMember intermediateMember, ref int offsetCounter)
 		{
-			DataType fullType = new DataType(memberType.Name, intermediateMember.PointerLevel, memberType.Size);
-			var result = new StructMemberDeclaration(fullType, intermediateMember.Name, 
+			var fullType = new DataType(memberType.Name, intermediateMember.PointerLevel, memberType.Size);
+			var result = new StructMemberDeclaration(fullType, intermediateMember.Name,
 				intermediateMember.ArraySize, offsetCounter);
 			offsetCounter += result.Type.TypeSize * result.ArraySize;
 			return result;
 		}
 
-		private static GlobalVariableDeclaration GetGlobalVariableDeclaration(List<Token> globalStatement)
+		[CanBeNull]
+		private GlobalVariableDeclaration GetGlobalVariableDeclaration(List<Token> globalStatement)
 		{
 			// Valid global variable definitions
 			//  global T name;
@@ -514,14 +515,11 @@ namespace Cix.AST.Generator
 			//  global T* ptr;
 
 			int pointerLevel = globalStatement.Count(t => t.Text == "*");
-			if (pointerLevel > 0)
-			{
-				globalStatement.RemoveAll(t => t.Text == "*");
-			}
+			if (pointerLevel > 0) { globalStatement.RemoveAll(t => t.Text == "*"); }
 
-			var typeData = globalStatement[1].Text.SeparateTypeNameAndPointerLevel();
+			Tuple<string, int> typeData = globalStatement[1].Text.SeparateTypeNameAndPointerLevel();
 			string typeName = typeData.Item1;
-			pointerLevel = (pointerLevel == 0) ? typeData.Item2 : pointerLevel;
+			pointerLevel = pointerLevel == 0 ? typeData.Item2 : pointerLevel;
 
 			string variableName = globalStatement[2].Text;
 			NumericLiteral numericLiteral = null;
@@ -538,47 +536,66 @@ namespace Cix.AST.Generator
 			bool typeExists = NameTable.Instance.Names.ContainsKey(typeName);
 			if (typeName == "void" && pointerLevel == 0)
 			{
-				throw new ASTException("No global variable may have the type of void. Perhaps you meant a pointer to void?");
+				errorList.AddError(ErrorSource.ASTGenerator, 18,
+					"No global may have type void, perhaps you meant pointer to void?",
+					globalStatement[1].FilePath, globalStatement[1].LineNumber);
+				return null;
 			}
 			else if (!typeNameIsActuallyAType && !typeNameIsStruct && typeName != "void")
 			{
-				throw new ASTException($"{typeName} is not a type; it's a {NameTable.Instance[typeName].GetType().Name}.");
+				errorList.AddError(ErrorSource.ASTGenerator, 19,
+					$"{typeName} is not a type; it's a {NameTable.Instance[typeName].GetType().Name}.",
+					globalStatement[1].FilePath, globalStatement[1].LineNumber);
+				return null;
 			}
 			else if (!typeExists && typeName != "void")
 			{
-				throw new ASTException($"Type {typeName} for global variable {variableName} doesn't exist.");
+				errorList.AddError(ErrorSource.ASTGenerator, 20,
+					$"Type {typeName} for global variable {variableName} doesn't exist.",
+					globalStatement[1].FilePath, globalStatement[1].LineNumber);
+				return null;
 			}
 			else if (typeName == "lpstring")
 			{
-				throw new ASTException("No global variable may directly have the type of lpstring. Consider using lpstring* instead.");
+				errorList.AddError(ErrorSource.ASTGenerator, 21,
+					"No global variable may directly have the type of lpstring. Consider using pointer to lpstring instead.",
+					globalStatement[1].FilePath, globalStatement[1].LineNumber);
+				return null;
 			}
 
-			int typeSize = (pointerLevel == 0) ? ((DataType)NameTable.Instance[typeName]).TypeSize : 8;
-			return new GlobalVariableDeclaration(new DataType(typeName, pointerLevel, typeSize), variableName, numericLiteral);
+			int typeSize = pointerLevel == 0 ? ((DataType) NameTable.Instance[typeName]).TypeSize : 8;
+			return new GlobalVariableDeclaration(new DataType(typeName, pointerLevel, typeSize),
+				variableName, numericLiteral);
 		}
 
+		[CanBeNull]
 		private DataType GetDataTypeFromNameTable(string typeName)
 		{
-			var typeNameWithPointerLevel = typeName.SeparateTypeNameAndPointerLevel();
-			var typeInNameTable = NameTable.Instance[typeNameWithPointerLevel.Item1];
+			// The error generation in this method is not the greatest.
+			// This is called from methods that, by all means, should probably be generating the
+			// errors themselves, but I'm not sure how to do that without changing this method's
+			// signature to something like
+			// TryGetDataTypeResult TryGetDataTypeFromNameTable(string, out DataType). So we'll
+			// cheat a bit and grab the current token here, under the assumption that the enumerator
+			// at least hasn't moved off this line.
 
-			if (typeInNameTable == null)
-			{
-				throw new ASTException($"Tried to find a type named \"{typeName}\", but that name isn't defined.");
-			}
+			Tuple<string, int> typeNameWithPointerLevel = typeName.SeparateTypeNameAndPointerLevel();
+			Element typeInNameTable = NameTable.Instance[typeNameWithPointerLevel.Item1];
 
-			if (typeInNameTable is DataType)
+			switch (typeInNameTable)
 			{
-				return ((DataType)typeInNameTable).WithPointerLevel(typeNameWithPointerLevel.Item2);
-			}
-			else if (typeInNameTable is StructDeclaration)
-			{
-				return ((StructDeclaration)typeInNameTable).ToDataType()
-					.WithPointerLevel(typeNameWithPointerLevel.Item2);
-			}
-			else
-			{
-				throw new ASTException($"Tried to find a type named \"{typeName}\", but that name defines a {typeInNameTable.GetType().Name}");
+				case null:
+					errorList.AddError(ErrorSource.ASTGenerator, 22, $"No type named {typeName} exists.",
+						tokens.Current.FilePath, tokens.Current.LineNumber);
+					return null;
+				case DataType dataType: return dataType.WithPointerLevel(typeNameWithPointerLevel.Item2);
+				case StructDeclaration structDeclaration:
+					return structDeclaration.ToDataType().WithPointerLevel(typeNameWithPointerLevel.Item2);
+				default:
+					errorList.AddError(ErrorSource.ASTGenerator, 23,
+						$"Tried to find a type named \"{typeName}\", but that name defines a {typeInNameTable.GetType().Name}.",
+						tokens.Current.FilePath, tokens.Current.LineNumber);
+					return null;
 			}
 		}
 
@@ -588,7 +605,7 @@ namespace Cix.AST.Generator
 			// Add 1 to startIndex and subtract 1 from endIndex to point them to the first and last
 			// actual tokens in the function arguments.
 
-			var argTokens = tokens.Subset(startIndex + 1, endIndex - 1);
+			TokenEnumerator argTokens = tokens.Subset(startIndex + 1, endIndex - 1);
 			var result = new List<FunctionArgument>();
 			if (argTokens.Current == null)
 			{
@@ -599,16 +616,19 @@ namespace Cix.AST.Generator
 			// Easy case: if the closeparen is right after the openparen, there are no arguments.
 			if (startIndex + 1 == endIndex) { return result; }
 
-			var args = argTokens.SplitOnComma();
+			IEnumerable<List<Token>> args = argTokens.SplitOnComma();
 
 			// A function argument is either "type name" or "type* name" or "type * name"
 			// (with however many asterisks, of course)
 
-			foreach (var arg in args)
+			foreach (List<Token> arg in args)
 			{
 				if (!ValidateFunctionArgumentTokens(arg))
 				{
-					throw new ASTException($"There are {arg.Count} token(s) in a function argument. There should be 2 or 3.");
+					errorList.AddError(ErrorSource.ASTGenerator, 24,
+						$"There are {arg.Count} token(s) in this function argument. There should be 2 or 3.",
+						tokens.Current.FilePath, tokens.Current.LineNumber);
+					continue;
 				}
 
 				Token typeNameToken = arg[0];
@@ -618,19 +638,27 @@ namespace Cix.AST.Generator
 				string typeName = typeNameToken.Text.TrimAsterisks();
 				if (!NameTable.Instance.Names.ContainsKey(typeName))
 				{
-					throw new ASTException($"A function argument was declared with return type {typeName}. No type by that name exists.");
+					errorList.AddError(ErrorSource.ASTGenerator, 25,
+						$"A function argument was declared with return type {typeName}. No type by that name exists.",
+						tokens.Current.FilePath, tokens.Current.LineNumber);
+					continue;
 				}
 
 				string argName = argNameToken.Text;
 				if (!argName.IsIdentifier())
 				{
-					throw new ASTException($"A function argument had the invalid name \"{argName}\".");
+					errorList.AddError(ErrorSource.ASTGenerator, 26,
+						$"A function argument had the invalid name \"{argName}\".",
+						tokens.Current.FilePath, tokens.Current.LineNumber);
+					continue;
 				}
 
 				int pointerLevel = arg.Count - 2;
 
 				// Look up the data type in the name table.
-				DataType argType = GetDataTypeFromNameTable(typeName).WithPointerLevel(pointerLevel);
+				DataType argType = GetDataTypeFromNameTable(typeName);
+				if (argType != null) { argType = argType.WithPointerLevel(pointerLevel); }
+				else { continue; }
 
 				result.Add(new FunctionArgument(argType, argName));
 			}
@@ -638,24 +666,15 @@ namespace Cix.AST.Generator
 			return result;
 		}
 
-		private static bool ValidateFunctionArgumentTokens(List<Token> tokens)
+		private static bool ValidateFunctionArgumentTokens(IReadOnlyList<Token> tokens)
 		{
-			if (tokens == null || !tokens.Any())
-			{
-				return false;
-			}
+			if (tokens == null || !tokens.Any()) { return false; }
 
 			// The first token must be an identifier
-			if (!tokens[0].Text.IsIdentifier(true))
-			{
-				return false;
-			}
+			if (!tokens[0].Text.IsIdentifier(true)) { return false; }
 
 			// The last token must be an identifier
-			if (tokens[tokens.Count - 1].Type != TokenType.Identifier)
-			{
-				return false;
-			}
+			if (tokens[tokens.Count - 1].Type != TokenType.Identifier) { return false; }
 
 			// There must be either no tokens in between or all tokens in between must be asterisks
 			if (tokens.Count == 2) { return true; }

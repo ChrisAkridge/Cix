@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Cix.AST;
+using Cix.AST.Generator;
 using Cix.Errors;
 using Cix.Parser;
 using Cix.Text;
@@ -17,12 +19,15 @@ namespace Cix
 		private List<Line> initialFile = new List<Line>();
 		private List<LexedWord> lexedFile;
 		private List<Token> tokenizedFile;
+		private List<Element> abstractSyntaxTree;
 
 		public IReadOnlyList<Line> InitialFile => initialFile.AsReadOnly();
 		public IReadOnlyList<LexedWord> LexedFile => lexedFile.AsReadOnly() ?? new List<LexedWord>().AsReadOnly();
 
 		public IReadOnlyList<Token> TokenizedFile
 			=> tokenizedFile.AsReadOnly() ?? new List<Token>().AsReadOnly();
+
+		public IReadOnlyList<Element> AbstractSyntaxTree => abstractSyntaxTree.AsReadOnly();
 
 		public Compilation(string filePath) => initialFilePath = filePath;
 
@@ -61,6 +66,18 @@ namespace Cix
 		{
 			var tokenizer = new Tokenizer(this);
 			tokenizedFile = tokenizer.Tokenize(lexedFile).ToList();
+			ThrowIfErrors();
+		}
+
+		public void GenerateAST()
+		{
+			var tokenEnumerator = new TokenEnumerator(tokenizedFile, this);
+			var firstPassGenerator = new FirstPassGenerator(tokenEnumerator, this);
+
+			firstPassGenerator.GenerateFirstPassAST();
+			abstractSyntaxTree = firstPassGenerator.Tree.ToList(); // TODO: make abstractSyntaxTree into an
+			// IReadOnlyList<Element> after we get the second pass generator done
+
 			ThrowIfErrors();
 		}
 

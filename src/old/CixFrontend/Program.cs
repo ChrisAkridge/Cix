@@ -40,6 +40,7 @@ namespace CixFrontend
 				compilation.Preprocess();
 				compilation.Lex();
 				compilation.Tokenize();
+				compilation.GenerateAST();
 			}
 			catch (ErrorsEncounteredException ex)
 			{

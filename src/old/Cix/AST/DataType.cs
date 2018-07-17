@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	internal sealed class DataType : Element
+	public sealed class DataType : Element
 	{
 		public string TypeName { get; }
 		public int PointerLevel { get; }
@@ -72,14 +72,11 @@ namespace Cix.AST
 			}
 		}
 
-		public DataType WithPointerLevel(int pointerLevel)
-		{
-			return new DataType(TypeName, pointerLevel, TypeSize);
-		}
+		public DataType WithPointerLevel(int pointerLevel) => new DataType(TypeName, pointerLevel, TypeSize);
 
-		public override string ToString()
-		{
-			return $"{TypeName}{new string('*', PointerLevel)} ({TypeSize} byte(s))";
-		}
+		public override string ToString() => $"{TypeName}{new string('*', PointerLevel)} ({TypeSize} byte(s))";
+
+		public override void Print(StringBuilder builder, int depth) =>
+			builder.AppendLineWithIndent(depth, ToString());
 	}
 }

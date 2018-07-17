@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace Cix.AST
 	/// <summary>
 	/// Represents a constant value as an expression element.
 	/// </summary>
-	internal sealed class ExpressionConstant : ExpressionElement
+	public sealed class ExpressionConstant : ExpressionElement
 	{
 		private byte[] value;
 		private DataType Type;
@@ -87,6 +88,27 @@ namespace Cix.AST
 
 			Type = new DataType("lpstring", 0, (int)stringLength + 4);
 			this.value = BitConverter.GetBytes(stringLength).Concat(utf8).ToArray();
+		}
+
+		public override string ToString()
+		{
+			switch (Type.TypeName)
+			{
+				case "byte": return value[0].ToString();
+				case "sbyte": return ((sbyte)value[0]).ToString();
+				case "short": return BitConverter.ToInt16(value, 0).ToString();
+				case "ushort": return BitConverter.ToUInt16(value, 0).ToString();
+				case "int": return BitConverter.ToInt32(value, 0).ToString();
+				case "uint": return BitConverter.ToUInt32(value, 0).ToString();
+				case "long": return BitConverter.ToInt64(value, 0).ToString();
+				case "ulong": return BitConverter.ToUInt64(value, 0).ToString();
+				case "float": return BitConverter.ToSingle(value, 0).ToString(CultureInfo.InvariantCulture);
+				case "double": return BitConverter.ToDouble(value, 0).ToString(CultureInfo.InvariantCulture);
+				case "lpstring":
+					int stringLength = value.Length - 4;
+					return Encoding.UTF8.GetString(value, 4, stringLength);
+				default: return "Unknown Constant";
+			}
 		}
 	}
 }

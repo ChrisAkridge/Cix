@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Cix.AST
 {
 	// Probably will remove in favor of ExpressionConstant
-	internal sealed class StringLiteral : ExpressionElement
+	public sealed class StringLiteral : ExpressionElement
 	{
 		public string Literal { get; }
 

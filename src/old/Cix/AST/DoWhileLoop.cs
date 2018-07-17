@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	internal sealed class DoWhileLoop : Element
+	public sealed class DoWhileLoop : Element
 	{
 		private List<Element> statements;
 		
@@ -17,6 +17,18 @@ namespace Cix.AST
 		{
 			Condition = condition;
 			statements = statements.ToList();
+		}
+
+		public override void Print(StringBuilder builder, int depth)
+		{
+			builder.AppendLineWithIndent(depth, "Do {");
+
+			foreach (Element statement in statements)
+			{
+				statement.Print(builder, depth + 1);
+			}
+
+			builder.AppendLineWithIndent(depth, $"}} While ({Condition})");
 		}
 	}
 }

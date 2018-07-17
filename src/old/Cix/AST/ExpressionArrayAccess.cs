@@ -6,25 +6,13 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	internal sealed class ExpressionArrayAccess : ExpressionElement
+	public sealed class ExpressionArrayAccess : ExpressionElement
 	{
-		private List<ExpressionElement> elements;
-		public IReadOnlyList<ExpressionElement> Elements => elements.AsReadOnly();
+		public Expression Indexer { get; }
 
-		public ExpressionElementSequence Sequence { get; }
+		public ExpressionArrayAccess(Expression indexer) => Indexer = indexer;
 
-		// TODO: this should own an expression, not a list of elements
-		public ExpressionArrayAccess(IEnumerable<ExpressionElement> elements,
-			ExpressionElementSequence sequence)
-		{
-			this.elements = elements.ToList();
-			Sequence = sequence;
-		}
-	}
-
-	internal enum ExpressionElementSequence
-	{
-		Infix,
-		PostFix
+		public override string ToString() =>
+			"[" + Indexer.ToString() + "]";
 	}
 }
