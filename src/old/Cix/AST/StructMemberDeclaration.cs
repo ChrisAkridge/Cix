@@ -13,7 +13,7 @@ namespace Cix.AST
 		public int ArraySize { get; }
 		public int Offset { get; }
 
-		public int Size => Type.TypeSize * ArraySize;
+		public int Size => Type.Size * ArraySize;
 
 		public StructMemberDeclaration(DataType type, string name, int arraySize, int offset)
 		{

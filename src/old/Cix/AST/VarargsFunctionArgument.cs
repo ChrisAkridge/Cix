@@ -11,7 +11,7 @@ namespace Cix.AST
 	/// </summary>
 	public sealed class VarargsFunctionArgument : Element
 	{
-		// TODO: this should derive from FunctionArgument, probably
+		// TODO: this should derive from FunctionParameter, probably
 
 		public override void Print(StringBuilder builder, int depth)
 		{

@@ -6,20 +6,20 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class FunctionArgument : Element
+	public sealed class FunctionParameter : Element
 	{
 		public DataType Type { get; }
-		public string ArgumentName { get; }
+		public string Name { get; }
 
-		public FunctionArgument(DataType type, string argumentName)
+		public FunctionParameter(DataType type, string name)
 		{
-			if (string.IsNullOrEmpty(argumentName))
+			if (string.IsNullOrEmpty(name))
 			{
 				throw new ArgumentException("The name of a function argument cannot be null or empty.");
 			}
 
 			Type = type;
-			ArgumentName = argumentName;
+			Name = name;
 		}
 
 		public override void Print(StringBuilder builder, int depth)
@@ -27,6 +27,6 @@ namespace Cix.AST
 			builder.Append("Don't use Print() on function args, use ToString() instead");
 		}
 
-		public override string ToString() => $"{Type} {ArgumentName}";
+		public override string ToString() => $"{Type} {Name}";
 	}
 }

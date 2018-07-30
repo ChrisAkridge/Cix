@@ -98,23 +98,22 @@
     <Compile Include="AST\ExpressionConstant.cs" />
     <Compile Include="AST\ExpressionElement.cs" />
     <Compile Include="AST\ExpressionFunctionCall.cs" />
-    <Compile Include="AST\ExpressionFunctionParameter.cs" />
+    <Compile Include="AST\ExpressionFunctionArgument.cs" />
     <Compile Include="AST\ExpressionIdentifier.cs" />
-    <Compile Include="AST\ExpressionMemberAccess.cs" />
     <Compile Include="AST\ExpressionOperator.cs" />
-    <Compile Include="AST\ExpressionParentheses.cs" />
-    <Compile Include="AST\ExpressionSquareBracket.cs" />
     <Compile Include="AST\ExpressionTypecast.cs" />
     <Compile Include="AST\ForLoop.cs" />
-    <Compile Include="AST\FunctionArgument.cs" />
+    <Compile Include="AST\FunctionParameter.cs" />
     <Compile Include="AST\Function.cs" />
     <Compile Include="AST\DoWhileLoop.cs" />
+    <Compile Include="AST\FunctionPointerType.cs" />
     <Compile Include="AST\Generator\FirstPassGenerator.cs" />
     <Compile Include="AST\Generator\IntermediateForms\IntermediateFunction.cs" />
     <Compile Include="AST\Generator\IntermediateForms\IntermediateStruct.cs" />
     <Compile Include="AST\Generator\IntermediateForms\IntermediateStructMember.cs" />
     <Compile Include="AST\Generator\NameTable.cs" />
     <Compile Include="AST\GlobalVariableDeclaration.cs" />
+    <Compile Include="AST\HardwareCall.cs" />
     <Compile Include="AST\Return.cs" />
     <Compile Include="AST\ReturnValue.cs" />
     <Compile Include="AST\StructDeclaration.cs" />
@@ -133,7 +132,6 @@
     <Compile Include="Exceptions\ParseException.cs" />
     <Compile Include="Exceptions\PreprocessingException.cs" />
     <Compile Include="AST\Expression.cs" />
-    <Compile Include="AST\NumericLiteral.cs" />
     <Compile Include="Errors\IErrorListProvider.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="IO.cs" />
@@ -149,9 +147,6 @@
     <Compile Include="Text\LineChar.cs" />
     <Compile Include="TokenEnumerator.cs" />
     <Compile Include="Parser\Tokenizer.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AST\NameToBeResolved.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

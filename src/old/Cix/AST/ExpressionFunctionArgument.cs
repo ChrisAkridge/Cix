@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class ExpressionFunctionParameter
+	public sealed class ExpressionFunctionArgument
 	{
 		// Terminology note: In function declarations (int main(int argc, char** argv), they're called parameters.
 		// In function calls (sort(&array)), they're called arguments.
-		public DataType ParameterType { get; }
+		public DataType Type { get; }
 		public Expression ValueExpression { get; }
 
-		public ExpressionFunctionParameter(DataType parameterType, Expression valueExpression)
+		public ExpressionFunctionArgument(DataType type, Expression valueExpression)
 		{
-			ParameterType = parameterType;
+			Type = type;
 			ValueExpression = valueExpression;
 		}
 

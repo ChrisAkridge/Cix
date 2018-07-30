@@ -12,9 +12,11 @@ namespace Cix.AST
 	/// </summary>
 	public sealed class Expression : ExpressionElement
 	{
-		private List<ExpressionElement> elements;
+		private readonly List<ExpressionElement> elements;
 		public IReadOnlyList<ExpressionElement> Elements => elements.AsReadOnly();
 
 		public override string ToString() => string.Join(" ", elements.Select(e => e.ToString()));
+
+		public Expression(IEnumerable<ExpressionElement> infixElements) => elements = infixElements.ToList();
 	}
 }

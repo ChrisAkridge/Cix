@@ -12,6 +12,6 @@ namespace Cix.AST
 
 		public ExpressionTypecast(DataType resultType) => ResultType = resultType;
 
-		public override string ToString() => "(" + ResultType.TypeName + ")";
+		public override string ToString() => "(" + ResultType.Name + ")";
 	}
 }

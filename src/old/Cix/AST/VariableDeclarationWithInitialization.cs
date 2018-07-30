@@ -13,7 +13,7 @@ namespace Cix.AST
 
 		// Note: in, say, int i = 4 + y, the OpAssignment operator is implied;
 		// it should not be included in the assignment expression
-		public Expression AssignmentExpression { get; private set; }
+		public Expression AssignmentExpression { get; }
 
 		public VariableDeclarationWithInitialization(DataType variableType, string variableName, Expression assignmentExpression)
 		{

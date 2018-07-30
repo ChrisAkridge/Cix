@@ -288,7 +288,7 @@ namespace Cix.AST.Generator
 					argsEndIndex += 1;
 
 					// Parse the function arguments.
-					IEnumerable<FunctionArgument> functionArguments =
+					IEnumerable<FunctionParameter> functionArguments =
 						ParseFunctionArguments(argsStartIndex, argsEndIndex);
 
 					// The openscope should be the next token.
@@ -457,7 +457,7 @@ namespace Cix.AST.Generator
 					var memberDeclaration =
 						new StructMemberDeclaration(fullType, member.Name, member.ArraySize, offsetCounter);
 					members.Add(memberDeclaration);
-					offsetCounter += memberDeclaration.Type.TypeSize * member.ArraySize;
+					offsetCounter += memberDeclaration.Type.Size * member.ArraySize;
 				}
 				else if (typeEntry is StructDeclaration baseType)
 				{
@@ -502,7 +502,7 @@ namespace Cix.AST.Generator
 			var fullType = new DataType(memberType.Name, intermediateMember.PointerLevel, memberType.Size);
 			var result = new StructMemberDeclaration(fullType, intermediateMember.Name,
 				intermediateMember.ArraySize, offsetCounter);
-			offsetCounter += result.Type.TypeSize * result.ArraySize;
+			offsetCounter += result.Type.Size * result.ArraySize;
 			return result;
 		}
 
@@ -563,7 +563,7 @@ namespace Cix.AST.Generator
 				return null;
 			}
 
-			int typeSize = pointerLevel == 0 ? ((DataType) NameTable.Instance[typeName]).TypeSize : 8;
+			int typeSize = pointerLevel == 0 ? ((DataType) NameTable.Instance[typeName]).Size : 8;
 			return new GlobalVariableDeclaration(new DataType(typeName, pointerLevel, typeSize),
 				variableName, numericLiteral);
 		}
@@ -599,14 +599,14 @@ namespace Cix.AST.Generator
 			}
 		}
 
-		private IEnumerable<FunctionArgument> ParseFunctionArguments(int startIndex, int endIndex)
+		private IEnumerable<FunctionParameter> ParseFunctionArguments(int startIndex, int endIndex)
 		{
 			// Start index and end index should point to the openparen and closeparen, respectively
 			// Add 1 to startIndex and subtract 1 from endIndex to point them to the first and last
 			// actual tokens in the function arguments.
 
 			TokenEnumerator argTokens = tokens.Subset(startIndex + 1, endIndex - 1);
-			var result = new List<FunctionArgument>();
+			var result = new List<FunctionParameter>();
 			if (argTokens.Current == null)
 			{
 				// No arguments
@@ -660,7 +660,7 @@ namespace Cix.AST.Generator
 				if (argType != null) { argType = argType.WithPointerLevel(pointerLevel); }
 				else { continue; }
 
-				result.Add(new FunctionArgument(argType, argName));
+				result.Add(new FunctionParameter(argType, argName));
 			}
 
 			return result;

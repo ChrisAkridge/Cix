@@ -7,11 +7,11 @@ namespace Cix.AST.Generator.IntermediateForms
 {
 	internal sealed class IntermediateFunction : Element
 	{
-		private readonly List<FunctionArgument> arguments = new List<FunctionArgument>();
+		private readonly List<FunctionParameter> arguments = new List<FunctionParameter>();
 
 		public DataType ReturnType { get; }
 		public string Name { get; }
-		public IReadOnlyList<FunctionArgument> Arguments => arguments.AsReadOnly();
+		public IReadOnlyList<FunctionParameter> Arguments => arguments.AsReadOnly();
 
 		/// <summary>
 		/// Gets the index of the function's openscope.
@@ -24,7 +24,7 @@ namespace Cix.AST.Generator.IntermediateForms
 		public int EndTokenIndex { get; }
 
 		public IntermediateFunction(DataType returnType, string name,
-			IEnumerable<FunctionArgument> args, int startTokenIndex, int endTokenIndex)
+			IEnumerable<FunctionParameter> args, int startTokenIndex, int endTokenIndex)
 		{
 			if (returnType == null)
 			{ throw new ArgumentNullException(nameof(returnType), "The provided return type was null."); }

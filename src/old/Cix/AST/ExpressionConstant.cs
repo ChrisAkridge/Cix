@@ -92,7 +92,7 @@ namespace Cix.AST
 
 		public override string ToString()
 		{
-			switch (Type.TypeName)
+			switch (Type.Name)
 			{
 				case "byte": return value[0].ToString();
 				case "sbyte": return ((sbyte)value[0]).ToString();

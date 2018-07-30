@@ -8,7 +8,7 @@ namespace Cix.AST
 {
 	public sealed class WhileLoop : Element
 	{
-		private List<Element> statements;
+		private readonly List<Element> statements;
 
 		public Expression Condition { get; }
 		public IReadOnlyList<Element> Statements => statements.AsReadOnly();

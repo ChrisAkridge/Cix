@@ -8,7 +8,7 @@ namespace Cix.AST
 {
 	public sealed class SwitchCase : Element
 	{
-		private List<Element> statements;
+		private readonly List<Element> statements;
 
 		public ExpressionConstant CaseConstant { get; }
 		public bool IsDefaultCase { get; }

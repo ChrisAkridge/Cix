@@ -7,13 +7,11 @@ using Cix.Parser;
 
 namespace Cix.AST
 {
-	public class ExpressionElement : Element
+	public abstract class ExpressionElement : Element
 	{
-		// this probably should be abstract
-
 		public static List<ExpressionElement> ToElements(IEnumerable<Token> tokens)
 		{
-			List<ExpressionElement> result = new List<ExpressionElement>();
+			var result = new List<ExpressionElement>();
 			foreach (Token token in tokens)
 			{
 				if (token.Text.IsNumericLiteral())

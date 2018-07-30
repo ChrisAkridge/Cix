@@ -12,21 +12,31 @@ namespace Cix.AST
 	public sealed class ExpressionFunctionCall : ExpressionElement
 	{
 		// TODO: you got this backwards; this is an argument, not a parameter
-		private List<ExpressionFunctionParameter> parameters;
+		private readonly List<ExpressionFunctionArgument> arguments;
 
-		public string FunctionName { get; }
+		public Expression FunctionExpression { get; }
 		public DataType FunctionReturnType { get; }
-		public IReadOnlyList<ExpressionFunctionParameter> Parameters => parameters.AsReadOnly();
+		public IReadOnlyList<ExpressionFunctionArgument> Arguments => arguments.AsReadOnly();
 
-		public ExpressionFunctionCall(string functionName, 
-			DataType functionReturnType, params ExpressionFunctionParameter[] parameters)
+		public ExpressionFunctionCall(Expression functionExpression, 
+			DataType functionReturnType, params ExpressionFunctionArgument[] arguments)
 		{
-			FunctionName = functionName;
+			FunctionExpression = functionExpression;
 			FunctionReturnType = functionReturnType;
 
-			this.parameters = parameters.ToList();
+			this.arguments = arguments.ToList();
 		}
 
-		public override string ToString() { return $"{FunctionName}({string.Join(", ", parameters.Select(p => p.ToString()).ToArray())})"; }
+		public override string ToString()
+		{
+			bool functionExpressionIsFuncPtr = (FunctionExpression.Elements.Count == 1 &&
+			                                    FunctionExpression.Elements[0] is ExpressionIdentifier);
+
+			string functionExpressionString = (!functionExpressionIsFuncPtr)
+				? ((ExpressionIdentifier) FunctionExpression.Elements[0]).Name
+				: "(" + FunctionExpression + ")";
+
+			return $"{functionExpressionString}({string.Join(", ", arguments.Select(p => p.ToString()).ToArray())})";
+		}
 	}
 }

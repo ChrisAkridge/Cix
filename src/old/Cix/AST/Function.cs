@@ -8,31 +8,32 @@ namespace Cix.AST
 {
 	public sealed class Function : Element
 	{
-		private List<FunctionArgument> arguments;
-		private List<Element> statements;
+		private readonly List<FunctionParameter> parameters;
+		private readonly List<Element> statements;
 
 		public DataType ReturnType { get; }
 		public string Name { get; }
-		public IReadOnlyList<FunctionArgument> Arguments => arguments.AsReadOnly();
+		public IReadOnlyList<FunctionParameter> Parameters => parameters.AsReadOnly();
 		public IReadOnlyList<Element> Statements => statements.AsReadOnly();
 
-		public Function(DataType returnType, string name, IEnumerable<FunctionArgument> arguments, 
+		public Function(DataType returnType, string name, IEnumerable<FunctionParameter> parameters, 
 			IEnumerable<Element> statements)
 		{
 			ReturnType = returnType;
 			Name = name;
-			this.arguments = arguments.ToList();
+			this.parameters = parameters.ToList();
 			this.statements = statements.ToList();
 		}
 
-		public Function WithStatements(IList<Element> statements) => new Function(ReturnType, Name, arguments, statements);
+		public Function WithStatements(IList<Element> newStatements) 
+			=> new Function(ReturnType, Name, parameters, newStatements);
 
 		public override void Print(StringBuilder builder, int depth)
 		{
 			string typeAndName = $"{ReturnType} {Name}";
-			string parameters = "(" + string.Join(", ", arguments.Select(p => p.ToString()).ToArray()) + ")";;
+			string parameterString = "(" + string.Join(", ", parameters.Select(p => p.ToString()).ToArray()) + ")";;
 
-			builder.AppendLineWithIndent(typeAndName + " " + parameters + " {", depth);
+			builder.AppendLineWithIndent(typeAndName + " " + parameterString + " {", depth);
 
 			foreach (Element statement in statements)
 			{
@@ -40,18 +41,6 @@ namespace Cix.AST
 			}
 
 			builder.AppendLineWithIndent("}", depth);
-		}
-
-		public override string ToString()
-		{
-			StringBuilder argumentBuilder = new StringBuilder();
-			foreach (var arg in arguments)
-			{
-				argumentBuilder.Append(arg.ToString());
-				argumentBuilder.Append(", ");
-			}
-
-			return $"{ReturnType} {Name}({argumentBuilder.ToString()})";
 		}
 	}
 }

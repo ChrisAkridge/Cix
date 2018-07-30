@@ -9,8 +9,8 @@ namespace Cix.AST
 {
 	public sealed class ConditionalBlock : Element
 	{
-		private Expression blockCondition;
-		private List<Element> blockStatements;
+		private readonly Expression blockCondition;
+		private readonly List<Element> blockStatements;
 
 		public IReadOnlyList<Element> BlockStatements => blockStatements.AsReadOnly();
 
@@ -26,7 +26,7 @@ namespace Cix.AST
 				}
 				else
 				{
-					throw new ASTException("There is no conditional statement for an Else block.");
+					throw new InvalidOperationException("There is no conditional statement for an Else block.");
 				}
 			}
 		}

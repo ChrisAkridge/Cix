@@ -8,22 +8,12 @@ namespace Cix.AST
 {
 	public sealed class StructDeclaration : Element
 	{
-		private List<StructMemberDeclaration> members;
+		private readonly List<StructMemberDeclaration> members;
 
 		public string Name { get; }
 		public IReadOnlyList<StructMemberDeclaration> Members => members.AsReadOnly();
 
-		public int Size
-		{
-			get
-			{
-				if (Members != null)
-				{
-					return Members.Sum(m => m.Size);
-				}
-				return 0;
-			}
-		}
+		public int Size => Members?.Sum(m => m.Size) ?? 0;
 
 		public StructDeclaration(string name, IEnumerable<StructMemberDeclaration> members)
 		{

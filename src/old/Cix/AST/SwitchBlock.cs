@@ -8,7 +8,7 @@ namespace Cix.AST
 {
 	public sealed class SwitchBlock : Element
 	{
-		private List<SwitchCase> switchCases;
+		private readonly List<SwitchCase> switchCases;
 
 		public Expression SwitchExpression { get; }
 		public IReadOnlyList<SwitchCase> SwitchCases => switchCases.AsReadOnly();

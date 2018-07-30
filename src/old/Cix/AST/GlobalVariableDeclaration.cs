@@ -10,7 +10,7 @@ namespace Cix.AST
 	{
 		public DataType Type { get; }
 		public string Name { get; }
-		public NumericLiteral InitialValue { get; }
+		public ExpressionConstant InitialValue { get; }
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GlobalVariableDeclaration"/> class.
@@ -18,7 +18,7 @@ namespace Cix.AST
 		/// <param name="type">The type of the global variable.</param>
 		/// <param name="name">The name of the global variable.</param>
 		/// <param name="initialValue">The global variable's initial value. Pass null for all-bits-zero.</param>
-		public GlobalVariableDeclaration(DataType type, string name, NumericLiteral initialValue)
+		public GlobalVariableDeclaration(DataType type, string name, ExpressionConstant initialValue)
 		{
 			Type = type;
 			Name = name;

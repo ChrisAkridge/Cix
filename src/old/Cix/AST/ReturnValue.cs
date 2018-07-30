@@ -10,14 +10,9 @@ namespace Cix.AST
 	{
 		public Expression ReturnExpression { get; }
 
-		public ReturnValue(Expression returnExpression)
-		{
-			ReturnExpression = returnExpression;
-		}
+		public ReturnValue(Expression returnExpression) => ReturnExpression = returnExpression;
 
 		public override void Print(StringBuilder builder, int depth)
-		{
-			builder.AppendLineWithIndent($"return {ReturnExpression}", depth);
-		}
+			=> builder.AppendLineWithIndent($"return {ReturnExpression}", depth);
 	}
 }

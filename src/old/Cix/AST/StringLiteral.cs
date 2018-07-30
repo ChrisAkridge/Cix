@@ -11,10 +11,7 @@ namespace Cix.AST
 	{
 		public string Literal { get; }
 
-		public StringLiteral(string literal)
-		{
-			Literal = literal;
-		}
+		public StringLiteral(string literal) => Literal = literal;
 
 		public override string ToString() => "\"" + Literal + "\"";
 	}

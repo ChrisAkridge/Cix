@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
-	public sealed class DataType : Element
+	public class DataType : Element
 	{
-		public string TypeName { get; }
+		public virtual string Name { get; }
 		public int PointerLevel { get; }
-		public int TypeSize { get; }
+		public int Size { get; }
 
-		public DataType(string typeName, int pointerLevel, int typeSize)
+		public DataType(string name, int pointerLevel, int size)
 		{
-			if (string.IsNullOrEmpty(typeName))
+			if (string.IsNullOrEmpty(name))
 			{
 				throw new ArgumentException("Invalid name for data type.");
 			}
@@ -24,14 +24,14 @@ namespace Cix.AST
 				throw new ArgumentException($"Invalid pointer level {pointerLevel}.");
 			}
 
-			if (typeSize <= 0)
+			if (size <= 0)
 			{
-				throw new ArgumentException($"Invalid type size {typeSize}.");
+				throw new ArgumentException($"Invalid type size {size}.");
 			}
 
-			TypeName = typeName;
+			Name = name;
 			PointerLevel = pointerLevel;
-			TypeSize = (pointerLevel == 0) ? typeSize : 8;
+			Size = (pointerLevel == 0) ? size : 8;
 		}
 
 		public Type GetBCLType()
@@ -41,7 +41,7 @@ namespace Cix.AST
 				throw new InvalidOperationException("This type is a pointer type; for type safety Cix cannot return the analogous BCL type.");
 			}
 
-			switch (TypeName)
+			switch (Name)
 			{
 				case "byte":
 					return typeof(byte);
@@ -68,13 +68,13 @@ namespace Cix.AST
 				case "void":
 					return typeof(void);
 				default:
-					throw new InvalidOperationException($"The Cix type {TypeName} does not have an analogous BCL type.");
+					throw new InvalidOperationException($"The Cix type {Name} does not have an analogous BCL type.");
 			}
 		}
 
-		public DataType WithPointerLevel(int pointerLevel) => new DataType(TypeName, pointerLevel, TypeSize);
+		public DataType WithPointerLevel(int pointerLevel) => new DataType(Name, pointerLevel, Size);
 
-		public override string ToString() => $"{TypeName}{new string('*', PointerLevel)}";
+		public override string ToString() => $"{Name}{new string('*', PointerLevel)}";
 
 		public override void Print(StringBuilder builder, int depth) =>
 			builder.AppendLineWithIndent(ToString(), depth);

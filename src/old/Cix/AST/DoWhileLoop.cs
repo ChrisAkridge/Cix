@@ -8,7 +8,7 @@ namespace Cix.AST
 {
 	public sealed class DoWhileLoop : Element
 	{
-		private List<Element> statements;
+		private readonly List<Element> statements;
 		
 		public Expression Condition { get; }
 		public IReadOnlyList<Element> Statements => statements.AsReadOnly();
@@ -16,7 +16,7 @@ namespace Cix.AST
 		public DoWhileLoop(Expression condition, IEnumerable<Element> statements)
 		{
 			Condition = condition;
-			statements = statements.ToList();
+			this.statements = statements.ToList();
 		}
 
 		public override void Print(StringBuilder builder, int depth)

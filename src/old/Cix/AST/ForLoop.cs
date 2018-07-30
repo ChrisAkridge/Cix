@@ -8,11 +8,11 @@ namespace Cix.AST
 {
 	public sealed class ForLoop : Element
 	{
-		private List<Element> statements;
+		private readonly List<Element> statements;
 
-		public Expression Initializer { get; private set; }
-		public Expression Condition { get; private set; }
-		public Expression Iterator { get; private set; }
+		public Expression Initializer { get; }
+		public Expression Condition { get; }
+		public Expression Iterator { get; }
 		public IReadOnlyList<Element> Statements => statements.AsReadOnly();
 
 		public ForLoop(Expression initializer, Expression condition, Expression iterator, 
