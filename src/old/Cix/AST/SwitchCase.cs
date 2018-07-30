@@ -21,5 +21,15 @@ namespace Cix.AST
 			IsDefaultCase = isDefaultCase;
 			this.statements = statements.ToList();
 		}
+
+		public override void Print(StringBuilder builder, int depth)
+		{
+			builder.AppendLineWithIndent((IsDefaultCase) ? "default:" : (CaseConstant + ":"), depth);
+
+			foreach (Element statement in statements)
+			{
+				statement.Print(builder, depth + 1);
+			}
+		}
 	}
 }

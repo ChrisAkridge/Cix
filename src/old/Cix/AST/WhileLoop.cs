@@ -18,5 +18,19 @@ namespace Cix.AST
 			Condition = condition;
 			this.statements = statements.ToList();
 		}
+
+		public override void Print(StringBuilder builder, int depth)
+		{
+			builder.AppendLineWithIndent("While", depth);
+			builder.AppendLineWithIndent($"Condition: {Condition}", depth + 1);
+			builder.AppendLineWithIndent("Statements: {", depth + 1);
+
+			foreach (Element statement in statements)
+			{
+				statement.Print(builder, depth + 2);
+			}
+
+			builder.AppendLineWithIndent("}", depth + 1);
+		}
 	}
 }

@@ -13,6 +13,6 @@ namespace Cix.AST
 		public ExpressionArrayAccess(Expression indexer) => Indexer = indexer;
 
 		public override string ToString() =>
-			"[" + Indexer.ToString() + "]";
+			"[" + Indexer + "]";
 	}
 }

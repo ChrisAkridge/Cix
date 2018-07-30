@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace Cix.AST
 {
+	// this needs changing, too
+	// Function calls aren't just myFunc(i), they're also (funcArray[5])(i)
 	public sealed class ExpressionFunctionCall : ExpressionElement
 	{
 		// TODO: you got this backwards; this is an argument, not a parameter
@@ -24,5 +26,7 @@ namespace Cix.AST
 
 			this.parameters = parameters.ToList();
 		}
+
+		public override string ToString() { return $"{FunctionName}({string.Join(", ", parameters.Select(p => p.ToString()).ToArray())})"; }
 	}
 }

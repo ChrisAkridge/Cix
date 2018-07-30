@@ -22,9 +22,11 @@ namespace Cix.AST
 			ArgumentName = argumentName;
 		}
 
-		public override string ToString()
+		public override void Print(StringBuilder builder, int depth)
 		{
-			return $"{Type} {ArgumentName}";
+			builder.Append("Don't use Print() on function args, use ToString() instead");
 		}
+
+		public override string ToString() => $"{Type} {ArgumentName}";
 	}
 }

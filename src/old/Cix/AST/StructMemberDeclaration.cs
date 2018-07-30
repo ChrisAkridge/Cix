@@ -22,5 +22,11 @@ namespace Cix.AST
 			ArraySize = arraySize;
 			Offset = offset;
 		}
+
+		public override void Print(StringBuilder builder, int depth)
+		{
+			string arraySizeString = (ArraySize == 1) ? "" : $"[{ArraySize}]";
+			builder.AppendLineWithIndent($"{Type} {Name}{arraySizeString} (offset {Offset})", depth);
+		}
 	}
 }

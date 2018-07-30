@@ -11,9 +11,6 @@ namespace Cix.AST
 	{
 		public string Name { get; }
 
-		public ExpressionMemberAccess(string name)
-		{
-			Name = name;
-		}
+		public ExpressionMemberAccess(string name) => Name = name;
 	}
 }

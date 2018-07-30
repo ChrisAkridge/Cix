@@ -31,5 +31,11 @@ namespace Cix.AST.Generator.IntermediateForms
 			SourceFilePath = typeToken.FilePath;
 			SourceLineNumber = typeToken.LineNumber;
 		}
+
+		public void Print(StringBuilder builder, int depth)
+		{
+			string arraySizeString = (ArraySize > 1) ? $"[{ArraySize}]" : "";
+			builder.AppendLineWithIndent($"{TypeName}{new String('*', PointerLevel)}{arraySizeString}", depth);
+		}
 	}
 }

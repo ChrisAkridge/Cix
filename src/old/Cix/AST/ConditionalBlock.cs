@@ -47,16 +47,16 @@ namespace Cix.AST
 			else if (BlockType == ConditionalBlockType.ElseIfBlock) { line = "Else If"; }
 			else { line = "Else"; }
 
-			builder.AppendLineWithIndent(depth, line);
-			builder.AppendLineWithIndent(depth + 1, $"Condition: ({blockCondition.ToString()})");
-			builder.AppendLineWithIndent(depth + 1, "Statements: {");
+			builder.AppendLineWithIndent(line, depth);
+			builder.AppendLineWithIndent($"Condition: ({blockCondition})", depth + 1);
+			builder.AppendLineWithIndent("Statements: {", depth + 1);
 
 			foreach (Element statement in blockStatements)
 			{
 				statement.Print(builder, depth + 2);
 			}
 
-			builder.AppendLineWithIndent(depth + 1, "}");
+			builder.AppendLineWithIndent("}", depth + 1);
 		}
 	}
 

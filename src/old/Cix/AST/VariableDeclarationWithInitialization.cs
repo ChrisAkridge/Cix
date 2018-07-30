@@ -21,5 +21,10 @@ namespace Cix.AST
 			VariableName = variableName;
 			AssignmentExpression = assignmentExpression;
 		}
+
+		public override void Print(StringBuilder builder, int depth)
+		{
+			builder.AppendLineWithIndent($"{VariableType} {VariableName} = {AssignmentExpression}", depth);
+		}
 	}
 }

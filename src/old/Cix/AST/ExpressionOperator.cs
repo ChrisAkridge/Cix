@@ -75,6 +75,56 @@ namespace Cix.AST
 					return -1;
 			}
 		}
+
+		public override string ToString()
+		{
+			switch (Operator)
+			{
+				case ExpressionOperators.UnaryIdentity: return "<idn>";
+				case ExpressionOperators.UnaryInverse: return "<inv>";
+				case ExpressionOperators.UnaryLogicalNOT: return "!";
+				case ExpressionOperators.UnaryBitwiseNOT: return "~";
+				case ExpressionOperators.UnaryPreincrement: return "<preincr>";
+				case ExpressionOperators.UnaryPredecrement: return "<predecr>";
+				case ExpressionOperators.UnaryPostincrement: return "<postincr>";
+				case ExpressionOperators.UnaryPostdecrement: return "<postdecr>";
+				case ExpressionOperators.UnaryDerefence: return "<deref>";
+				case ExpressionOperators.UnaryAddressOf: return "&";
+				case ExpressionOperators.BinaryAddition: return "+";
+				case ExpressionOperators.BinarySubtraction: return "-";
+				case ExpressionOperators.BinaryMultiplication: return "*";
+				case ExpressionOperators.BinaryDivision: return "/";
+				case ExpressionOperators.BinaryModulus: return "%";
+				case ExpressionOperators.BinaryEquality: return "==";
+				case ExpressionOperators.BinaryInequality: return "!=";
+				case ExpressionOperators.BinaryLessThan: return "<";
+				case ExpressionOperators.BinaryGreaterThan: return ">";
+				case ExpressionOperators.BinaryLessThanOrEqualTo: return "<=";
+				case ExpressionOperators.BinaryGreaterThanOrEqualTo: return ">=";
+				case ExpressionOperators.BinaryLogicalAND: return "&&";
+				case ExpressionOperators.BinaryLogicalOR: return "||";
+				case ExpressionOperators.BinaryBitwiseAND: return "&";
+				case ExpressionOperators.BinaryBitwiseOR: return "|";
+				case ExpressionOperators.BinaryBitwiseXOR: return "^";
+				case ExpressionOperators.BinaryShiftLeft: return "<<";
+				case ExpressionOperators.BinaryShiftRight: return ">>";
+				case ExpressionOperators.BinaryAssignment: return "=";
+				case ExpressionOperators.BinaryAddAssign: return "+=";
+				case ExpressionOperators.BinarySubAssign: return "-=";
+				case ExpressionOperators.BinaryMultAssign: return "*=";
+				case ExpressionOperators.BinaryDivAssign: return "/=";
+				case ExpressionOperators.BinaryModAssign: return "%=";
+				case ExpressionOperators.BinaryANDAssign: return "&=";
+				case ExpressionOperators.BinaryORAssign: return "|=";
+				case ExpressionOperators.BinaryXORAssign: return "^=";
+				case ExpressionOperators.BinaryShiftLeftAssign: return "<<=";
+				case ExpressionOperators.BinaryShiftRightAssign: return ">>=";
+				case ExpressionOperators.BinaryMemberAccess: return ".";
+				case ExpressionOperators.BinaryPointerMemberAccess: return "->";
+				case ExpressionOperators.UnaryArrayAccess: return "<arrayacc>";
+				default: throw new ArgumentOutOfRangeException();
+			}
+		}
 	}
 
 	public enum ExpressionOperators

@@ -12,5 +12,10 @@ namespace Cix.AST
 	public sealed class VarargsFunctionArgument : Element
 	{
 		// TODO: this should derive from FunctionArgument, probably
+
+		public override void Print(StringBuilder builder, int depth)
+		{
+			builder.AppendLineWithIndent("Argument: ...", depth);
+		}
 	}
 }

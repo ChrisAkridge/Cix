@@ -49,7 +49,14 @@ namespace CixFrontend
 				return;
 			}
 
-			foreach (var token in compilation.TokenizedFile) { Console.WriteLine(token); }
+			var builder = new StringBuilder();
+
+			foreach (Element rootElement in compilation.AbstractSyntaxTree)
+			{
+				rootElement.Print(builder, 0);
+			}
+
+			Console.Write(builder.ToString());
 
 			#if DEBUG
 			Console.ReadKey();

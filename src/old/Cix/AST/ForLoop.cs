@@ -23,5 +23,17 @@ namespace Cix.AST
 			Iterator = iterator;
 			this.statements = statements.ToList();
 		}
+
+		public override void Print(StringBuilder builder, int depth)
+		{
+			string loopParenthetical = string.Join("; ", Initializer.ToString(), Condition.ToString(),
+				Iterator.ToString());
+
+			builder.AppendLineWithIndent($"for ({loopParenthetical}) {{", depth);
+
+			foreach (Element statement in statements) { statement.Print(builder, depth + 1); }
+
+			builder.AppendLineWithIndent("}", depth);
+		}
 	}
 }

@@ -10,9 +10,8 @@ namespace Cix.AST
 	{
 		public DataType ResultType { get; }
 
-		public ExpressionTypecast(DataType resultType)
-		{
-			ResultType = resultType;
-		}
+		public ExpressionTypecast(DataType resultType) => ResultType = resultType;
+
+		public override string ToString() => "(" + ResultType.TypeName + ")";
 	}
 }

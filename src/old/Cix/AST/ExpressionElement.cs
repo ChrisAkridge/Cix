@@ -167,7 +167,7 @@ namespace Cix.AST
 
 		public override void Print(StringBuilder builder, int depth)
 		{
-			builder.AppendLineWithIndent(depth, "Don't print expression elements directly.");
+			builder.AppendLineWithIndent("Don't print expression elements directly.", depth);
 		}
 	}
 }

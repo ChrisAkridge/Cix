@@ -14,5 +14,10 @@ namespace Cix.AST
 		{
 			ReturnExpression = returnExpression;
 		}
+
+		public override void Print(StringBuilder builder, int depth)
+		{
+			builder.AppendLineWithIndent($"return {ReturnExpression}", depth);
+		}
 	}
 }

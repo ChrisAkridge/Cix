@@ -180,7 +180,7 @@ namespace Cix
 			return s.Substring(startIndex, length);
 		}
 
-		public static void AppendLineWithIndent(this StringBuilder builder, int indent, string line)
+		public static void AppendLineWithIndent(this StringBuilder builder, string line, int indent)
 		{
 			builder.Append(new string(' ', indent));
 			builder.AppendLine(line);

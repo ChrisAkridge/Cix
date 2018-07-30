@@ -11,6 +11,6 @@ namespace Cix.AST
 		public override string ToString() => "Break";
 
 		public override void Print(StringBuilder builder, int depth) =>
-			builder.AppendLineWithIndent(depth, "Break");
+			builder.AppendLineWithIndent("Break", depth);
 	}
 }

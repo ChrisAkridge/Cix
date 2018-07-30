@@ -17,7 +17,12 @@ namespace Cix.AST
 			Name = name;
 			Type = type;
 		}
-    }
+
+	    public override void Print(StringBuilder builder, int depth)
+	    {
+			builder.AppendLineWithIndent("OBSOLETE NameToBeResolved", depth);
+	    }
+	}
 
 	public enum ToBeResolvedType
 	{

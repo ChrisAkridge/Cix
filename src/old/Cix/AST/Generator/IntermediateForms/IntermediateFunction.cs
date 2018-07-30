@@ -56,5 +56,12 @@ namespace Cix.AST.Generator.IntermediateForms
 			StartTokenIndex = startTokenIndex;
 			EndTokenIndex = endTokenIndex;
 		}
+
+		public override void Print(StringBuilder builder, int depth)
+		{
+			builder.AppendLineWithIndent(
+				$"Intermediate Function {Name}({string.Join(", ", Arguments.Select(a => a.ToString()))}) starts at {StartTokenIndex}, ends at {EndTokenIndex}",
+				depth);
+		}
 	}
 }

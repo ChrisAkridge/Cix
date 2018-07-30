@@ -32,5 +32,17 @@ namespace Cix.AST
 		}
 
 		public DataType ToDataType() => new DataType(Name, 0, Size);
+
+		public override void Print(StringBuilder builder, int depth)
+		{
+			builder.AppendLineWithIndent($"struct {Name} {{", depth);
+
+			foreach (StructMemberDeclaration member in members)
+			{
+				member.Print(builder, depth + 1);
+			}
+
+			builder.AppendLineWithIndent("}", depth);
+		}
 	}
 }

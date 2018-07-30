@@ -11,9 +11,6 @@ namespace Cix.AST
 	{
 		public ParenthesesType Type { get; }
 
-		public ExpressionSquareBracket(ParenthesesType type)
-		{
-			Type = type;
-		}
+		public ExpressionSquareBracket(ParenthesesType type) => Type = type;
 	}
 }

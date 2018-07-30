@@ -12,14 +12,13 @@ namespace Cix.AST
 		// In function calls (sort(&array)), they're called arguments.
 		public DataType ParameterType { get; }
 		public Expression ValueExpression { get; }
-		public ExpressionElementSequence Sequence { get; }
 
-		public ExpressionFunctionParameter(DataType parameterType, Expression valueExpression, 
-			ExpressionElementSequence sequence)
+		public ExpressionFunctionParameter(DataType parameterType, Expression valueExpression)
 		{
 			ParameterType = parameterType;
 			ValueExpression = valueExpression;
-			Sequence = sequence;
 		}
+
+		public override string ToString() => ValueExpression.ToString();
 	}
 }

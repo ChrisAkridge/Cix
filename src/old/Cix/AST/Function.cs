@@ -25,9 +25,21 @@ namespace Cix.AST
 			this.statements = statements.ToList();
 		}
 
-		public Function WithStatements(IList<Element> statements)
+		public Function WithStatements(IList<Element> statements) => new Function(ReturnType, Name, arguments, statements);
+
+		public override void Print(StringBuilder builder, int depth)
 		{
-			return new Function(ReturnType, Name, arguments, statements);
+			string typeAndName = $"{ReturnType} {Name}";
+			string parameters = "(" + string.Join(", ", arguments.Select(p => p.ToString()).ToArray()) + ")";;
+
+			builder.AppendLineWithIndent(typeAndName + " " + parameters + " {", depth);
+
+			foreach (Element statement in statements)
+			{
+				statement.Print(builder, depth + 1);
+			}
+
+			builder.AppendLineWithIndent("}", depth);
 		}
 
 		public override string ToString()

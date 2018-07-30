@@ -24,5 +24,10 @@ namespace Cix.AST
 			Name = name;
 			InitialValue = initialValue;
 		}
+
+		public override void Print(StringBuilder builder, int depth)
+		{
+			builder.AppendLineWithIndent($"global {Type} {Name} = {InitialValue}", depth);
+		}
 	}
 }

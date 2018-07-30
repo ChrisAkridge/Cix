@@ -16,5 +16,10 @@ namespace Cix.AST
 			Type = type;
 			Name = name;
 		}
+
+		public override void Print(StringBuilder builder, int depth)
+		{
+			builder.AppendLineWithIndent($"{Type} {Name}", depth);
+		}
 	}
 }

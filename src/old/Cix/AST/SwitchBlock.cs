@@ -18,5 +18,17 @@ namespace Cix.AST
 			SwitchExpression = switchExpression;
 			this.switchCases = switchCases.ToList();
 		}
+
+		public override void Print(StringBuilder builder, int depth)
+		{
+			builder.AppendLineWithIndent($"switch ({SwitchExpression}) {{", depth);
+
+			foreach (SwitchCase switchCase in switchCases)
+			{
+				switchCase.Print(builder, depth + 1);
+			}
+
+			builder.AppendLineWithIndent("}", depth);
+		}
 	}
 }

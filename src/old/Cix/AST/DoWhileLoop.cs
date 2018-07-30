@@ -21,14 +21,14 @@ namespace Cix.AST
 
 		public override void Print(StringBuilder builder, int depth)
 		{
-			builder.AppendLineWithIndent(depth, "Do {");
+			builder.AppendLineWithIndent("Do {", depth);
 
 			foreach (Element statement in statements)
 			{
 				statement.Print(builder, depth + 1);
 			}
 
-			builder.AppendLineWithIndent(depth, $"}} While ({Condition})");
+			builder.AppendLineWithIndent($"}} While ({Condition})", depth);
 		}
 	}
 }

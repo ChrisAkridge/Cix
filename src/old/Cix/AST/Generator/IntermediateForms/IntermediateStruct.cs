@@ -25,5 +25,17 @@ namespace Cix.AST.Generator.IntermediateForms
 			FirstDefinitionTokenIndex = firstTokenIndex;
 			LastTokenIndex = lastTokenIndex;
 		}
+
+		public override void Print(StringBuilder builder, int depth)
+		{
+			builder.AppendLineWithIndent($"Intermediate Struct {Name} {{", depth);
+
+			foreach (IntermediateStructMember member in Members)
+			{
+				member.Print(builder, depth + 1);
+			}
+
+			builder.AppendLineWithIndent("}", depth);
+		}
 	}
 }

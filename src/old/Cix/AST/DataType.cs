@@ -74,9 +74,9 @@ namespace Cix.AST
 
 		public DataType WithPointerLevel(int pointerLevel) => new DataType(TypeName, pointerLevel, TypeSize);
 
-		public override string ToString() => $"{TypeName}{new string('*', PointerLevel)} ({TypeSize} byte(s))";
+		public override string ToString() => $"{TypeName}{new string('*', PointerLevel)}";
 
 		public override void Print(StringBuilder builder, int depth) =>
-			builder.AppendLineWithIndent(depth, ToString());
+			builder.AppendLineWithIndent(ToString(), depth);
 	}
 }
