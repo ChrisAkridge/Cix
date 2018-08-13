@@ -384,7 +384,7 @@ namespace Cix.AST.Generator
 				if (enumerator.MoveNext() && enumerator.Current.Type == TokenType.OpenBracket)
 				{
 					// This is an array member.
-					if (!enumerator.MoveNext() || enumerator.Current.Type != TokenType.Identifier)
+					if (!enumerator.MoveNext() || !enumerator.Current.Type.IsNumericLiteralToken())
 					{
 						errorList.AddError(ErrorSource.ASTGenerator, 13,
 							$"The size of the array {memberName} was not declared.",
@@ -392,23 +392,22 @@ namespace Cix.AST.Generator
 						continue;
 					}
 
-					// TODO: replace with ExpressionConstant
-					NumericLiteral arraySizeLiteral = NumericLiteral.Parse(enumerator.Current.Text);
-					if (arraySizeLiteral.UnderlyingType != typeof(int))
+					ExpressionConstant arraySizeLiteral = LiteralParser.Parse(enumerator.Current, errorList);
+					if (arraySizeLiteral.Type.Name != "int")
 					{
 						errorList.AddError(ErrorSource.ASTGenerator, 14,
 							$"The type of the size of the array {memberName} is not valid; must be int.",
 							typeToken.FilePath, typeToken.LineNumber);
 						continue;
 					}
-					else if (arraySizeLiteral.SignedIntegralValue <= 0)
+					else if (arraySizeLiteral.ToInt() <= 0)
 					{
 						errorList.AddError(ErrorSource.ASTGenerator, 15,
 							$"The size of the array {memberName} is not valid; must be positive.",
 							typeToken.FilePath, typeToken.LineNumber);
 						continue;
 					}
-					memberArraySize = (int) arraySizeLiteral.SignedIntegralValue;
+					memberArraySize = arraySizeLiteral.ToInt();
 
 					if (!enumerator.MoveNext() || enumerator.Current.Type != TokenType.CloseBracket)
 					{
@@ -522,12 +521,12 @@ namespace Cix.AST.Generator
 			pointerLevel = pointerLevel == 0 ? typeData.Item2 : pointerLevel;
 
 			string variableName = globalStatement[2].Text;
-			NumericLiteral numericLiteral = null;
+			ExpressionConstant numericLiteral = null;
 
 			if (globalStatement.Any(t => t.Text == "=") && NameTable.IsPrimitiveType(typeName))
 			{
-				string numericLiteralToken = globalStatement[4].Text;
-				numericLiteral = NumericLiteral.Parse(numericLiteralToken);
+				Token numericLiteralToken = globalStatement[4];
+				numericLiteral = LiteralParser.Parse(numericLiteralToken, errorList);
 			}
 
 			// Double-check that the global's type actually exists.

@@ -49,11 +49,10 @@ namespace CixFrontend
 				return;
 			}
 
-			var builder = new StringBuilder();
-
-			foreach (Element rootElement in compilation.AbstractSyntaxTree)
+			StringBuilder builder = new StringBuilder();
+			foreach (var element in compilation.AbstractSyntaxTree)
 			{
-				rootElement.Print(builder, 0);
+				element.Print(builder, 0);
 			}
 
 			Console.Write(builder.ToString());

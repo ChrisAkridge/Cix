@@ -254,10 +254,25 @@ ternary-expression:
 	One of { expression expression-value unary-prefix-element unary-postfix-element }
 
 function-call-element:
-	identifier then
+	function-expression then
 	Zero or more whitespaces then
 	Left parentheses (U+0028) then
 	function-call-arguments then
+	Zero or more whitespaces then
+	Right parentheses (U+0029)
+	
+function-expression:
+	identifier or
+	hwcall-intrinsic or
+	function-pointer-expression
+	
+hwcall-intrinsic:
+	"@hwcall"
+	
+function-pointer-expression:
+	Left parentheses (U+0028) then
+	Zero or more whitespaces then
+	expression then
 	Zero or more whitespaces then
 	Right parentheses (U+0029)
 

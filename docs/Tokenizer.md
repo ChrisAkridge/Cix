@@ -36,6 +36,18 @@ break byte case const continue default do double else float for goto if int long
 
 If a word is any of the above reserved words, it is classified as one of the token types for that keyword (for example, the word `int` has a token type of `KeyInt`).
 
+### Numeric Literals
+
+Numeric literals are classed into the following token types:
+
+* **BasicNumericLiteral**: Consists only of one or more digits.
+* **BasicHexadecimalLiteral**: Starts with `0x`, then is followed by one or more digits or letters `A` through `F` (any case).
+* **SuffixedNumericLiteral**: A basic numeric literal suffixed with any of `u`, `l`, or `ul`.
+* **SuffixedHexadecimalLiteral**: A hexadecimal literal suffixed with any of `u`, `l`, or `ul`.
+* **FloatingLiteralWithDecimal**: A set of digits with a single `.` in them.
+* **SuffixedFloatingLiteral**: A floating literal (with or without a `.`) suffixed with `f` or `d`. The period may not appear directly before the suffix.
+* **FloatingLiteralWithExponent**: A floating literal (with or without a `.`), suffixed with an `e`, a `+` or `-`, then one or more digits. The period may not appear directly before the exponent.
+
 ### Operator Characters
 
 Various words correspond to operators, such as addition or multiplication. Some words can represent different operators. For example, `+` can be either identity (`+x`) or addition (`x + y`). What each operator is can usually be determined by what words *precede* and *succeed* it.

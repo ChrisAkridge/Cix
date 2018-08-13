@@ -111,6 +111,7 @@
     <Compile Include="AST\Generator\IntermediateForms\IntermediateFunction.cs" />
     <Compile Include="AST\Generator\IntermediateForms\IntermediateStruct.cs" />
     <Compile Include="AST\Generator\IntermediateForms\IntermediateStructMember.cs" />
+    <Compile Include="AST\Generator\LiteralParser.cs" />
     <Compile Include="AST\Generator\NameTable.cs" />
     <Compile Include="AST\GlobalVariableDeclaration.cs" />
     <Compile Include="AST\HardwareCall.cs" />
@@ -126,6 +127,7 @@
     <Compile Include="AST\WhileLoop.cs" />
     <Compile Include="CharExtensions.cs" />
     <Compile Include="Compilation.cs" />
+    <Compile Include="EnumExtensions.cs" />
     <Compile Include="Errors\Error.cs" />
     <Compile Include="Errors\ErrorsEncounteredException.cs" />
     <Compile Include="Exceptions\ASTException.cs" />

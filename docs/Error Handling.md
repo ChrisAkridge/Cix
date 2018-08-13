@@ -68,6 +68,7 @@ Each struct, global, or function declaration should be parsed as far as possible
 ### Lexer Errors:
 * LX001: Invalid character '{char}'.
 * LX002: The character '{char}' isn't a valid numeric literal suffix; valid suffixes are "u", "l", "ul", "f", and "d".
+* LX003: The At Sign can only appear at the start of an identifier.
 
 ### Tokenizer Errors:
 * TK001: The word "{word}" cannot be parsed.
@@ -75,6 +76,11 @@ Each struct, global, or function declaration should be parsed as far as possible
 * TK003: The word "{word}" cannot be in the place of an operator.
 * TK004: The type "{typeNameWithAsterisks}" must be followed by a name or a close parenthesis.
 * TK005: Multiple asterisks must follow a type name, not "{word}".
+* TK006: A string literal cannot have unescaped single or double quotes.
+* TK007: An escaping backslash cannot be at the end of a string literal.
+* TK008: An string literal ends in a Unicode escape sequence, but there aren't enough hexadecimal digits to determine the codepoint.
+* TK009: The sequence {unicodesequence} is not a valid Unicode code point.
+* TK010: The escape sequence {sequence} is not valid.
 
 ### AST Generator Errors
 AG001: AST already generated; did you accidentally call GenerateFirstPassAST again?
@@ -100,3 +106,6 @@ AG020: Invalid type for {globalVariableName}. The type {type} is not defined.
 AG021: Invalid type for {globalVariableName}. No global may be "lpstring", perhaps you meant "lpstring*"?
 AG022: Type "{type}" is not defined.
 AG023: Token "{type}" is not actually a type, it's a {thing}.
+AG024: The numeric literal {literal} is supposed to be a long but is out of range or invalid.
+AG025: The numeric literal {literal} is supposed to be a uint but is out of range or invalid.
+AG026: The numeric literal {literal} is supposed to be a float but is out of range or invalid.

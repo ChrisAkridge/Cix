@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Cix.Errors;
 
 namespace Cix.AST
 {
@@ -13,24 +15,26 @@ namespace Cix.AST
 	public sealed class ExpressionConstant : ExpressionElement
 	{
 		private byte[] value;
-		private DataType Type;
+
+		public IReadOnlyList<byte> Value => new ReadOnlyCollection<byte>(value);
+		public DataType Type { get; }
 
 		public ExpressionConstant(bool value)
 		{
 			Type = new DataType("byte", 0, 1);
-			this.value = new byte[] { value ? (byte)1 : (byte)0 };
+			this.value = new[] { value ? (byte)1 : (byte)0 };
 		}
 
 		public ExpressionConstant(byte value)
 		{
 			Type = new DataType("byte", 0, 1);
-			this.value = new byte[] { value };
+			this.value = new[] { value };
 		}
 
 		public ExpressionConstant(sbyte value)
 		{
 			Type = new DataType("sbyte", 0, 1);
-			this.value = new byte[] { unchecked((byte)value) };
+			this.value = new[] { unchecked((byte)value) };
 		}
 
 		public ExpressionConstant(short value)
@@ -89,6 +93,18 @@ namespace Cix.AST
 			Type = new DataType("lpstring", 0, (int)stringLength + 4);
 			this.value = BitConverter.GetBytes(stringLength).Concat(utf8).ToArray();
 		}
+
+		public byte ToByte() => value[0];
+		public sbyte ToSByte() => unchecked((sbyte)value[0]);
+		public short ToShort() => BitConverter.ToInt16(value, 0);
+		public ushort ToUShort() => BitConverter.ToUInt16(value, 0);
+		public int ToInt() => BitConverter.ToInt32(value, 0);
+		public uint ToUInt() => BitConverter.ToUInt32(value, 0);
+		public long ToLong() => BitConverter.ToInt64(value, 0);
+		public ulong ToULong() => BitConverter.ToUInt64(value, 0);
+		public float ToFloat() => BitConverter.ToSingle(value, 0);
+		public double ToDouble() => BitConverter.ToDouble(value, 0);
+		public string ToCLRString() => Encoding.UTF8.GetString(value, 4, value.Length - 4);
 
 		public override string ToString()
 		{

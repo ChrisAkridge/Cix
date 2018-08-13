@@ -13,6 +13,8 @@ namespace Cix.Parser
 	/// </summary>
 	internal sealed class Lexer
 	{
+		// TODO: We can get rid of Comment and Directive contexts. We need to add the At Sign parser.
+
 		private readonly IErrorListProvider errorList;
 		private LineCharEnumerator charEnumerator;
 		private readonly StringBuilder currentWord = new StringBuilder();
@@ -51,9 +53,9 @@ namespace Cix.Parser
 				{
 					ProcessBraceBracketOrParentheses(current);
 				}
-				else if (char.IsLetter(current) || lineChar.Text == '_')
+				else if (char.IsLetter(current) || current == '_' || current == '@')
 				{
-					ProcessLetterOrUnderscore(current, last);
+					ProcessLetterUnderscoreOrAtSign(current, last);
 				}
 				else if (char.IsDigit(current))
 				{
@@ -202,7 +204,7 @@ namespace Cix.Parser
 			}
 		}
 
-		private void ProcessLetterOrUnderscore(char current, char last)
+		private void ProcessLetterUnderscoreOrAtSign(char current, char last)
 		{
 			switch (context)
 			{
@@ -213,6 +215,12 @@ namespace Cix.Parser
 					currentWord.Append(current);
 					break;
 				case ParsingContext.Word:
+					if (current == '@')
+					{
+						errorList.AddError(ErrorSource.Lexer, 3,
+							"The At Sign can only be at the start of an identifier.", charEnumerator.CurrentLine);
+						break;
+					}
 					currentWord.Append(current);
 					break;
 				case ParsingContext.Operator:

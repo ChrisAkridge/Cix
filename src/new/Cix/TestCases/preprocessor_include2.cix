@@ -1,3 +1,0 @@
-// preprocessor_include2.cix
-
-double cos(double x) { return 0d; }

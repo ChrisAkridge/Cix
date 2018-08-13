@@ -58,7 +58,7 @@ namespace Cix
 		public IList<Line> SplitFileByLine(string filePath, string file)
 		{
 			string[] splitLines = file.Split(new[] {"\r\n"}, StringSplitOptions.None);
-			return splitLines.Select((t, i) => new Line(filePath, i, t)).ToList();
+			return splitLines.Select((text, lineNumber) => new Line(filePath, lineNumber, text)).ToList();
 		}
 	}
 }

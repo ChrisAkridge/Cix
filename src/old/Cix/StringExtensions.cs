@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -55,47 +56,117 @@ namespace Cix
 			return allowReservedWords || ReservedKeywords.All(r => word.ToLower() != r);
 		}
 
-		public static bool IsNumericLiteral(this string word)
+		/// <summary>
+		/// Determines if a given string is a basic numeric literal (an optional minus sign, then
+		/// one or more digits).
+		/// </summary>
+		/// <param name="word">The word to check.</param>
+		/// <returns>True if <paramref name="word"/> is a basic numeric literal, false if it's not.</returns>
+		public static bool IsBasicNumericLiteral(this string word)
 		{
-			if (string.IsNullOrEmpty(word) || word == "\r\n")
-			{
-				// Empty strings and newlines cannot be numeric literals.
-				return false;
-			}
+			// Turns out we can just rely on TryParse. We don't care here exactly what type of number
+			// we have (it can be any of int, long, uint, ulong, float, or double), so we can just
+			// range check based on the widest integral type we have: long (then ulong if it fails).
 
-			if (!char.IsDigit(word[0]))
-			{
-				// A numeric literal cannot start with a letter.
-				return false;
-			}
+			// Although basic literals can be turned into floats and doubles, you can't make a float
+			// or double out of the range of +/-9.2 quintillion as a basic numeric literal. You need
+			// any of the floating literals to do that.
 
-			foreach (char c in word.ToLowerInvariant())
-			{
-				// All characters in a numeric literal must be a digit, a period, or one of the suffixes
-				if (!(c >= '0' && c <= '9') && c == '.' && c.IsOneOfCharacter('u', 'l', 'f', 'd'))
-				{
-					return false;
-				}
-			}
-
-			return true;
+			// ReSharper disable once ArrangeMethodOrOperatorBody
+			return long.TryParse(word, out _) || ulong.TryParse(word, out _);
 		}
 
-		public static bool IsHexadecimalNumericLiteral(this string word)
+		/// <summary>
+		/// Determines if a given string is a basic hexadecimal literal (0x, then one or more digits or hex digits).
+		/// </summary>
+		/// <param name="word">The word to check.</param>
+		/// <returns>True if <paramref name="word"/> is a basic hexadecimal literal, false if it's not.</returns>
+		public static bool IsBasicHexadecimalLiteral(this string word)
 		{
-			word = word.ToLowerInvariant();
-			if (!word.StartsWith("0x")) { return false; }
+			// We expect an 0x here, but the only method that can actually parse it with the 0x is
+			// Convert.ToInt64, which will throw on failure. So we'll strip it out to pass it to
+			// long.TryParse instead.
 
-			foreach (char c in word.Substring(2))
-			{
-				if (!(c >= '0' && c <= '9') || !(c >= 'a' && c <= 'f')) { return false; }
-			}
+			if (!word.ToLowerInvariant().StartsWith("0x")) { return false; }
 
-			return true;
+			string hexDigitsOnly = word.Substring(2);
+			return long.TryParse(hexDigitsOnly, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture,
+				       out _)
+			       || ulong.TryParse(hexDigitsOnly, NumberStyles.AllowHexSpecifier,
+				       CultureInfo.InvariantCulture, out _);
 		}
+
+		/// <summary>
+		/// Determines if a given string is a suffixed numeric literal (one or more digits, then one of
+		/// u, ul, or l).
+		/// </summary>
+		/// <param name="word">The word to check.</param>
+		/// <returns>True if <paramref name="word"/> is a suffixed numeric literal, false if it's not.</returns>
+		public static bool IsSuffixedNumericLiteral(this string word)
+		{
+			string lowercase = word.ToLowerInvariant();
+			if (lowercase.EndsWith("u") || lowercase.EndsWith("l"))
+			{
+				lowercase = lowercase.Substring(0, lowercase.Length - 1);
+			}
+			else if (lowercase.EndsWith("ul")) { lowercase = lowercase.Substring(0, lowercase.Length); }
+			else { return false; }
+
+			return long.TryParse(lowercase, out _) || ulong.TryParse(lowercase, out _);
+		}
+
+		/// <summary>
+		/// Determines if a given string is a suffixed hexadecimal literal (0x, then one or more digits or hex digits,
+		/// then either u, ul, or l).
+		/// </summary>
+		/// <param name="word">The word to check.</param>
+		/// <returns>True if <paramref name="word"/> is a suffixed hexadecimal literal, false if it's not.</returns>
+		public static bool IsSuffixedHexadecimalLiteral(this string word)
+		{
+			string lowercase = word.ToLowerInvariant();
+			if (lowercase.EndsWith("u") || lowercase.EndsWith("l"))
+			{
+				lowercase = lowercase.Substring(0, lowercase.Length - 1);
+			}
+			else if (lowercase.EndsWith("ul")) { lowercase = lowercase.Substring(0, lowercase.Length); }
+			else { return false; }
+
+			return lowercase.IsBasicHexadecimalLiteral();
+		}
+
+		/// <summary>
+		/// Determines if a given string is a floating literal with a decimal point (one or more digits,
+		/// a decimal point, then one or more digits).
+		/// </summary>
+		/// <param name="word">The word to check.</param>
+		/// <returns>True if <paramref name="word"/> is a basic hexadecimal literal, false if it's not.</returns>
+		public static bool IsFloatingLiteralWithDecimal(this string word) => double.TryParse(word, out _)
+		    && !word.ToLowerInvariant().Contains("e");
+
+		/// <summary>
+		/// Determines if a given string is a suffixed floating literal (either a basic numeric literal,
+		/// or a floating literal with a decimal point, followed by either f or d).
+		/// </summary>
+		/// <param name="word">The word to check.</param>
+		/// <returns>True if <paramref name="word"/> is a suffixed floating literal, false if it's not.</returns>
+		public static bool IsSuffixedFloatingLiteral(this string word)
+		{
+			string lowercase = word.ToLowerInvariant();
+			if (!lowercase.EndsWith("f") && !lowercase.EndsWith("d")) { return false; }
+
+			string literalWithoutSuffix = lowercase.Substring(0, lowercase.Length - 1);
+
+			return IsBasicNumericLiteral(literalWithoutSuffix) ||
+			       IsFloatingLiteralWithDecimal(literalWithoutSuffix);
+		}
+
+		public static bool IsFloatingLiteralWithExponent(this string word)
+			=> double.TryParse(word, out _);
 
 		public static bool IsIdentifierOrLiteral(this string word, bool allowReservedWords = false)
-			=> word.IsIdentifier(allowReservedWords) || word.IsNumericLiteral() || word.IsHexadecimalNumericLiteral();
+			=> word.IsIdentifier(allowReservedWords) || word.IsBasicNumericLiteral() || word.IsBasicHexadecimalLiteral() ||
+		       word.IsSuffixedNumericLiteral() || word.IsSuffixedHexadecimalLiteral() || word.IsFloatingLiteralWithDecimal() ||
+		       word.IsSuffixedFloatingLiteral() || word.IsFloatingLiteralWithExponent();
 
 		[Obsolete]
 		public static string RemoveComments(this string input)

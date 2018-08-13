@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "CixCLI": {
-      "commandName": "Project",
-      "commandLineArgs": "--input \"C:\\Users\\Chris\\Documents\\GitHub\\Cix\\samples\\tetris\\tetris.cix\" --output \"C:\\Users\\Chris\\Documents\\GitHub\\Cix\\samples\\tetris\\tetris.iasm\" --removeComments"
-    }
-  }
-}

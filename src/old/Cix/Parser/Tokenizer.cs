@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Cix.Errors;
@@ -72,11 +73,22 @@ namespace Cix.Parser
 				LexedWord next = (i < wordCount - 1) ? words[i + 1] : null;
 
 				if (current.Text.IsIdentifier()) { AddToken(TokenType.Identifier, current); }
-				else if (current.Text.IsNumericLiteral()) { AddToken(TokenType.NumericLiteral, current); }
-				else if (current.Text.IsHexadecimalNumericLiteral())
+				else if (current.Text.IsBasicNumericLiteral()) { AddToken(TokenType.BasicNumericLiteral, current); }
+				else if (current.Text.IsBasicHexadecimalLiteral())
 				{
-					AddToken(TokenType.HexadecimalNumericLiteral, current);
+					AddToken(TokenType.BasicHexadecimalLiteral, current);
 				}
+				else if (current.Text.IsSuffixedNumericLiteral()) { AddToken(TokenType.SuffixedNumericLiteral, current); }
+				else if (current.Text.IsSuffixedHexadecimalLiteral()) { AddToken(TokenType.SuffixedHexadecimalLiteral, current); }
+				else if (current.Text.IsFloatingLiteralWithDecimal())
+				{
+					AddToken(TokenType.FloatingLiteralWithDecimal, current);
+				}
+				else if (current.Text.IsSuffixedFloatingLiteral())
+				{
+					AddToken(TokenType.SuffixedFloatingLiteral, current);
+				}
+				else if (current.Text.IsFloatingLiteralWithExponent()) { AddToken(TokenType.FloatingLiteralWithExponent, current); }
 				else
 				{
 					switch (current.Text)
@@ -594,8 +606,111 @@ namespace Cix.Parser
 
 		private void ProcessStringLiteral(LexedWord current)
 		{
-			// A word beginning and ending in double quotes.
-			AddToken(TokenType.StringLiteral, current);
+			// 1. Remove the starting and ending quotation marks.
+			// 2. Process every escape character
+			
+			// Code from IronAssembler, used with permission.
+			StringBuilder result = new StringBuilder(current.Text.Length - 2);
+			string literal = current.Text;
+			literal = literal.Substring(1, literal.Length - 2);
+
+			for (int i = 0; i < literal.Length; i++)
+			{
+				char currentChar = literal[i];
+
+				if (currentChar == '\'' || currentChar == '\"')
+				{
+					// These characters need to be escaped, so we'll throw an error.
+					errorList.AddError(ErrorSource.Tokenizer, 6,
+						"A string literal cannot have unescaped single or double quotes.", 
+						current.FilePath, current.LineNumber);
+				}
+				else if (currentChar == '\\')
+				{
+					if (i == literal.Length - 1)
+					{
+						errorList.AddError(ErrorSource.Tokenizer, 7,
+							"An escaping backslash cannot be at the end of a string literal.",
+							current.FilePath, current.LineNumber);
+						return;
+					}
+
+					char next = literal[i + 1];
+
+					if (next == 'u' || next == 'U')
+					{
+						int codePointLength = (next == 'u') ? 4 : 8;
+						if (i + 1 + codePointLength > literal.Length - 1)
+						{
+							errorList.AddError(ErrorSource.Tokenizer, 8,
+								"An string literal ends in a Unicode escape sequence, but there aren't enough hexadecimal digits to determine the codepoint.",
+								current.FilePath, current.LineNumber);
+							return;
+						}
+
+						string codePointString = literal.Substring(i + 2, codePointLength);
+						if (!int.TryParse(codePointString, NumberStyles.HexNumber,
+							CultureInfo.CurrentCulture, out int codePoint))
+						{
+							errorList.AddError(ErrorSource.Tokenizer, 9,
+								$"The sequence {codePointString} is not a valid Unicode code point.",
+								current.FilePath, current.LineNumber);
+							return;
+						}
+
+						result.Append(char.ConvertFromUtf32(codePoint));
+						i += 1 + codePointLength;
+					}
+
+					switch (next)
+					{
+						case '\'':
+							result.Append('\'');
+							break;
+						case '\"':
+							result.Append('\"');
+							break;
+						case '\\':
+							result.Append('\\');
+							break;
+						case '0':
+							result.Append('\0');
+							break;
+						case 'a':
+							result.Append('\a');
+							break;
+						case 'b':
+							result.Append('\b');
+							break;
+						case 'f':
+							result.Append('\f');
+							break;
+						case 'n':
+							result.Append('\n');
+							break;
+						case 'r':
+							result.Append('\r');
+							break;
+						case 't':
+							result.Append('\t');
+							break;
+						case 'v':
+							result.Append('\v');
+							break;
+						default:
+							errorList.AddError(ErrorSource.Tokenizer, 10,
+								$"The escape sequence \\{next} is not valid.",
+								current.FilePath, current.LineNumber);
+							return;
+					}
+
+					i++;
+				}
+				else { result.Append(currentChar); }
+
+				AddToken(TokenType.StringLiteral,
+					new LexedWord(current.FilePath, current.LineNumber, current.WordNumber, result.ToString()));
+			}
 		}
 
 		private void AddToken(TokenType type, LexedWord word)
@@ -622,8 +737,13 @@ namespace Cix.Parser
 	{
 		Invalid,
 		Identifier,
-		NumericLiteral,
-		HexadecimalNumericLiteral,
+		BasicNumericLiteral,
+		BasicHexadecimalLiteral,
+		SuffixedNumericLiteral,
+		SuffixedHexadecimalLiteral,
+		FloatingLiteralWithDecimal,
+		SuffixedFloatingLiteral,
+		FloatingLiteralWithExponent,
 		Directive,
 		DirectiveEnd,
 		Semicolon,
