@@ -832,7 +832,9 @@ namespace Cix.Parser
 		/// to the left of the asterisk is a type name.
 		/// </remarks>
 		Indeterminate,
-		StringLiteral
+		StringLiteral,
+		IntrinsicHWCall,
+		IntrinsicFuncPtr
 	}
 
 	/// <summary>

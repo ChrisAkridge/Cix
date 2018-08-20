@@ -55,9 +55,13 @@ struct Game
 	Tetrimino* HoldPiece;
 	Tetrimino* NextPiece;
 	int DropRatePerSecond;
+	int[5] ArrayMember;
+	int offsetCounter;
 }
 
 global Game* game;
+global int[5] globalArray;
+
 int Main(int argc, byte** argv)
 {
 	// Find the VGA monitor's address
@@ -160,7 +164,8 @@ Tetrimino* CreateZ()
 	return result;
 }
 
-global /* @funcptr<Tetrimino*>* */ void* tetriminoFunctions;
+//global @funcptr<Tetrimino*>* tetriminoFunctions;
+// global @funcptr<int, byte*, short, long**, 
 
 Tetrimino* RandomTetrimino()
 {

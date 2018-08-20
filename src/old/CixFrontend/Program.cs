@@ -55,7 +55,7 @@ namespace CixFrontend
 				element.Print(builder, 0);
 			}
 
-			Console.Write(builder.ToString());
+			Console.WriteLine(builder.ToString());
 
 			#if DEBUG
 			Console.ReadKey();

@@ -26,7 +26,7 @@ namespace Cix.AST
 		public override void Print(StringBuilder builder, int depth)
 		{
 			string arraySizeString = (ArraySize == 1) ? "" : $"[{ArraySize}]";
-			builder.AppendLineWithIndent($"{Type} {Name}{arraySizeString} (offset {Offset})", depth);
+			builder.AppendLineWithIndent($"{Type}{arraySizeString} {Name} (offset {Offset})", depth);
 		}
 	}
 }

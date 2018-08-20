@@ -115,7 +115,7 @@ namespace Cix.AST.Generator
 			else if (lowercase.EndsWith("u"))
 			{
 				string withoutSuffix = lowercase.Substring(0, lowercase.Length - 1);
-				if (uint.TryParse(lowercase, out uint result)) { return new ExpressionConstant(result); }
+				if (uint.TryParse(withoutSuffix, out uint result)) { return new ExpressionConstant(result); }
 				else
 				{
 					errorList.AddError(ErrorSource.ASTGenerator, 25,

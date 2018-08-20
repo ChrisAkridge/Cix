@@ -336,11 +336,11 @@ namespace Cix.AST.Generator
 				// int i;
 				// void* pv;
 				// byte** ppb;
-				// int array[50];
-				// short* p_array[25];
+				// int[50] array;
+				// short*[25] p_array;
 
-				var memberPointerLevel = 0;
-				int memberArraySize;
+				int memberPointerLevel = 0;
+				int memberArraySize = 0;
 
 				List<Token>.Enumerator enumerator = statement.GetEnumerator();
 				enumerator.MoveNext(); // start with the first item
@@ -372,22 +372,18 @@ namespace Cix.AST.Generator
 					enumerator.MoveNext();
 				}
 
-				if (enumerator.Current.Type != TokenType.Identifier)
+				string memberName = null;
+				if (enumerator.Current.Type == TokenType.Identifier)
 				{
-					errorList.AddError(ErrorSource.ASTGenerator, 12,
-						$"Invalid token {enumerator.Current.Text} of type {enumerator.Current.Type} after type.",
-						typeToken.FilePath, typeToken.LineNumber);
-					continue;
+					memberName = enumerator.Current.Text;
 				}
-				string memberName = enumerator.Current.Text;
-
-				if (enumerator.MoveNext() && enumerator.Current.Type == TokenType.OpenBracket)
+				else if (enumerator.Current.Type == TokenType.OpenBracket)
 				{
 					// This is an array member.
 					if (!enumerator.MoveNext() || !enumerator.Current.Type.IsNumericLiteralToken())
 					{
 						errorList.AddError(ErrorSource.ASTGenerator, 13,
-							$"The size of the array {memberName} was not declared.",
+							"The size of the struct array element was not declared.",
 							typeToken.FilePath, typeToken.LineNumber);
 						continue;
 					}
@@ -396,14 +392,14 @@ namespace Cix.AST.Generator
 					if (arraySizeLiteral.Type.Name != "int")
 					{
 						errorList.AddError(ErrorSource.ASTGenerator, 14,
-							$"The type of the size of the array {memberName} is not valid; must be int.",
+							"The type of the size of the struct array element is not valid; must be int.",
 							typeToken.FilePath, typeToken.LineNumber);
 						continue;
 					}
 					else if (arraySizeLiteral.ToInt() <= 0)
 					{
 						errorList.AddError(ErrorSource.ASTGenerator, 15,
-							$"The size of the array {memberName} is not valid; must be positive.",
+							"The size of the struct array element is not valid; must be positive.",
 							typeToken.FilePath, typeToken.LineNumber);
 						continue;
 					}
@@ -416,13 +412,19 @@ namespace Cix.AST.Generator
 							typeToken.FilePath, typeToken.LineNumber);
 						continue;
 					}
+
+					if (!enumerator.MoveNext() || enumerator.Current.Type != TokenType.Identifier)
+					{
+						errorList.AddError(ErrorSource.ASTGenerator, 12,
+							$"Invalid token {enumerator.Current.Text} of type {enumerator.Current.Type} after type.",
+							typeToken.FilePath, typeToken.LineNumber);
+						continue;
+					}
+
+					memberName = enumerator.Current.Text;
 				}
-				else
-				{
-					// This is not an array member, but...
-					memberArraySize = 1;
-					// ...it still acts like a one-member array.
-				}
+
+				if (memberArraySize == 0) { memberArraySize = 1;}
 
 				enumerator.Dispose();
 				intermediateStruct.Members.Add(new IntermediateStructMember(memberTypeName, memberName,
@@ -512,6 +514,7 @@ namespace Cix.AST.Generator
 			//  global T name;
 			//  global U primitive = 137;
 			//  global T* ptr;
+			//	global T[5] arrayMember;
 
 			int pointerLevel = globalStatement.Count(t => t.Text == "*");
 			if (pointerLevel > 0) { globalStatement.RemoveAll(t => t.Text == "*"); }

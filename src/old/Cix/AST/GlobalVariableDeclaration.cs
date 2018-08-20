@@ -9,6 +9,7 @@ namespace Cix.AST
 	public sealed class GlobalVariableDeclaration : Element
 	{
 		public DataType Type { get; }
+		public int ArraySize { get; }
 		public string Name { get; }
 		public ExpressionConstant InitialValue { get; }
 
@@ -22,12 +23,22 @@ namespace Cix.AST
 		{
 			Type = type;
 			Name = name;
+			ArraySize = 1;
 			InitialValue = initialValue;
+		}
+
+		public GlobalVariableDeclaration(DataType type, string name, int arraySize)
+		{
+			Type = type;
+			Name = name;
+			ArraySize = arraySize;
 		}
 
 		public override void Print(StringBuilder builder, int depth)
 		{
-			builder.AppendLineWithIndent($"global {Type} {Name} = {InitialValue}", depth);
+			string declaration = $"global {Type} {Name}";
+			string initializer = (InitialValue != null) ? $" = {InitialValue}" : "";
+			builder.AppendLineWithIndent($"{declaration}{initializer}", depth);
 		}
 	}
 }
