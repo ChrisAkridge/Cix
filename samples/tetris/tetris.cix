@@ -60,7 +60,7 @@ struct Game
 }
 
 global Game* game;
-global int[5] globalArray;
+// global int[5] globalArray;
 
 int Main(int argc, byte** argv)
 {
