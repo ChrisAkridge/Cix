@@ -22,12 +22,12 @@ global void* memBase;
 global MyStruct structDef;	// assume MyStruct is 20 bytes
 ```
 
-...the following CA would be created to keep track of the globals during code generation:
+...the following CA would be created to keep track of the globals during code generation (`HeaderEnd` being the first byte after the IronArc executable header):
 
 ```
-Global 0: {Name: "i", Type: int, Address: Header + 0}
-Global 1: {Name: "memBase", Type: void*, Address: Header + 4}
-Global 2: {Name: "structDef", Type: MyStruct, Address: Header + 12}
+Global 0: {Name: "i", Type: int, Address: HeaderEnd + 0}
+Global 1: {Name: "memBase", Type: void*, Address: HeaderEnd + 4}
+Global 2: {Name: "structDef", Type: MyStruct, Address: HeaderEnd + 12}
 ```
 
 ...and produce the following `globals:` block in the IronAssembler file:
@@ -39,7 +39,7 @@ globals: 32
 Globals will be defined in the CA in the order they're defined in the AST, which is the order they're defined in the preprocessed source. Any usage of a global variable first requires some code to add the address to the `ERP` register so that, if the program is loaded at an address other than 0, the address is correct.
 
 ## Initialization Code
-Cix expects that any preprocessed source file contains one function named `main`. It must have no return type or arguments. The function `main` may appear anywhere in the code, but it will be the first function in the IronArc assembly file.
+Cix expects that any preprocessed source file contains one function named `main`. It must have no return type or arguments. The function `main` may appear anywhere in the Cix code, but it will be the first function in the IronArc assembly file.
 
 The first two instructions of the `main` function are inserted by the compiler automatically, and they are `mov QWORD eax ebp` and `mov QWORD eax esp`; this sets up the stack to just after the program. Following these two instructions is the instructions of the rest of the `main` function.
 
@@ -65,7 +65,7 @@ Kinds of Assembly Blocks are:
 * `while` condition
 * `while` body
 
-The virtual stack imitates the actual IronArc stack when the function is run. Each **virtual stack element** (VSE) represents an actual value on the IronArc stack during execution. VSEs may be local variables, function arguments, or interstital values produced as expressions execute.
+The virtual stack imitates the actual IronArc stack when the function is run. Each **virtual stack element** (VSE) represents an actual value on the IronArc stack during execution. VSEs may be local variables, function arguments, or interstital values produced as expressions are evaluated.
 
 Each of the above block kinds gets a counter that starts at 0 and increments each time a block of that kind is found in the function. This gives the indices for the label names for each assembly block.
 
@@ -76,7 +76,7 @@ Each kind of block (`if`, `while`, `switch`, etc.) gets one or more assembly blo
 
 For example, consider an `if` block. Such a block has a condition and a sequence of code to execute if the condition is true. If the `if` block occurs in a function named `InitRNG`, two assembly blocks are defined with the names `InitRNG__if_0_condition` and `InitRNG__if_0_true`.
 
-Any code following a block is usually suffixed with "after", i.e. `InitRNG__if_0_after`.
+Any code following a block but not inside another is suffixed with "after", i.e. `InitRNG__if_0_after`.
 
 ### Determing the Kind of an Assembly Block
 An assembly block has a kind, taken from the list above. The kind of the assembly block is usually pretty easy to determine, as it is set when the code generator enters a particular block. The only complicated kind of assembly blocks are the ones that come after blocks; the `_after` blocks.
@@ -127,7 +127,7 @@ When a `do` block is found, an unconditional jump to a label named `funcName__do
 In the latter assembly block, the code to evaluate and check the condition is emitted. A conditional jump-if-not-equal is emitted to `funcName__dowhile_#_body` is emitted, then an unconditional jump to `funcName__dowhile_#_after` is emitted.
 
 #### For Loop
-All for loops were rewritten to while loops back in the lowering phase. Please see the "Lowering" document for more details.
+All `for` loops were rewritten to `while` loops back in the lowering phase. Please see the "Lowering" document for more details.
 
 #### Return
 The `return;` statement returns from a function. It doesn't return a value and can only be used in functions whose return type is `void`.
@@ -135,7 +135,7 @@ The `return;` statement returns from a function. It doesn't return a value and c
 When a `return;` statement is found, the code generator emits the following instructions:
 
 ```
-mov QWORD ebp esp  # To reset the stack
+mov QWORD ebp esp  # To reset the stack to what it was before the function call
 ret                # To perform the return
 ```
 
@@ -173,7 +173,7 @@ A variable declaration creates a new variable without assigning it a value.
 When a variable declaration is encountered, the code generator emits either a `push` instruction (if the type of the variable in primitive or a pointer), or, for a struct, adds the number of bytes in the struct to ESP. The code generator also adds a VSE to the virtual stack representing this local variable.
 
 #### Variable Declaration with Initialization
-A variable declaration with initializaes creates a new variable and assigns it a value based on an expression.
+A variable declaration with initialization creates a new variable and assigns it a value based on an expression.
 
 The code generator emits the same code as it does for a normal variable declaration, but it then emits code to evaluate the expression, then code to store the result in the variable.
 
@@ -212,8 +212,36 @@ Pointers conversions are explicit, except for `void*`, which can be converted to
 
 Struct types cannot be converted to or from anything.
 
+Function pointers cannot be cast to or from anything except `void*`. `void*` can be cast to any function pointer type.
+
 ### Determining the Type of an Expression
 
+Every expression has a type; this type is what results from an expression's evaluation. For instance, the expression `5 + 3` has type `int`. Additionally, each subexpression in an expression has its own type, which may not be the same as the expression's type. For instance, the expression `5 + (int)(3.0f + 1.0f)` has type `int`, but the parenthesized expression has type `float`.
+
+*TODO: remember why this is important to figure out*
+
 ## Expression Generation
+
+Expression generation produces assembly code that evaluates an expression. As expressions are stored in the AST in RPN form, the order of operations is already known and parentheses are not present. Generating the code for each expression element works as follows:
+
+### Array Accesses
+
+An array access is an operator with an expression producing an index of type `int`. This index is then applied to a pointer to the start of an array. First, the code to evaluate the index is generated. That index lives atop the stack.
+
+Next, code is generated that multiplies the index by the size of an element of the array's type. For instance, if the code accesses an element of a `long` array, the index is multiplied by `sizeof(long) == 8`.
+
+Finally, code is produced that copies the desired array element to atop the stack. This may be a simple `mov` for primitive types, or a `movln` for struct types.
+
+### Constants
+
+A constant is any numeric value or string literal used in an expression. For instance, `5 + 3` has the constants `5` and `3`. For the numeric types, a simple `push` is emitted that places the desired constant atop the stack.
+
+For string literals, which will be stored in the strings section of the assembly code, code is emitted that pushes the string's index atop the stack. The index is converted to a pointer into the string table when the code is assembled.
+
+### Function Calls and Arguments
+
+A function call changes the currently running function by setting `eip`. First, though, there may be function arguments that need to be evaluated.
+
+Each argument is an expression, and they're calculated in the order that they're specified in the function.
 
 ### Temporary Register Allocation
