@@ -7,7 +7,7 @@ using Cix.Parser;
 
 namespace Cix
 {
-	internal sealed class TokenEnumerator
+	public sealed class TokenEnumerator
 	{
 		private readonly List<Token> tokens;
 		private readonly IErrorListProvider errorList;

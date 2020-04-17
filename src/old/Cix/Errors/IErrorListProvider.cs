@@ -6,7 +6,7 @@ using Cix.Text;
 
 namespace Cix.Errors
 {
-	internal interface IErrorListProvider
+	public interface IErrorListProvider
 	{
 		void AddError(ErrorSource source, int errorNumber, string message, Line line);
 

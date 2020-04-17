@@ -16,7 +16,7 @@ namespace Cix.AST.Generator
 	///     This stage creates a tree containing the complete declaration of all structures
 	///     and global variables, and the headers and locations of all functions.
 	/// </remarks>
-	internal sealed class FirstPassGenerator
+	public sealed class FirstPassGenerator
 	{
 		private const int MaxStructNestingDepth = 100;
 
@@ -66,6 +66,7 @@ namespace Cix.AST.Generator
 			tree = GenerateStructTree(intermediateStructs);
 			tree = AddGlobalsToTree(tree);
 			intermediateFunctions = GenerateIntermediateFunctions();
+			tree.AddRange(intermediateFunctions);
 
 			astGenerated = true;
 		}

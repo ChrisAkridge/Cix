@@ -21,10 +21,13 @@ namespace CixTests
 
 		private bool cachesCreated = false;
 
-		private List<string> lexedWordCache;
-		private List<Token> tokenCache;
-		private List<Element> tree;
+		private IReadOnlyList<LexedWord> lexedWordCache;
+		private IReadOnlyList<Token> tokenCache;
+		private IReadOnlyList<Element> tree;
 		private List<IntermediateFunction> functions;
+
+		private static Func<LexedWord, string, bool> LexedWordComparer =>
+			(l, s) => l.Text == s;
 
 		private void CreateCaches()
 		{
@@ -37,12 +40,12 @@ namespace CixTests
 			compilation.Preprocess();
 			compilation.Lex();
 			compilation.Tokenize();
+			compilation.GenerateAST();
 
-			FirstPassGenerator generator = new FirstPassGenerator(new TokenEnumerator(tokenCache));
-			var structs = generator.GenerateIntermediateStructs();
-			tree = generator.GenerateStructTree(structs);
-			tree = generator.AddGlobalsToTree(tree);
-			functions = generator.GenerateIntermediateFunctions();
+			lexedWordCache = compilation.LexedFile;
+			tokenCache = compilation.TokenizedFile;
+			tree = compilation.AbstractSyntaxTree;
+			functions = compilation.AbstractSyntaxTree.Where(e => e is IntermediateFunction).Cast<IntermediateFunction>().ToList();
 
 			cachesCreated = true;
 		}
@@ -52,13 +55,13 @@ namespace CixTests
 		{
 			CreateCaches();
 
-			var wordsWithAsterisks = lexedWordCache.Where(w => w.Contains('*'));
+			var wordsWithAsterisks = lexedWordCache.Where(w => w.Text.Contains('*'));
 
 			// Validate that all words with asterisks are of length 1 and have only asterisks
-			foreach (string word in wordsWithAsterisks)
+			foreach (LexedWord word in wordsWithAsterisks)
 			{
 				// A word with length 1 that has asterisks will only contain an asterisk
-				if (word.Length > 1) { Assert.Fail($"Word {word} is too long (length must be 1)"); }
+				if (word.Text.Length > 1) { Assert.Fail($"Word {word.Text} is too long (length must be 1)"); }
 			}
 		}
 
@@ -70,13 +73,13 @@ namespace CixTests
 			// In the test case, globals _3 and _4, s._7, s._8, and f3(int**) and f4(int**) all have
 			// multiple asterisks in sequence. The lexer doesn't care about structure like this, so
 			// we just need to check _3.
-			int indexOf_3 = lexedWordCache.IndexOf("_3");
+			int indexOf_3 = lexedWordCache.IndexOf("_3", LexedWordComparer);
 			// Go back three tokens to "int"
 			int indexOfInt = indexOf_3 - 3;
 
-			if (lexedWordCache[indexOfInt] != "int") { Assert.Fail($"Word 1:{lexedWordCache[indexOfInt]}"); }
-			if (lexedWordCache[indexOfInt + 1] != "*") { Assert.Fail($"Word 2: {lexedWordCache[indexOfInt+1]}"); }
-			if (lexedWordCache[indexOfInt + 2] != "*") { Assert.Fail($"Word 3: {lexedWordCache[indexOfInt+2]}"); }
+			if (lexedWordCache[indexOfInt].Text != "int") { Assert.Fail($"Word 1:{lexedWordCache[indexOfInt]}"); }
+			if (lexedWordCache[indexOfInt + 1].Text != "*") { Assert.Fail($"Word 2: {lexedWordCache[indexOfInt+1]}"); }
+			if (lexedWordCache[indexOfInt + 2].Text != "*") { Assert.Fail($"Word 3: {lexedWordCache[indexOfInt+2]}"); }
 		}
 
 		[TestMethod()]
@@ -108,7 +111,7 @@ namespace CixTests
 			CreateCaches();
 
 			// Find _3.
-			int indexOf_3 = tokenCache.IndexOf(tokenCache.Find(t => t.Text == "_3"));
+			int indexOf_3 = tokenCache.IndexOf(tokenCache.First(t => t.Text == "_3"));
 
 			// Go back three tokens. The tokens should be { int, *, *, _3 }.
 			int indexOfInt = indexOf_3 - 3;

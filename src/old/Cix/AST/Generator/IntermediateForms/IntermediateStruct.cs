@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Cix.AST.Generator.IntermediateForms
 {
-	internal sealed class IntermediateStruct : Element
+	public sealed class IntermediateStruct : Element
 	{
 		public string Name { get; }
 		public int Size { get; }

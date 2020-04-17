@@ -125,6 +125,7 @@
     <Compile Include="AST\WhileLoop.cs" />
     <Compile Include="CharExtensions.cs" />
     <Compile Include="Compilation.cs" />
+    <Compile Include="EnumerableExtensions.cs" />
     <Compile Include="EnumExtensions.cs" />
     <Compile Include="Errors\Error.cs" />
     <Compile Include="Errors\ErrorsEncounteredException.cs" />

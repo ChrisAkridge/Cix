@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Cix.AST.Generator.IntermediateForms
 {
-	internal sealed class IntermediateFunction : Element
+	public sealed class IntermediateFunction : Element
 	{
 		private readonly List<FunctionParameter> arguments = new List<FunctionParameter>();
 
