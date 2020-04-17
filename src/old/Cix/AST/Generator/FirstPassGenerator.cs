@@ -5,7 +5,6 @@ using System.Linq;
 using Cix.AST.Generator.IntermediateForms;
 using Cix.Errors;
 using Cix.Parser;
-using JetBrains.Annotations;
 
 namespace Cix.AST.Generator
 {
@@ -123,7 +122,6 @@ namespace Cix.AST.Generator
 		///     The intermediate structures for which to generate a tree.
 		/// </param>
 		/// <returns>A tree containing the complete struct definitions.</returns>
-		[CanBeNull]
 		public List<Element> GenerateStructTree(List<IntermediateStruct> intermediateStructs)
 		{
 			if (!AllStructNamesUnique(intermediateStructs)) { return null; }
@@ -507,7 +505,6 @@ namespace Cix.AST.Generator
 			return result;
 		}
 
-		[CanBeNull]
 		private GlobalVariableDeclaration GetGlobalVariableDeclaration(List<Token> globalStatement)
 		{
 			// Valid global variable definitions
@@ -570,7 +567,6 @@ namespace Cix.AST.Generator
 				variableName, numericLiteral);
 		}
 
-		[CanBeNull]
 		private DataType GetDataTypeFromNameTable(string typeName)
 		{
 			// The error generation in this method is not the greatest.

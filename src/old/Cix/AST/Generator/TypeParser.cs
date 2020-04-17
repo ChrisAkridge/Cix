@@ -25,6 +25,8 @@ namespace Cix.AST.Generator
 			{
 				return ParseFunctionPointerType(enumerator, errorList);
 			}
+
+			throw new NotImplementedException();
 		}
 
 		private static FunctionPointerType ParseFunctionPointerType(TokenEnumerator enumerator,
@@ -37,6 +39,7 @@ namespace Cix.AST.Generator
 			//		 i. If the last token is a comma, or this is the first/last element, raise an error.
 			//		    Else, continue.
 			//	     Else, call ParseType on the token. Sadly, we'll need a new TokenEnumerator.
+			throw new NotImplementedException();
 		}
 	}
 }

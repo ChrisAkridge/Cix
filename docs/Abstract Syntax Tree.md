@@ -1,6 +1,6 @@
 # Abstract Syntax Tree
 
-In Cix, the **abstract syntax tree** is a tree data structures that describes a preprocessed, lexed, and tokenized Cix file. The **AST generator** transforms a tokenized list of words into a tree.
+In Cix, the **abstract syntax tree** is a tree data structures that describes a preprocessed, lexed, and tokenized set of Cix files. The **AST generator** transforms a tokenized list of words into a tree.
 
 The AST contains tree nodes that, themselves, contain other nodes. The nodes at the top of the tree are struct definitions, global variable declarations, and functions. Struct definitions then own elements describing their members, globals own elements describing their type and name, and functions own elements describing the statements and expressions within them.
 
@@ -12,15 +12,16 @@ Additionally, some elements are **expression** elements, which can be used in an
 
 The types of elements are as follows:
 
+* Block: A list of zero or more statements wrapped in curly braces.
 * Break: Represents a `break` statement.
-* Conditional Block: Represents a single `if`/`else`/`else if` block. Contains the conditional expression and the statements inside the block. Multiple conditions appear in order in whatever element contains the conditional block.
+* Conditional Block: Represents a single `if`/`else`block. Contains the conditional expression and a single element to be executed if the condition is true. The single element may be a Block with multiple statements. `else if` is represented as an `else` with an element that is itself a Conditional Block.
 * Continue: Represents a `continue` statement.
-* Data Type: Represents a type for a local or global variable, function argument or return type, or structure member. Is composed of the type's name, pointer level (`int` is at level 0, `int**` is at level 2), and the size in bytes of the type.
-	* Function Pointer Type: Represents a type for a function pointer. In addition to the other Data Type properties, this element contains a return type and a list of zero or more parameter types.
+* Data Type: Represents a type for a local or global variable, function argument or return type, or structure member. Is composed of the type's name, pointer level (`int` is at pointer level 0, `int**` is at pointer level 2), and the size in bytes of the type.
+	* Function Pointer Type: Represents a type for a function pointer. In addition to the other Data Type properties, this element contains a return type and a list of zero or more parameter types, which themselves can be function pointer types.
 * Do-While Loop: Represents a loop that performs an action at least once, then checks a condition to see if it should loop again. Contains the condition and the statements to loop over.
 * For Loop: Represents a loop that runs an initializer, then checks a condition. If the condition is true, a set of statements are executed, followed by an iterator statement. This element contains the initializer, condition, and iterator expressions, and the statements to loop over.
-* Function: Contains the function's name, return type, arguments, and the statements it contains.
-* Function Argument: Contains the argument's name and type.
+* Function: Contains the function's name, return type, parameters, and the statements it contains.
+* Function parameter: The parameter used in a function declaration. Contains the parameter's name and type.
 * Global Variable Declaration: Contains the global's type, name, and initial value, if any.
 * Return: Represents a `return` statement.
 * Return Value: Represents a `return` statement that returns a value.
@@ -37,8 +38,8 @@ The types of expression elements are as follows:
 * Expression: Represents an entire expression. Contains a list of the elements in "postfix" notation (that is, `2 + 3` becomes `2 3 +`). For more information on expression parsing, please see Expression Parsing below.
 * Array Access: Represents an array access. Array accesses themselves are expressions (i.e. `data[i * 4]`).
 * Constant: Represents a constant or string literal, such as `5`, `3.14159d`, or `"Hello, world!"`.
-* Function Call: Represents the invocation of a function or function pointer. Contains the name of the function/function pointer being invoked, as well as the parameters and the return type.
-* Function Parameter: Represents an expression used as a parameter in a function call.
+* Function Call: Represents the invocation of a function or function pointer. Contains the name of the function/function pointer being invoked, as well as the arguments and the return type.
+* Function Argument: Represents an expression used as a argument in a function call.
 * Identifier: Names a global or local variable, function argument, or, used with the member access operators, a struct member.
 * Operator: Represents a unary or binary operator, such as dereference, add, or multiplication assignment.
 * Parentheses: Represents a left or right parentheses.
@@ -82,7 +83,7 @@ Expression parsing is covered in the "Expression Parsing" section below. For now
 
 * A list of elements (blocks or statements) for every top-level element in the function. For example, the below lines marked with `<-` are top-level elements.
 
-```
+```c
 int main()
 {
 	if (3 < 5) <-
@@ -93,7 +94,7 @@ int main()
 }
 ```
 
-Each top-level element may be a statement that contains nothing else (in which case, it is considered a *terminal element*), or it may contain a list of elements within it (in which case, it is a *non-terminal statement*). Note that, in Cix, a statement that contains an expression (like `int y = x * z;`) is NOT considered to contain any other elements; it is considered terminal.
+Each top-level element may be a statement that contains nothing else (in which case, it is considered a *terminal element*), or it may contain a list of elements within it (in which case, it is a *non-terminal statement*). Note that, in Cix, a statement that contains an expression (like `int y = x * z;`) is NOT considered to contain any other elements; it is considered terminal because it only contains expression elements.
 
 Thus, a tree of the above function should appear as (where indented lines are children of the line with one less indentation):
 
@@ -136,11 +137,11 @@ Unary operations accept only one operand. Some unary operators come before the o
 
 Almost all C-like languages have the ternary conditional operator `?:`. Cix does not, at least at this time.
 
-Most such operators are pretty simple. Some operators, however, parse a bit differently. Consider the following:
+Most operators are pretty simple. Some operators, however, parse a bit differently. Consider the following:
 
 * Direct Member Access (`a.b`): This expression is used to access members of structs. It results in an assignable expression (see "Assignable and Value Expressions") that points to member "b" in variable "a".
 * Pointer Member Access (`a->b`): This expression takes a pointer to a struct and follows it to find the named member. It's equivalent to `(*a).b`, and produces an assignable expression much like Direct Member Access.
-* Typecast (`(int)f`): This expression takes a sub-expression and converts it to a different type. Note that it isn't made of one token, but at least three (`(`, `int`, and `)`), and the middle token(s) can and will vary.
+* Typecast (`(int)f`): This expression takes a sub-expression and converts it to a different type. Note that it isn't made of one token, but at least three (`(`, `int`, and `)`).
 * Array Access (`arr[(i * width) + j]`): This expression takes an expression producing an array/pointer as one operand and an expression producing an index into that array (or offset beyond that pointer) as another, producing the value at that address in the array. The expression is equivalent to `*(arr + ((i * width) + j))`. This is not unlike the typecast operator, in that it has multiple tokens and the inner tokens vary in type and count.
 * Function Invocation (`randomInt(1, 6)`): This takes a function name (or expression resulting in a function pointer), and a comma-delimited list of parameters, each an expression of its own, started and ended by parentheses.
 
@@ -174,19 +175,19 @@ Unary operators are considered right associative.
 * Right-associative: Assignment `= += -= *= /= %= <<= >>> &= ^= |=`
 
 #### Assignable and Value Expressions
-Some expressions produces things that can be assigned to. For example, if `p` is a pointer, then `p + 4` produces a pointer that can be assigned to (`(p + 4) = 2` would work, for instance). Such expressions are called **assignable expressions** (or lvalues).
+Some expressions produces things that can be assigned to. For example, if `p` is a pointer, then `p + 4` produces a pointer that can be assigned to (`(p + 4) = 2` would work, for instance). Such expressions are called **assignable expressions** (or lvalues in C).
 
-Some expressions produce things that can only be used as a value. For example, as `5` is a number, you cannot assign a value to it (`5 = 2` doesn't work). Such expressions are called **value expressions** (or rvalues).
+Some expressions produce things that can only be used as a value. For example, as `5` is a number, you cannot assign a value to it (`5 = 2` doesn't work). Such expressions are called **value expressions** (or rvalues in C).
 
 Assignable expressions represent an object in memory and can be used both for their value and to assign a new value to the object. Value expressions can only be used for their value.
 
 The following expression elements are assignable or produce assignable expressions:
 
 * The name of a variable (`myVar`), or an access to a member of a structure (`socket.port`, `thermometer->tempF`).
+* Functions or expressions that result in a pointer.
 * Arithmetic operations on pointers (`p + 4`).
-* Functions that return a pointer.
 
-Any other element or operation only produces a value.
+Any other element or operation only produces a value expression.
 
 #### Parsing Expressions into a Tree
 
@@ -301,13 +302,13 @@ N = normal PS
 F = function call PS
 ```
 
-What does knowing what's a function call and what's not let us do? It lets us treat function call subexpressions as individual tokens we don't have to parse. Since we can parse any subexpression independent of whatever expression it's in (`(i + 2)` can be parsed without having to know it's part of `(i + 2) + 4`), we don't have to worry about accounting for function call tokens along with all the normal tokens. We can just parse the function call and its arguments separately and treat it no differently as a variable name.
+What does knowing what's a function call and what's not let us do? It lets us treat function call subexpressions as individual tokens we don't have to parse at this stage. Since we can parse any subexpression independent of whatever expression it's in (`(i + 2)` can be parsed without having to know it's part of `(i + 2) + 4`), we don't have to worry about accounting for function call tokens along with all the normal tokens. We can just parse the function call and its arguments separately and treat it no differently as an identifier.
 
-We can do the same with typecasts. Since a typecast is a type in parentheses followed by an expression (here called the **typecast value expression**), we can treat typecasts as individual tokens which are processed the same as variable names. The expressions within the typecasts can be processed recursively.
+We can do the same with typecasts. Since a typecast is a type in parentheses followed by an expression (here, the entire subexpression is called the **typecast value expression**), we can treat typecasts as individual tokens which are processed the same as variable names. The expressions within the typecasts can be processed recursively.
 
 Once the whole expression and any subexpressions in function calls and typecasts are converted into trees, we can merge the trees of the expressions and subexpressions together to make one unified tree.
 
-There's a bit of cleanup we need to do before we can continue, though. We must convert all blocks of EETs corresponding to typecasts into individual token. These tokens then contain the list of expression elements that makes up their function-producing expression/function arguments/typecast value expression. These are treated identically to tokens that just contain a variable name. We can then work on creating a tree from the expression.
+There's a bit of cleanup we need to do before we can continue, though. We must convert all blocks of EETs corresponding to typecasts into individual tokens. These tokens then contain the list of expression elements that makes up their function-producing expression/function arguments/typecast value expression. These are treated identically to tokens that just contain a variable name. We can then work on creating a tree from the expression.
 
 One last thing, though: nested function calls (i.e. `sqrt(cos(i))`). Since these new token types can contain other expression element tokens, and since these new token types *are* expression element tokens, they can contain other function calls or typecasts.
 
@@ -527,3 +528,138 @@ Function call expression elements are in one of two forms: a **simple function c
 Typecast elements have two properties: the expression to convert, and the type to convert it to.
 
 Nonetheless, generating trees for these are easy. Traverse the expression tree, and when a function call/typecast element is found, call the functions that generate a tree on every expression in the element.
+
+### Generating Element Trees
+
+Now that we know how to turn expressions into trees, we can now take on generating trees for elements like statements and blocks.
+
+Statements are easy to generate trees for, because the process for each kind of statement is always the same. The algorithm to produce this tree works token-by-token, left to right, on each function body. It determines what kind of element it's looking at based on rules stated below. The algorithm is recursive; it will call itself when it finds a standalone block. It will also call itself after finding a Conditional Block, Do-While loop, For loop, or While loop with a special flag that has it return after parsing one element. This kind of recursion is called **single-element recursion**.
+
+Let's see how to generate trees for each kind of element.
+
+#### Block
+A block is a list of zero or more elements wrapped in curly braces. Blocks can be stand-alone, but they're usually immediately after a conditional block, Do-While loop, For loop, or While loop.
+
+Note that the curly-bracket-delimited "block" of a Switch Block follows special rules and is not a block. Switch Blocks will parse the curly-bracket-delimited "block" that follows the `switch` statement, so we don't need to worry about encountering it by itself.
+
+When the algorithm finds a standalone openscope `{`, it searches through the tokens to find the matching closescope `}` at the same level. This produces the token indices for the open and closescopes. The algorithm then recurses into the block, generating a tree of the elements inside the block, resulting in a list of elements.
+
+#### Break
+A break statement is standalone. The algorithm checks for a semicolon after it. If present, it adds the break to the tree.
+
+#### Conditional Block
+When the algorithm finds an `if` keyword, it looks for a `(`, finds the matching `)`, then calls the expression parser to generate the expression tree for the condition. It then single-element recurses into itself to parse the element following the conditional expression. After the element following the condition is parsed, it then looks for an `else`. If it finds one, it single-element recurses into itself again to parse whatever follows the `else`, be it another `if`, a statement, or a block.
+
+Finally, the first conditional block (and second, if present) are added to the tree.
+
+#### Continue
+When the algorithm finds a `continue` keyword, it checks if it's followed by a semicolon, and adds it to the tree.
+
+#### Data Type
+When the algorithm encounters an identifier, it will try to look it up in the type table if the identifier is the first token in the statement following a closescope or semicolon. The algorithm then calls a type parser. This type parser is also called when the expression parser algorithm finds a type in a typecast.
+
+If the identifier is not followed by asterisks, it can just be added to the tree as is. If it's followed by asterisks, each one that's there will add 1 to the pointer level of the type added to the tree.
+
+If the identifier is `@funcptr`, a special parser is used to parse the type. It looks for the openbracket `<`, then runs the type parser on the next token, which should be the return type. As long as a comma follows the current token, it will run the token after the comma through the type parser until it finds the closebracket `>` at the same level. The type parser, once recursed into, automatically matches nested brackets, i.e. `@funcptr<int, @funcptr<long, long*>>`
+
+#### Do-While Loop
+A Do-While loop looks like this:
+
+```c
+do statement;
+while (condition);
+```
+
+When the algorithm encounters a `do` keyword, it single-element recurses to get the body of the loop. It then looks for a `while` immediately after, skips the openparen, calls the expression parser for the condition, then skips the closeparen, validating that the line ends in a semicolon.
+
+#### For Loop
+A For loop looks like this:
+
+```c
+for (initializer; condition; iterator) statement;
+```
+
+When the algorithm encounters a `for` keyword, it skips the openparen and calls the expression parser to parse the initializer, condition, and iterator, skipping each semicolon. It then single-element recurses to parse the statement.
+
+#### Return and Return Value
+A return statement is merely `return;`. If the algorithm finds a semicolon, it adds a return statement to the tree, but if it finds anything else, it calls the expression parser and puts it in the tree as a return value statement.
+
+#### Switch Block and Switch Case
+
+A Switch block looks like this:
+
+```c
+switch (expression)
+{
+	case 0:
+	case 1:
+		statement;
+	case 2:
+		statement;
+	default:
+		statement;
+}
+```
+
+The Switch block is transformed into the following tree:
+
+```
+Switch Block:
+	Expression: expression
+	Cases:
+		Multicase:
+			Literals: {0, 1}
+			Statements: {
+				statement
+			}
+		Single Case:
+			Literal: 2
+			Is Default Case: false
+			Statements: {
+				statement
+			}
+		Single Case:
+			Literal: 2
+			Is Default Case: false
+			Statements: {
+				statement
+			}
+```
+
+When the algorithm finds a `switch` keyword, it skips the openparen, runs the expression parser on the expression, then skips the closeparen. A Switch block _does_ require the open and closescopes, unlike If, While, For, etc. The algorithm skips the openscope when it finds it and begins parsing the cases.
+
+Only `case` keywords can be at the root level of the block beneath switch. A case is the keyword `case` followed by a numeric or a string literal and a colon. `default` can appear as a case, but it doesn't have a literal following it, and must appear as the last case (no other cases can appear after it).
+
+A `case` statement can be followed immediately by another `case` statement, or `default`. If the `case` is followed by one or more `cases`, the entire contiguous sequence of cases are combined into a Multicase that stores all of its literals in the order they were seen.
+
+When the algorithm finds a non-`case` statement, it parses the statement and all that follow into the Statements list on the current single or multicase. When the algorithm finds a `break` statement, return statement, or return value statement, it adds the statement to the list and then looks for the next `case` or `default` statement, or the closescope for the entire Switch block. If a case does not end in any of these things, the algorithm raises an error.
+
+#### Variable Declaration and Variable Declaration with Initialization
+A variable declaration is a type name followed by an identifier and semicolon. A variable declaration with initialization is a variable declaration, but with an equal sign token followed by an expression before the semicolon.
+
+When the parser encounters a type name immediately following a semicolon or closescope, it parses the data type, takes up the identifier, and then looks for a semicolon or equal sign. If it finds a semicolon, it adds the statement to the tree.
+
+If it finds an equal sign, it skips the sign, parses the expression that follows, looks for the trailing semicolon, and adds the statement to the tree.
+
+#### While Loop
+
+A While Loop looks like:
+
+```c
+while (condition)
+	statement;
+```
+
+It is converted into the following form:
+
+```
+While Loop:
+	Condition: condition
+	Statement: statement
+```
+
+When the algorithm finds a `while` keyword, it skips the openparen, runs the condition through an expression parser, and skips the closescope. It then single-element recurses to get the statement to loop over. Finally, the loop is added to the tree.
+
+## Conclusion
+
+By this point, a complete Abstract Syntax Tree with every struct definition, global variable, and complete function, has been created and is ready for the next stage, Lowering.

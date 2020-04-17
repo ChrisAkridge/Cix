@@ -7,7 +7,7 @@ New lowerings may be added to Cix at any future point.
 ## Convert For Loops into While Loops
 Any for loop can be rewritten as a while loop. For example...
 
-```
+```c
 code before;
 for (initializer; condition; iterator)
 {
@@ -17,7 +17,7 @@ code after;
 ```
 
 can be rewritten as
-```
+```c
 code before;
 initializer;
 while (condition)
