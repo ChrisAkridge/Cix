@@ -1,14 +1,12 @@
 # Cix: Intrinsics and Function Pointers
 
-This document describes upcoming changes to the Cix standard.
-
 ## Intrinsic
 
 An intrinsic is a keyword denoting a special, built-in object provided by the compiler. Intrinsics can be types or functions. Their implementation is provided by the compiler and their usage generates special code.
 
-All intrinsics begin with an `@` symbol, like so: `@hwcall`. This both signifies the locations of intrinsics to the compiler and allows the user to define normal identifiers with those names. They also allow for differing syntactic constructs for certain intrinsics.
+All intrinsics begin with an `@` symbol, like so: `@intrinsic`. This both signifies the locations of intrinsics to the compiler and allows the user to define normal identifiers with those names. They also allow for differing syntactic constructs for certain intrinsics.
 
-Intrinsic keywords should be lexed as one word: `@hwcall`, not `@` then `hwcall`. At tokenization, they should be given the `Intrinsic` token type. Depending on the value of the intrinsic, other phases of the compiler may produce a different AST or generate different code than if a different identifier was used in its place.
+Intrinsic keywords should be lexed as one word: `@intrinsic`, not `@` then `intrinsic`. Depending on the value of the intrinsic, other phases of the compiler may produce a different AST or generate different code than if a different identifier was used in its place.
 
 ## Function Pointers
 
@@ -35,15 +33,10 @@ void main()
 ```
 
 Function pointers do not support the following operations:
-* Pointer arithmetic: As functions are not considered to be actual values in memory, pointer arithmetic on function pointers is meaningless.
+* Pointer arithmetic: As functions are not considered to have constant sizes, pointer arithmetic on function pointers is meaningless.
 * Casts: Function pointers cannot be cast to other function pointer types, nor can they be cast to any primitive or user-defined type.
 
-One exception to not being able to cast function pointers is, as with every other type, the ability to cast a pointer to and from `void*`. For instance, the cast `(@funcptr<int, long, ulong>*)(void*)f` is a legal if erroneous cast.
-
-### Modifications to Cix to Support Function Pointers
-#### AST Generation
-
-As a function pointer is a special kind of type, it can appear anywhere where a type is valid. Thus, a general parser for types must be written, which can then be used for every stage of AST generation. This parser will check to see if the type is the intrinsic `@funcptr` type, and if it is, it will parse in types using itself recursively for the return type and all argument types. The `DataType` class will be amended to support function pointers, perhaps through a derived type.
+One exception to not being able to cast function pointers is, as with every other type, the ability to cast a pointer to and from `void*`. For instance, the cast `(@funcptr<int, long, ulong>*)(void*)f` is a legal if erroneous cast..
 
 ### Code Generation
 

@@ -18,6 +18,9 @@ namespace Cix.AST.Generator
 	/// </remarks>
 	public sealed class FirstPassGenerator
 	{
+		/// <summary>
+		/// The maximum depth that structs can be members of other structs.
+		/// </summary>
 		private const int MaxStructNestingDepth = 100;
 
 		private readonly TokenEnumerator tokens;
@@ -236,6 +239,7 @@ namespace Cix.AST.Generator
 				{
 					// We've found a type name! Probably! Let's find it in the nametable before we
 					// get too excited.
+					// TODO: functions can return @funcptr, too
 					string possibleTypeName = tokens.Current.Text;
 					if (!NameTable.Instance.Names.ContainsKey(possibleTypeName.TrimAsterisks()))
 					{
@@ -284,6 +288,7 @@ namespace Cix.AST.Generator
 
 					// The above loop stops just before the closeparen. Add 1 to move it to the
 					// closeparen.
+					// TODO: is that right?
 					argsEndIndex += 1;
 
 					// Parse the function arguments.
@@ -337,6 +342,8 @@ namespace Cix.AST.Generator
 				// byte** ppb;
 				// int[50] array;
 				// short*[25] p_array;
+				// TODO: @funcptr<void, int, int***> funcptr;
+				// TODO: @funcptr<void, int, int***>[] funcptr_array;
 
 				int memberPointerLevel = 0;
 				int memberArraySize = 0;

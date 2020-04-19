@@ -11,7 +11,6 @@ namespace Cix.AST
 	// Function calls aren't just myFunc(i), they're also (funcArray[5])(i)
 	public sealed class ExpressionFunctionCall : ExpressionElement
 	{
-		// TODO: you got this backwards; this is an argument, not a parameter
 		private readonly List<ExpressionFunctionArgument> arguments;
 
 		public Expression FunctionExpression { get; }

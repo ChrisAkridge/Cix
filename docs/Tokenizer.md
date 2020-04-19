@@ -4,7 +4,7 @@ The Cix Tokenizer takes a list of words made from the lexer, where each word is 
 
 ## Definitions
 
-* A **word** is a string containing an indivisible unit of text from the preprocessed Cix file. Examples of words are `int`, `myVariable`, `+`, and `[`.
+* A **word** is a string containing an indivisible unit of text from the preprocessed Cix file. Examples of words are `int`, `myVariable`, `+`, `@funcptr`, and `[`.
 * A **token** is a word associated with a token type, such as Identifier, OpAdd, or OpenBracket.
 * An **operator** is an element of an expression that combines one or two *operands* (such as numbers, identifiers, or other expressions) into one operand. For example, in `5 + 3`, `+` is the operator.
 * A **unary operator** is an operator that has one operand. It can appear before or after the operand. Some unary operators are identity (`+5`) and postincrement (`i++`).
@@ -17,7 +17,9 @@ The tokenization categorizes each word by the content of the words immediately b
 Each word is categorized in the order provided by the lexer.
 
 ### Basic Tokens
-* The word is an **identifier** if it is made only of letters, numbers, and underscores and the first character is not a number.
+* The word is an **identifier** if:
+    * It is made only of letters, numbers, and underscores and the first character is not a number.
+    * It begins with a single at sign `@` and is followed only by letters, numbers, and underscores.
 * The word is a **semicolon** if the word is only a `;`.
 * The word is an **openscope** (left curly brace) if the word is only a `{`.
 * The word is a **closescope** (right curly brace) if the word is only a `}`.

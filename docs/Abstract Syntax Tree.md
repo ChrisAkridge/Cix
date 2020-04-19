@@ -19,6 +19,7 @@ The types of elements are as follows:
 * Data Type: Represents a type for a local or global variable, function argument or return type, or structure member. Is composed of the type's name, pointer level (`int` is at pointer level 0, `int**` is at pointer level 2), and the size in bytes of the type.
 	* Function Pointer Type: Represents a type for a function pointer. In addition to the other Data Type properties, this element contains a return type and a list of zero or more parameter types, which themselves can be function pointer types.
 * Do-While Loop: Represents a loop that performs an action at least once, then checks a condition to see if it should loop again. Contains the condition and the statements to loop over.
+* Expression Statement: A single expression that makes up its own statement, like `i = i + 5;`.
 * For Loop: Represents a loop that runs an initializer, then checks a condition. If the condition is true, a set of statements are executed, followed by an iterator statement. This element contains the initializer, condition, and iterator expressions, and the statements to loop over.
 * Function: Contains the function's name, return type, parameters, and the statements it contains.
 * Function parameter: The parameter used in a function declaration. Contains the parameter's name and type.
@@ -560,7 +561,9 @@ When the algorithm encounters an identifier, it will try to look it up in the ty
 
 If the identifier is not followed by asterisks, it can just be added to the tree as is. If it's followed by asterisks, each one that's there will add 1 to the pointer level of the type added to the tree.
 
-If the identifier is `@funcptr`, a special parser is used to parse the type. It looks for the openbracket `<`, then runs the type parser on the next token, which should be the return type. As long as a comma follows the current token, it will run the token after the comma through the type parser until it finds the closebracket `>` at the same level. The type parser, once recursed into, automatically matches nested brackets, i.e. `@funcptr<int, @funcptr<long, long*>>`
+If the identifier is `@funcptr`, a special parser is used to parse the type. It looks for the openbracket `<`, then runs the type parser on the next token, which should be the return type. As long as a comma follows the current token, it will run the token after the comma through the type parser until it finds the closebracket `>` at the same level. The type parser, once recursed into, automatically matches nested brackets, i.e. `@funcptr<int, @funcptr<long, long*>>`.
+
+Should asterisks follow a function pointer type, the algorithm parses through them, adding one for each asterisk it finds.
 
 #### Do-While Loop
 A Do-While loop looks like this:
@@ -571,6 +574,13 @@ while (condition);
 ```
 
 When the algorithm encounters a `do` keyword, it single-element recurses to get the body of the loop. It then looks for a `while` immediately after, skips the openparen, calls the expression parser for the condition, then skips the closeparen, validating that the line ends in a semicolon.
+
+
+#### Expression Statement
+
+An expression doesn't need to be part of a conditional or loop, they can occur as an entire statement, such as in `i += 1;`, or `InitRNG()`. All expressions start with either an identifier, openparen, or prefix unary operator (one of `! ~ + - & *`). The one ambiguity in the Cix grammar, whether `x * y;` means `x` multiplied by `y` or a variable declaration of type pointer-to-`x` named `y`, is already resolvable at this stage because of the complete type table. Thus, parsing an expression statement can be fairly straightforward.
+
+When the algorithm encounters an openparen or one of the unary operators immediately after a semicolon or closescope, it finds the next semicolon, takes all the tokens between the openparen or operator, and hands it to the expression parser. When the algorithm encounters an identifier immediately after a semicolon or closescope, it looks the identifier up in the name table. If the identifier names a type (built-in or user-defined), the algorithm parses it as a Variable Declaration or Variable Declaration with Initialization. Otherwise, it does the same find-the-semicolon-and-run-the-expression-parser routine as before.
 
 #### For Loop
 A For loop looks like this:

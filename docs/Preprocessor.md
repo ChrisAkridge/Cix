@@ -75,6 +75,10 @@ In the following example, assume that only the preprocessor flag `MEMORY_MAPPING
 ```
 
 ### `#include`: Include the Text of a Cix File
-`#include <filepath.cix>` or `#include "filepath.cix"` (both forms are treated as identical) finds and loads a text file at the given path in the folder that the Cix file being processed is in. The text of this loaded file is then preprocessed, then replaces the `#include` directive, and an extra newline is added at the end of the included file. The file path supports files in child and parent folders, too: `#include "io/file.cix"`, `#include "../../program.cix"`.
+`#include <filepath.cix>` or `#include "filepath.cix"` (both forms are treated as identical) finds and loads a text file at the given path in the folder that the Cix file being processed is in. Two kinds of files can be included: Cix source files and JSON files containing a hardware definition. The text is first parsed to find out if it's Cix or JSON.
 
-There cannot be an inclusion loop: `a.cix` cannot include `b.cix` if `b.cix` already includes `a.cix`.
+For Cix files, the text of the loaded file is then preprocessed and replaces the `#include` directive. An extra newline is added at the end of the included file.
+
+For hardware definition files, the JSON file is parsed into memory and the hardware definition is kept alongside the rest of the compilation's data to be used during the AST generation phase.
+
+The file path supports files in child and parent folders, too: `#include "io/file.cix"`, `#include "../../program.cix"`. The path of each file that was included is added to a list; if the same file is included twice, an error is raised.

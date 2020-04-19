@@ -38,14 +38,14 @@ The lexer's context is its state. The context can be set by the character most r
 * StringLiteral: Append to the builder.
 
 ### At Sign (@)
-* Root: Starts an identifier (@funcptr, in this case). Switch to Word and append to builder.
-* Whitespace: Starts an identifier. Switch to Word and append to builder.
-* Word: INVALID. The At Sign can only start an identifier. Add an error to the error list.
+* Root: Starts an intrinsic. Switch to Word and append to builder.
+* Whitespace: Starts an intrinsic. Switch to Word and append to builder.
+* Word: INVALID. The At Sign can only start a word. Add an error to the error list.
 * Operator: Yield and clear the builder. Append to builder and change context to Word.
-* NumericLiteral: INVALID. At Signs require whitespace after a number to be parsed as an identifier. Add an error to the error list.
-* NumericLiteralFraction: INVALID. At Signs require whitespace after a number to be parsed as an identifier. Add an error to the error list.
-* NumericLiteralSuffix: INVALID. At Signs require whitespace after a number to be parsed as an identifier. Add an error to the error list.
-* HexadecimalNumericLiteral: INVALID. At Signs require whitespace after a number to be parsed as an identifier. Add an error to the error list.
+* NumericLiteral: INVALID. At Signs require whitespace after a number to be parsed as an intrinsic. Add an error to the error list.
+* NumericLiteralFraction: INVALID. At Signs require whitespace after a number to be parsed as an intrinsic. Add an error to the error list.
+* NumericLiteralSuffix: INVALID. At Signs require whitespace after a number to be parsed as an intrinsic. Add an error to the error list.
+* HexadecimalNumericLiteral: INVALID. At Signs require whitespace after a number to be parsed as an intrinsic. Add an error to the error list.
 * StringLiteral: Append to builder.
 
 ### Letter or Underscore

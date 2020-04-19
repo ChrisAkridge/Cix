@@ -39,6 +39,7 @@ Each struct, global, or function declaration should be parsed as far as possible
 
 ## Error List
 ### I/O Errors:
+
 * IO001: Null or empty file path.
 * IO002: File {file} is not a valid path or the file does not exist.
 * IO003: File {file} could not be opened for reading. Check permissions or if the file is already opened.
@@ -46,9 +47,11 @@ Each struct, global, or function declaration should be parsed as far as possible
 * IO005: I/O exception occurred. (include exception details)
 
 ## Comment Remover Errors:
+
 * CR001: Single forward slash at end of line is not a valid comment.
 
 ### Preprocessor Errors:
+
 * PR001: "{defineLine}" isn't valid; must be "#define SYMBOL" or "#define THIS THAT".
 * PR002: #define symbol {symbol} is not an identifier.
 * PR003: Symbol {symbol} is already defined.
@@ -66,11 +69,13 @@ Each struct, global, or function declaration should be parsed as far as possible
 * PR015: File "file.cix" was already included.
 
 ### Lexer Errors:
+
 * LX001: Invalid character '{char}'.
 * LX002: The character '{char}' isn't a valid numeric literal suffix; valid suffixes are "u", "l", "ul", "f", and "d".
 * LX003: The At Sign can only appear at the start of an identifier.
 
 ### Tokenizer Errors:
+
 * TK001: The word "{word}" cannot be parsed.
 * TK002: The operator "{word}" cannot appear in this location.
 * TK003: The word "{word}" cannot be in the place of an operator.
@@ -83,29 +88,31 @@ Each struct, global, or function declaration should be parsed as far as possible
 * TK010: The escape sequence {sequence} is not valid.
 
 ### AST Generator Errors
-AG001: AST already generated; did you accidentally call GenerateFirstPassAST again?
-AG002: Expected a token of type {expected}, got a token of type {actual}.
-AG003: Expected a token of type anything except {notExpected}, but got it anyway.
-AG004: Unexpected end of file.
-AG005: There is already a structure named "{struct}".
-AG006: Return type "{type}" is not defined.
-AG007: Function name "{name}" is not valid.
-AG008: Expected "(".
-AG009: Token "{token}" appears between arguments and openscope of {funcName}.
-AG010: Function {funcName} has no closescope.
-AG011: Invalid type for {structName}.{memberName}. lpstring- or void-typed members cannot be in structures. Consider a pointer to these types instead.
-AG012: Invalid token {token} of type {type} after type.
-AG013: The size of the array {structAndMember} was not declared.
-AG014: The size of the array {structAndMember} is out of range ({arraySize}). Array sizes must be between 0 and 2.1 billion.
-AG015: Expected ']'.
-AG016: Invalid type for {structAndMember}. Type {type} is not defined.
-AG017: Maximum struct nesting depth of {depth} reached. Look for circular struct members.
-AG018: Invalid type for {globalVariableName}. Type "void" is not valid; perhaps you meant "void*"?
-AG019: Invalid type for {globalVariableName}. "{word}" is a {thing}, not a type.
-AG020: Invalid type for {globalVariableName}. The type {type} is not defined.
-AG021: Invalid type for {globalVariableName}. No global may be "lpstring", perhaps you meant "lpstring*"?
-AG022: Type "{type}" is not defined.
-AG023: Token "{type}" is not actually a type, it's a {thing}.
-AG024: The numeric literal {literal} is supposed to be a long but is out of range or invalid.
-AG025: The numeric literal {literal} is supposed to be a uint but is out of range or invalid.
-AG026: The numeric literal {literal} is supposed to be a float but is out of range or invalid.
+
+* AG001: AST already generated; did you accidentally call GenerateFirstPassAST again?
+* AG002: Expected a token of type {expected}, got a token of type {actual}.
+* AG003: Expected a token of type anything except {notExpected}, but got it anyway.
+* AG004: Unexpected end of file.
+* AG005: There is already a structure named "{struct}".
+* AG006: Return type "{type}" is not defined.
+* AG007: Function name "{name}" is not valid.
+* AG008: Expected "(".
+* AG009: Token "{token}" appears between arguments and openscope of {funcName}.
+* AG010: Function {funcName} has no closescope.
+* AG011: Invalid type for {structName}.{memberName}. lpstring- or void-typed members cannot be in structures. Consider a pointer to these * types instead.
+* AG012: Invalid token {token} of type {type} after type.
+* AG013: The size of the array {structAndMember} was not declared.
+* AG014: The size of the array {structAndMember} is out of range ({arraySize}). Array sizes must be between 0 and 2.1 billion.
+* AG015: Expected ']'.
+* AG016: Invalid type for {structAndMember}. Type {type} is not defined.
+* AG017: Maximum struct nesting depth of {depth} reached. Look for circular struct members.
+* AG018: Invalid type for {globalVariableName}. Type "void" is not valid; perhaps you meant "void*"?
+* AG019: Invalid type for {globalVariableName}. "{word}" is a {thing}, not a type.
+* AG020: Invalid type for {globalVariableName}. The type {type} is not defined.
+* AG021: Invalid type for {globalVariableName}. No global may have type "lpstring", perhaps you meant "lpstring*"?
+* AG022: Type "{type}" is not defined.
+* AG023: Token "{type}" is not actually a type, it's a {thing}.
+* AG024: The numeric literal {literal} is supposed to be a long but is out of range or invalid.
+* AG025: The numeric literal {literal} is supposed to be a uint but is out of range or invalid.
+* AG026: The numeric literal {literal} is supposed to be a float but is out of range or invalid.
+* AG027: The function named {function} collides with a hardware call function with the same name.

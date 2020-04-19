@@ -290,7 +290,6 @@ function-call-element:
 function-expression:
 	identifier or hwcall-intrinsic or function-pointer-expression
 	
-	
 hwcall-intrinsic:
 	"@hwcall"
 	

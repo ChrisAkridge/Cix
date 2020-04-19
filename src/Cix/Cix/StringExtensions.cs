@@ -32,6 +32,7 @@ namespace Cix
 
 		public static bool IsIdentifier(this string word, bool allowReservedWords = false)
 		{
+			// TODO: support identifiers starting with @
 			if (string.IsNullOrEmpty(word) || word == "\\r\\n")
 			{
 				return false;
