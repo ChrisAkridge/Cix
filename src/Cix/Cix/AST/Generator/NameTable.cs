@@ -65,5 +65,21 @@ namespace Cix.AST.Generator
 		                                                       typeName == "float" ||
 		                                                       typeName == "double" ||
 		                                                       typeName == "char";
+
+		public static bool Contains(string name) => Instance.Names.ContainsKey(name);
+
+		public static bool Contains(DataType type)
+		{
+			if (type is FunctionPointerType)
+			{
+				var functionPointerType = type as FunctionPointerType;
+				return Contains(functionPointerType.ReturnType)
+					&& functionPointerType.ParameterTypes.All(pt => Contains(pt));
+			}
+			else
+			{
+				return Contains(type.Name);
+			}
+		}
 	}
 }

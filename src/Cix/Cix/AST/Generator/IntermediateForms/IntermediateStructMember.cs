@@ -8,7 +8,7 @@ namespace Cix.AST.Generator.IntermediateForms
 {
 	public sealed class IntermediateStructMember
 	{
-		public string TypeName { get; }
+		public DataType Type { get; }
 		public string Name { get; }
 		public int PointerLevel { get; }
 		public int ArraySize { get; }
@@ -21,10 +21,10 @@ namespace Cix.AST.Generator.IntermediateForms
 		public string SourceFilePath { get; }
 		public int SourceLineNumber { get; }
 
-		public IntermediateStructMember(string typeName, string name, int pointerLevel, int arraySize,
+		public IntermediateStructMember(DataType type, string name, int pointerLevel, int arraySize,
 			Token typeToken)
 		{
-			TypeName = typeName;
+			Type = type;
 			Name = name;
 			PointerLevel = pointerLevel;
 			ArraySize = arraySize;
@@ -35,7 +35,7 @@ namespace Cix.AST.Generator.IntermediateForms
 		public void Print(StringBuilder builder, int depth)
 		{
 			string arraySizeString = (ArraySize > 1) ? $"[{ArraySize}]" : "";
-			builder.AppendLineWithIndent($"{TypeName}{new String('*', PointerLevel)}{arraySizeString}", depth);
+			builder.AppendLineWithIndent($"{Type.ToString()}{new String('*', PointerLevel)}{arraySizeString}", depth);
 		}
 	}
 }

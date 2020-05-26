@@ -83,9 +83,9 @@ namespace Cix
 			return new TokenEnumerator(tokens.Skip(startIndex).Take(length).ToList(), errorList);
 		}
 
-		public IEnumerable<List<Token>> SplitOnSemicolon()
+		public IEnumerable<TokenEnumerator> SplitOnSemicolon()
 		{
-			var result = new List<List<Token>>();
+			var result = new List<TokenEnumerator>();
 			var currentStatement = new List<Token>();
 
 			Reset();
@@ -94,13 +94,13 @@ namespace Cix
 			{
 				if (Current.Type == TokenType.Semicolon)
 				{
-					result.Add(currentStatement);
+					result.Add(new TokenEnumerator(currentStatement, errorList));
 					currentStatement = new List<Token>();
 				}
 				else if (Current.Type == TokenType.OpenScope || Current.Type == TokenType.CloseScope)
 				{
-					result.Add(currentStatement);
-					result.Add(new List<Token> { Current });
+					result.Add(new TokenEnumerator(currentStatement, errorList));
+					result.Add(new TokenEnumerator(new List<Token> { Current }, errorList));
 					currentStatement = new List<Token>();
 				}
 				else
@@ -111,7 +111,7 @@ namespace Cix
 
 			if (currentStatement.Any())
 			{
-				result.Add(currentStatement);
+				result.Add(new TokenEnumerator(currentStatement, errorList));
 			}
 			return result;
 		}

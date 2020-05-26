@@ -317,8 +317,10 @@ namespace Cix.AST.Generator
 						}
 					}
 
-					functions.Add(new IntermediateFunction(returnType, name, functionArguments, openScopeIndex,
-						closeScopeIndex));
+					var function = new IntermediateFunction(returnType, name, functionArguments, openScopeIndex,
+						closeScopeIndex);
+					functions.Add(function);
+					NameTable.Instance.Names.Add(function.Name, function);
 				}
 
 				tokens.MoveNext();
@@ -330,11 +332,11 @@ namespace Cix.AST.Generator
 		[SuppressMessage("ReSharper", "PossibleNullReferenceException")] // no part of the token list should ever be null
 		private void ParseIntermediateStructMembers(IntermediateStruct intermediateStruct)
 		{
-			IEnumerable<List<Token>> statements = tokens
+			IEnumerable<TokenEnumerator> statements = tokens
 				.Subset(intermediateStruct.FirstDefinitionTokenIndex, intermediateStruct.LastTokenIndex)
 				.SplitOnSemicolon();
 
-			foreach (List<Token> statement in statements)
+			foreach (TokenEnumerator statementTokens in statements)
 			{
 				// Valid member definitions:
 				// int i;
@@ -342,99 +344,75 @@ namespace Cix.AST.Generator
 				// byte** ppb;
 				// int[50] array;
 				// short*[25] p_array;
-				// TODO: @funcptr<void, int, int***> funcptr;
-				// TODO: @funcptr<void, int, int***>[] funcptr_array;
+				// @funcptr<void, int, int***> funcptr;
+				// @funcptr<void, int, int***>[] funcptr_array;
 
 				int memberPointerLevel = 0;
 				int memberArraySize = 0;
 
-				List<Token>.Enumerator enumerator = statement.GetEnumerator();
-				enumerator.MoveNext(); // start with the first item
+				Token firstTypeToken = statementTokens.Current; // used for error tracking
 
-				Token typeToken = enumerator.Current; // used for error tracking
-
-				// If this struct member is a pointer...
-				string memberTypeName = enumerator.Current.Text;
-
-				enumerator.MoveNext();
-				while (enumerator.Current.Text == "*")
+				if (!TypeParser.TryParseType(statementTokens, errorList, out DataType memberType))
 				{
-					memberPointerLevel++;
-					enumerator.MoveNext();
-				}
-
-				if ((memberTypeName == "void" || memberTypeName == "lpstring") && memberPointerLevel == 0)
-				{
-					errorList.AddError(ErrorSource.ASTGenerator, 11,
-						$"Members of type {memberTypeName} cannot appear in a struct; consider a pointer to {memberTypeName} instead.",
-						enumerator.Current.FilePath, enumerator.Current.LineNumber);
 					continue;
 				}
 
-				while (enumerator.Current.Text == "*")
-				{
-					// ...usually. This is a token with one or more asterisks, i.e. "int ** i"
-					memberPointerLevel++;
-					enumerator.MoveNext();
-				}
-
 				string memberName = null;
-				if (enumerator.Current.Type == TokenType.Identifier)
+				if (statementTokens.Current.Type == TokenType.Identifier)
 				{
-					memberName = enumerator.Current.Text;
+					memberName = statementTokens.Current.Text;
 				}
-				else if (enumerator.Current.Type == TokenType.OpenBracket)
+				else if (statementTokens.Current.Type == TokenType.OpenBracket)
 				{
 					// This is an array member.
-					if (!enumerator.MoveNext() || !enumerator.Current.Type.IsNumericLiteralToken())
+					if (!statementTokens.MoveNext() || !statementTokens.Current.Type.IsNumericLiteralToken())
 					{
 						errorList.AddError(ErrorSource.ASTGenerator, 13,
 							"The size of the struct array element was not declared.",
-							typeToken.FilePath, typeToken.LineNumber);
+							firstTypeToken.FilePath, firstTypeToken.LineNumber);
 						continue;
 					}
 
-					ExpressionConstant arraySizeLiteral = LiteralParser.Parse(enumerator.Current, errorList);
+					ExpressionConstant arraySizeLiteral = LiteralParser.Parse(statementTokens.Current, errorList);
 					if (arraySizeLiteral.Type.Name != "int")
 					{
 						errorList.AddError(ErrorSource.ASTGenerator, 14,
 							"The type of the size of the struct array element is not valid; must be int.",
-							typeToken.FilePath, typeToken.LineNumber);
+							firstTypeToken.FilePath, firstTypeToken.LineNumber);
 						continue;
 					}
 					else if (arraySizeLiteral.ToInt() <= 0)
 					{
 						errorList.AddError(ErrorSource.ASTGenerator, 15,
 							"The size of the struct array element is not valid; must be positive.",
-							typeToken.FilePath, typeToken.LineNumber);
+							firstTypeToken.FilePath, firstTypeToken.LineNumber);
 						continue;
 					}
 					memberArraySize = arraySizeLiteral.ToInt();
 
-					if (!enumerator.MoveNext() || enumerator.Current.Type != TokenType.CloseBracket)
+					if (!statementTokens.MoveNext() || statementTokens.Current.Type != TokenType.CloseBracket)
 					{
 						errorList.AddError(ErrorSource.ASTGenerator, 16,
 							"Expected closing bracket.",
-							typeToken.FilePath, typeToken.LineNumber);
+							firstTypeToken.FilePath, firstTypeToken.LineNumber);
 						continue;
 					}
 
-					if (!enumerator.MoveNext() || enumerator.Current.Type != TokenType.Identifier)
+					if (!statementTokens.MoveNext() || statementTokens.Current.Type != TokenType.Identifier)
 					{
 						errorList.AddError(ErrorSource.ASTGenerator, 12,
-							$"Invalid token {enumerator.Current.Text} of type {enumerator.Current.Type} after type.",
-							typeToken.FilePath, typeToken.LineNumber);
+							$"Invalid token {statementTokens.Current.Text} of type {statementTokens.Current.Type} after type.",
+							firstTypeToken.FilePath, firstTypeToken.LineNumber);
 						continue;
 					}
 
-					memberName = enumerator.Current.Text;
+					memberName = statementTokens.Current.Text;
 				}
 
 				if (memberArraySize == 0) { memberArraySize = 1;}
 
-				enumerator.Dispose();
-				intermediateStruct.Members.Add(new IntermediateStructMember(memberTypeName, memberName,
-					memberPointerLevel, memberArraySize, typeToken));
+				intermediateStruct.Members.Add(new IntermediateStructMember(memberType, memberName,
+					memberPointerLevel, memberArraySize, firstTypeToken));
 			}
 		}
 
@@ -448,30 +426,41 @@ namespace Cix.AST.Generator
 			foreach (IntermediateStructMember member in intermediateStruct.Members)
 			{
 				// Resolve the type.
-				if (!NameTable.Instance.Names.ContainsKey(member.TypeName))
+				if (!NameTable.Contains(member.Type))
 				{
 					errorList.AddError(ErrorSource.ASTGenerator, 16,
-						$"Invalid type {member.TypeName} for {structName}.{member.Name}.",
+						$"Invalid type {member.Type.Name} for {structName}.{member.Name}.",
 						member.SourceFilePath, member.SourceLineNumber);
 					continue;
 				}
-				Element typeEntry = NameTable.Instance[member.TypeName];
 
-				if (typeEntry is DataType baseType1)
+				if (member.Type is FunctionPointerType)
+				{
+					// Scenario 0: Member is a function pointer type
+					var memberDeclaration = new StructMemberDeclaration(member.Type,
+						member.Name, member.ArraySize, offsetCounter);
+					members.Add(memberDeclaration);
+					offsetCounter += 8 * member.ArraySize;
+					continue;
+				}
+
+				Element typeEntry = NameTable.Instance[member.Type.Name];
+
+				if (typeEntry is DataType primitiveType)
 				{
 					// Scenario 1: Member has a primitive type or is a pointer to a primitive type
-					DataType fullType = baseType1.WithPointerLevel(member.PointerLevel);
+					DataType fullType = primitiveType.WithPointerLevel(member.Type.PointerLevel);
 					var memberDeclaration =
 						new StructMemberDeclaration(fullType, member.Name, member.ArraySize, offsetCounter);
 					members.Add(memberDeclaration);
 					offsetCounter += memberDeclaration.Type.Size * member.ArraySize;
 				}
-				else if (typeEntry is StructDeclaration baseType)
+				else if (typeEntry is StructDeclaration structDeclarationType)
 				{
 					// Scenario 2: Member has a struct type or is a pointer to a struct type
-					members.Add(GetDeclarationOfStructMember(baseType, member, ref offsetCounter));
+					members.Add(GetDeclarationOfStructMember(structDeclarationType, member, ref offsetCounter));
 				}
-				else if (typeEntry is IntermediateStruct @struct)
+				else if (typeEntry is IntermediateStruct intermediateStructType)
 				{
 					// Scenario 3: Member has a struct type which is not fully defined
 					depthLevel++;
@@ -485,7 +474,7 @@ namespace Cix.AST.Generator
 						continue;
 					}
 
-					StructDeclaration newlyDefinedStruct = CreateStructDeclaration(@struct, ref depthLevel);
+					StructDeclaration newlyDefinedStruct = CreateStructDeclaration(intermediateStructType, ref depthLevel);
 					members.Add(GetDeclarationOfStructMember(newlyDefinedStruct, member, ref offsetCounter));
 				}
 				else if (typeEntry == null && member.Name == "void" && member.PointerLevel > 0)
@@ -517,52 +506,54 @@ namespace Cix.AST.Generator
 		{
 			// Valid global variable definitions
 			//  global T name;
-			//  global U primitive = 137;
+			//  global U primitive = 137; (numeric types only)
 			//  global T* ptr;
 			//	global T[5] arrayMember;
+			//  global @funcptr<R, P1, P2> function;
+			//  global @funcptr<R, P1, P2>* pFunction;
+			//  global @funcptr<R, P1, P2>[3] functionArray;
 
-			int pointerLevel = globalStatement.Count(t => t.Text == "*");
-			if (pointerLevel > 0) { globalStatement.RemoveAll(t => t.Text == "*"); }
+			var statementTokens = new TokenEnumerator(globalStatement, errorList);
+			statementTokens.MoveNext();
+		
+			if (!TypeParser.TryParseType(tokens, errorList, out DataType globalType))
+			{
+				// TODO: AAAA
+				// We really need a better pattern for a non-void returning method that
+				// may fail, since we're not try-catching all over the place
+				// I do NOT like the TryXXX pattern very much
+				throw new NotImplementedException();
+			}
 
-			Tuple<string, int> typeData = globalStatement[1].Text.SeparateTypeNameAndPointerLevel();
-			string typeName = typeData.Item1;
-			pointerLevel = pointerLevel == 0 ? typeData.Item2 : pointerLevel;
+			statementTokens.MoveNext();
 
-			string variableName = globalStatement[2].Text;
+			string variableName = statementTokens.Current.Text;
 			ExpressionConstant numericLiteral = null;
 
-			if (globalStatement.Any(t => t.Text == "=") && NameTable.IsPrimitiveType(typeName))
+			if (globalStatement.Any(t => t.Text == "=") && NameTable.IsPrimitiveType(globalType.Name))
 			{
 				Token numericLiteralToken = globalStatement[4];
 				numericLiteral = LiteralParser.Parse(numericLiteralToken, errorList);
 			}
 
 			// Double-check that the global's type actually exists.
-			bool typeNameIsActuallyAType = NameTable.Instance[typeName] is DataType;
-			bool typeNameIsStruct = NameTable.Instance[typeName] is StructDeclaration;
-			bool typeExists = NameTable.Instance.Names.ContainsKey(typeName);
-			if (typeName == "void" && pointerLevel == 0)
+			bool typeExists = NameTable.Contains(globalType.Name);
+			bool typeNameIsStruct = NameTable.Instance[globalType.Name] is StructDeclaration;
+			if (globalType.Name == "void" && globalType.PointerLevel == 0)
 			{
 				errorList.AddError(ErrorSource.ASTGenerator, 18,
 					"No global may have type void, perhaps you meant pointer to void?",
-					globalStatement[1].FilePath, globalStatement[1].LineNumber);
+					statementTokens.Current.FilePath, statementTokens.Current.LineNumber);
 				return null;
 			}
-			else if (!typeNameIsActuallyAType && !typeNameIsStruct && typeName != "void")
-			{
-				errorList.AddError(ErrorSource.ASTGenerator, 19,
-					$"{typeName} is not a type; it's a {NameTable.Instance[typeName].GetType().Name}.",
-					globalStatement[1].FilePath, globalStatement[1].LineNumber);
-				return null;
-			}
-			else if (!typeExists && typeName != "void")
+			else if (!typeExists && globalType.Name != "void")
 			{
 				errorList.AddError(ErrorSource.ASTGenerator, 20,
-					$"Type {typeName} for global variable {variableName} doesn't exist.",
+					$"Type {globalType.Name} for global variable {variableName} doesn't exist.",
 					globalStatement[1].FilePath, globalStatement[1].LineNumber);
 				return null;
 			}
-			else if (typeName == "lpstring")
+			else if (globalType.Name == "lpstring")
 			{
 				errorList.AddError(ErrorSource.ASTGenerator, 21,
 					"No global variable may directly have the type of lpstring. Consider using pointer to lpstring instead.",
@@ -570,9 +561,7 @@ namespace Cix.AST.Generator
 				return null;
 			}
 
-			int typeSize = pointerLevel == 0 ? ((DataType) NameTable.Instance[typeName]).Size : 8;
-			return new GlobalVariableDeclaration(new DataType(typeName, pointerLevel, typeSize),
-				variableName, numericLiteral);
+			return new GlobalVariableDeclaration(globalType, variableName, numericLiteral);
 		}
 
 		private DataType GetDataTypeFromNameTable(string typeName)
@@ -611,62 +600,77 @@ namespace Cix.AST.Generator
 			// Add 1 to startIndex and subtract 1 from endIndex to point them to the first and last
 			// actual tokens in the function arguments.
 
-			TokenEnumerator argTokens = tokens.Subset(startIndex + 1, endIndex - 1);
-			var result = new List<FunctionParameter>();
-			if (argTokens.Current == null)
-			{
-				// No arguments
-				return result;
-			}
-
 			// Easy case: if the closeparen is right after the openparen, there are no arguments.
-			if (startIndex + 1 == endIndex) { return result; }
+			if (startIndex + 1 == endIndex) { return Enumerable.Empty<FunctionParameter>(); }
 
-			IEnumerable<List<Token>> args = argTokens.SplitOnComma();
+			TokenEnumerator paramTokens = tokens.Subset(startIndex + 1, endIndex - 1);
+			var result = new List<FunctionParameter>();
+			IEnumerable<List<Token>> parameters = paramTokens.SplitOnComma();
 
 			// A function argument is either "type name" or "type* name" or "type * name"
 			// (with however many asterisks, of course)
 
-			foreach (List<Token> arg in args)
+			foreach (List<Token> arg in parameters)
 			{
 				if (!ValidateFunctionArgumentTokens(arg))
 				{
 					errorList.AddError(ErrorSource.ASTGenerator, 24,
-						$"There are {arg.Count} token(s) in this function argument. There should be 2 or 3.",
+						$"This function parameter is not of the correct form.",
 						tokens.Current.FilePath, tokens.Current.LineNumber);
 					continue;
 				}
 
-				Token typeNameToken = arg[0];
-				Token argNameToken = arg.Last();
+				if (!TypeParser.TryParseType(new TokenEnumerator(arg, errorList), errorList, out DataType paramType))
+				{
+					throw new InvalidOperationException();
+				}
+				Token paramNameToken = arg.Last();
 
 				// Look up the type name in the name table to check if it's real.
-				string typeName = typeNameToken.Text.TrimAsterisks();
-				if (!NameTable.Instance.Names.ContainsKey(typeName))
+				if (!NameTable.Instance.Names.ContainsKey(paramType.Name))
 				{
 					errorList.AddError(ErrorSource.ASTGenerator, 25,
-						$"A function argument was declared with return type {typeName}. No type by that name exists.",
+						$"A function argument was declared with return type {paramType.Name}. No type by that name exists.",
 						tokens.Current.FilePath, tokens.Current.LineNumber);
 					continue;
 				}
 
-				string argName = argNameToken.Text;
-				if (!argName.IsIdentifier())
+				string paramName = paramNameToken.Text;
+				if (!paramName.IsIdentifier())
 				{
 					errorList.AddError(ErrorSource.ASTGenerator, 26,
-						$"A function argument had the invalid name \"{argName}\".",
+						$"A function argument had the invalid name \"{paramName}\".",
 						tokens.Current.FilePath, tokens.Current.LineNumber);
 					continue;
 				}
 
 				int pointerLevel = arg.Count - 2;
 
-				// Look up the data type in the name table.
-				DataType argType = GetDataTypeFromNameTable(typeName);
-				if (argType != null) { argType = argType.WithPointerLevel(pointerLevel); }
-				else { continue; }
+				// WYLO: Okay, so types are kind of broken here.
+				// A data type can be a primitive or a pointer, but it can also be a struct
+				// type. Structs have to keep their member offsets so that we know what to
+				// translate myStruct.member into. But that creates other complications,
+				// namely that the rest of the AST generator (and probably the code generator)
+				// have to check every single type to see if it's a DataType or a StructDeclaration,
+				// including subexpression types.
+				//
+				// We also let structures reference each other before they're formally defined
+				// - A can have a member of type B before B is defined. This can still be done,
+				// but we have to have a way to set sizes after we find B. In fact, I think I have
+				// an idea:
+				//	- Remove StructDeclaration from the AST
+				//	- Add a list of struct members to DataType itself. Each member would have
+				//	  a type, name, array size, and offset. Primitives, pointers, and function
+				//	  pointers would have this list null.
+				//	- Add a property IsStruct to DataType that's true if the list of struct
+				//	  members is null.
+				//
+				// We also need a better pattern for methods that return something (i.e. a
+				// parsed DataType) but may also return errors. Some options are returning
+				// null (probably the easiest), using the TryXXX pattern (ugh), or using
+				// exception (even worse). Null is probably the easiest pattern to use.
 
-				result.Add(new FunctionParameter(argType, argName));
+				result.Add(new FunctionParameter(paramType, paramName));
 			}
 
 			return result;
@@ -681,14 +685,6 @@ namespace Cix.AST.Generator
 
 			// The last token must be an identifier
 			if (tokens[tokens.Count - 1].Type != TokenType.Identifier) { return false; }
-
-			// There must be either no tokens in between or all tokens in between must be asterisks
-			if (tokens.Count == 2) { return true; }
-
-			for (int i = 1; i < tokens.Count - 2; i++)
-			{
-				if (tokens[i].Text != "*") { return false; }
-			}
 
 			return true;
 		}

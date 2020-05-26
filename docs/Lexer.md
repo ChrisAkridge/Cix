@@ -112,7 +112,7 @@ The lexer's context is its state. The context can be set by the character most r
 * Root: INVALID. Add an error to the error list.
 * Whitespace: Append to builder and change context to Operator.
 * Word: Yield and clear the builder. Append to builder and change context to Operator.
-* Operator: INVALID. Add an error to the error list.
+* Operator: Invalid unless the lass character was an asterisk; otherwise, append to builder.
 * NumericLiteral: Yield and clear the builder. Append to builder and change context to Operator.
 * NumericLiteralFraction: Same as in NumericLiteral.
 * NumericLiteralSuffix: Same as in NumericLiteral.

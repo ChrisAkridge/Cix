@@ -83,8 +83,11 @@ namespace Cix
 			var firstPassGenerator = new FirstPassGenerator(tokenEnumerator, this);
 
 			firstPassGenerator.GenerateFirstPassAST();
-			abstractSyntaxTree = firstPassGenerator.Tree.ToList(); // TODO: make abstractSyntaxTree into an
+			abstractSyntaxTree = firstPassGenerator.Tree.ToList();
+			// TODO: make abstractSyntaxTree into an
 			// IReadOnlyList<Element> after we get the second pass generator done
+
+			
 
 			ThrowIfErrors();
 		}

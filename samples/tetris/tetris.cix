@@ -17,6 +17,8 @@
  *
  */
 
+global void** doublePointer;
+
 global void* vgaBase;
 
 #define COLOR_CYAN 0x03 // I

@@ -94,7 +94,7 @@ Each struct, global, or function declaration should be parsed as far as possible
 * AG003: Expected a token of type anything except {notExpected}, but got it anyway.
 * AG004: Unexpected end of file.
 * AG005: There is already a structure named "{struct}".
-* AG006: Return type "{type}" is not defined.
+* AG006: Type "{type}" is not defined.
 * AG007: Function name "{name}" is not valid.
 * AG008: Expected "(".
 * AG009: Token "{token}" appears between arguments and openscope of {funcName}.

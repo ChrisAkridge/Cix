@@ -31,5 +31,7 @@ namespace Cix.AST
 
 			this.parameterTypes = parameterTypes.ToList();
 		}
+
+		public override DataType WithPointerLevel(int pointerLevel) => new FunctionPointerType(ReturnType, ParameterTypes, pointerLevel);
 	}
 }

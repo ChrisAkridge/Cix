@@ -106,6 +106,16 @@ Function (name "main", returns int, 0 arguments)
 	Return Value (value 0)
 ```
 
+### Data Type Parsing
+
+A data type is either a standard type (i.e. `int` or `MyStruct`), or a function pointer type (i.e. `@funcptr<int, long, char*>`), followed by zero or more asterisks. Unlike in C, the asterisks must always come immediately after the type name with no whitespace proceeding them (i.e. `int* i`, not `int * i` or `int *i`).
+
+The type parser first looks for `@funcptr`. If it finds another identifier, it can skip right to the pointer level parsing.
+
+If `@funcptr` is found instead, the parser looks for the openbracket `<`, then recursively runs itself on the next token, which should be the return type. As long as a comma follows each parsed type, it will run the token after the comma through itself until it finds the closebracket `>` at the same level. The type parser, once recursed into, automatically matches nested brackets, i.e. `@funcptr<int, @funcptr<long, long*>>`.
+
+At the end, the parser counts the number of asterisks on the end of the type and sets that as the pointer level.
+
 ### Expression Parsing
 
 #### Operators in Cix and How They're Evaluated
@@ -561,9 +571,7 @@ When the algorithm encounters an identifier, it will try to look it up in the ty
 
 If the identifier is not followed by asterisks, it can just be added to the tree as is. If it's followed by asterisks, each one that's there will add 1 to the pointer level of the type added to the tree.
 
-If the identifier is `@funcptr`, a special parser is used to parse the type. It looks for the openbracket `<`, then runs the type parser on the next token, which should be the return type. As long as a comma follows the current token, it will run the token after the comma through the type parser until it finds the closebracket `>` at the same level. The type parser, once recursed into, automatically matches nested brackets, i.e. `@funcptr<int, @funcptr<long, long*>>`.
-
-Should asterisks follow a function pointer type, the algorithm parses through them, adding one for each asterisk it finds.
+If the identifier is `@funcptr`, the type parser described in Data Type Parsing is used.
 
 #### Do-While Loop
 A Do-While loop looks like this:

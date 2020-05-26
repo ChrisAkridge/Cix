@@ -465,6 +465,8 @@ namespace Cix.Parser
 			switch (context)
 			{
 				case ParsingContext.Root:
+					errorList.AddError(ErrorSource.Lexer, 1, "Invalid character *.", charEnumerator.CurrentLine);
+					break;
 				case ParsingContext.Whitespace:
 					currentWord.Append('*');
 					context = ParsingContext.Operator;
@@ -472,7 +474,6 @@ namespace Cix.Parser
 				case ParsingContext.Operator:
 					if (last == '*')
 					{
-						AddWordToList();
 						currentWord.Append('*');
 					}
 					else

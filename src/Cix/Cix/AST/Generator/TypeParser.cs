@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Cix.Errors;
+using Cix.Parser;
 
 namespace Cix.AST.Generator
 {
@@ -12,34 +13,101 @@ namespace Cix.AST.Generator
 		/// <summary>
 		/// Given a token enumerator, parse in a type name.
 		/// </summary>
-		/// <param name="enumerator">A token enumerator with the current element set to a type name.</param>
+		/// <param name="tokens">A token enumerator with the current element set to a type name.</param>
 		/// <returns>A data type with pointer level.</returns>
 		/// <remarks>
 		/// The enumerator must have its current element on the type name of the type to parse.
 		/// This method will move the enumerator to the last token of the data type (i.e. the
-		/// type "@funcptr&lt;int, float&gt;" will have the enumerator on the &gt;
+		/// type "@funcptr&lt;int, float&gt;" will have the enumerator on the &gt;.
 		/// </remarks>
-		public static DataType ParseType(TokenEnumerator enumerator, IErrorListProvider errorList)
+		public static bool TryParseType(TokenEnumerator tokens, IErrorListProvider errorList, out DataType result)
 		{
-			if (enumerator.Current.Text == "@funcptr")
+			DataType type;
+
+			if (tokens.Current.Text == "@funcptr")
 			{
-				return ParseFunctionPointerType(enumerator, errorList);
+				if (!TryParseFunctionPointerType(tokens, errorList, out FunctionPointerType functionPointerType))
+				{
+					result = null;
+					return false;
+				}
+				type = functionPointerType;
+			}
+			else
+			{
+				string typeName = tokens.Current.Text;
+
+				if (NameTable.Contains(typeName) && NameTable.Instance[typeName] is DataType)
+				{
+					type = NameTable.Instance[typeName] as DataType;
+				}
+				else
+				{
+					type = new DataType(typeName, 0, 0);
+				}
 			}
 
-			throw new NotImplementedException();
+			// Look for asterisks. Move the enumerator back if we don't find any.
+			tokens.MoveNext();
+			if (!tokens.Current.Text.All(c => c == '*'))
+			{
+				tokens.MovePrevious();
+				result = type;
+			}
+			else
+			{
+				result = type.WithPointerLevel(tokens.Current.Text.Length);
+			}
+			return true;
 		}
 
-		private static FunctionPointerType ParseFunctionPointerType(TokenEnumerator enumerator,
-			IErrorListProvider errorList)
+		private static bool TryParseFunctionPointerType(TokenEnumerator tokens,
+			IErrorListProvider errorList, out FunctionPointerType result)
 		{
-			// 1. Take up tokens into a list until we hit a closing >. Keep track of our depth to
-			//	  ensure that we match the < and > correctly.
-			// 2. For each token in the list,
-			//	  a. If the token is a comma:
-			//		 i. If the last token is a comma, or this is the first/last element, raise an error.
-			//		    Else, continue.
-			//	     Else, call ParseType on the token. Sadly, we'll need a new TokenEnumerator.
-			throw new NotImplementedException();
+			if (!tokens.MoveNextValidate(TokenType.OpenBracket))
+			{
+				errorList.AddError(ErrorSource.ASTGenerator, 2,
+					$"Expected a token of type OpenBracket, found a token of type {tokens.Current.Type}.",
+					tokens.Current.FilePath, tokens.Current.LineNumber);
+				result = null;
+				return false;
+			}
+
+			tokens.MoveNext();
+			if (!TryParseType(tokens, errorList, out DataType returnType))
+			{
+				result = null;
+				return false;
+			}
+			tokens.MoveNext();
+
+			var parameterTypes = new List<DataType>();
+
+			while (tokens.Current.Type == TokenType.Comma)
+			{
+				tokens.MoveNext();
+				if (!TryParseType(tokens, errorList, out DataType parameterType))
+				{
+					result = null;
+					return false;
+				}
+				parameterTypes.Add(parameterType);
+				tokens.MoveNext();
+			}
+
+			if (tokens.Current.Type == TokenType.CloseBracket)
+			{
+				result = new FunctionPointerType(returnType, parameterTypes, 8);
+				return true;
+			}
+			else
+			{
+				errorList.AddError(ErrorSource.ASTGenerator, 2,
+						$"Expected a token of type CloseBracket or Comma, found a token of type {tokens.Current.Type}.",
+						tokens.Current.FilePath, tokens.Current.LineNumber);
+				result = null;
+				return false;
+			}
 		}
 	}
 }

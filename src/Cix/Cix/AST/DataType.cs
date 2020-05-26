@@ -72,7 +72,8 @@ namespace Cix.AST
 			}
 		}
 
-		public DataType WithPointerLevel(int pointerLevel) => new DataType(Name, pointerLevel, Size);
+		public virtual DataType WithPointerLevel(int pointerLevel) => new DataType(Name, pointerLevel, (pointerLevel > 0) ? 8 : Size);
+		public DataType WithSize(int size) => new DataType(Name, PointerLevel, size);
 
 		public override string ToString() => $"{Name}{new string('*', PointerLevel)}";
 

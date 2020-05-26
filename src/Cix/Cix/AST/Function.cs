@@ -25,6 +25,13 @@ namespace Cix.AST
 			this.statements = statements.ToList();
 		}
 
+		public Function(DataType returnType, string name, IEnumerable<FunctionParameter> parameters)
+		{
+			ReturnType = returnType;
+			Name = name;
+			this.parameters = parameters.ToList();
+		}
+
 		public Function WithStatements(IList<Element> newStatements) 
 			=> new Function(ReturnType, Name, parameters, newStatements);
 
