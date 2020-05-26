@@ -669,6 +669,9 @@ namespace Cix.AST.Generator
 				// parsed DataType) but may also return errors. Some options are returning
 				// null (probably the easiest), using the TryXXX pattern (ugh), or using
 				// exception (even worse). Null is probably the easiest pattern to use.
+				// 
+				// And we need to change how intermediate functions and their parameters parse
+				// their types.
 
 				result.Add(new FunctionParameter(paramType, paramName));
 			}
