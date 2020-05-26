@@ -245,8 +245,6 @@ namespace Cix.Parser
 			// Then they'll load and preprocess the file
 			// And then return it.
 
-			// TODO: ensure there are no cycles in the inclusion tree
-
 			string includeFilePath = Path.Combine(basePath, fileName);
 			if (!File.Exists(includeFilePath))
 			{
@@ -255,6 +253,12 @@ namespace Cix.Parser
 				return Enumerable.Empty<Line>();
 			}
 
+			if (includedFilePaths.Contains(includeFilePath))
+			{
+				errorList.AddError(ErrorSource.Preprocessor, 15, $"The file {includeFilePath} was already included.",
+					includingLine);
+				return Enumerable.Empty<Line>();
+			}
 			includedFilePaths.Add(includeFilePath);
 			
 			var io = new IO(errorList);
@@ -264,7 +268,7 @@ namespace Cix.Parser
 			var commentRemover = new CommentRemover(errorList);
 			IList<Line> fileWithoutComments = commentRemover.RemoveComments(includeFile);
 
-			Preprocessor filePreprocessor = new Preprocessor(errorList, fileWithoutComments, includeFilePath);
+			var filePreprocessor = new Preprocessor(errorList, fileWithoutComments, includeFilePath);
 			return filePreprocessor.Preprocess();
 		}
 	}

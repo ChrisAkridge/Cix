@@ -16,4 +16,10 @@
     <ProjectReference Include="..\..\Cix\Cix\Cix.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="hardware_20200520.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

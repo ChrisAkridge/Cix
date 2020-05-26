@@ -31,7 +31,7 @@ namespace Cix.AST
 		public override void Print(StringBuilder builder, int depth)
 		{
 			string typeAndName = $"{ReturnType} {Name}";
-			string parameterString = "(" + string.Join(", ", parameters.Select(p => p.ToString()).ToArray()) + ")";;
+			string parameterString = "(" + string.Join(", ", parameters.Select(p => p.ToString()).ToArray()) + ")";
 
 			builder.AppendLineWithIndent(typeAndName + " " + parameterString + " {", depth);
 

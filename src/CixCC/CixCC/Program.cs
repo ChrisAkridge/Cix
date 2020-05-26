@@ -19,6 +19,8 @@ namespace CixCC
 	{
 		private static void Main(string[] args)
 		{
+			const string HardwareDefinitionPath = @".\hardware_20200520.json";
+
 			Console.WriteLine("Cix Platform");
 			Console.WriteLine("Copyright © 2014-2018 Chris Akridge.");
 			Console.WriteLine("Licensed under the MIT Public License.");
@@ -31,7 +33,7 @@ namespace CixCC
 			}
 
 			string filePath = args[0];
-			var compilation = new Compilation(filePath);
+			var compilation = new Compilation(filePath, HardwareDefinitionPath);
 
 			try
 			{

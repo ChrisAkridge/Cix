@@ -6,20 +6,22 @@ using System.Threading.Tasks;
 using Cix.AST;
 using Cix.AST.Generator;
 using Cix.Errors;
+using Cix.Models;
 using Cix.Parser;
 using Cix.Text;
+using Newtonsoft.Json;
 
 namespace Cix
 {
 	public sealed class Compilation : IErrorListProvider
 	{
 		private readonly List<Error> errors = new List<Error>();
-
 		private readonly string initialFilePath;
 		private List<Line> initialFile = new List<Line>();
 		private List<LexedWord> lexedFile;
 		private List<Token> tokenizedFile;
 		private List<Element> abstractSyntaxTree;
+		private readonly HardwareDefinition hardwareDefinition;
 
 		public IReadOnlyList<Line> InitialFile => initialFile.AsReadOnly();
 		public IReadOnlyList<LexedWord> LexedFile => lexedFile.AsReadOnly() ?? new List<LexedWord>().AsReadOnly();
@@ -29,7 +31,13 @@ namespace Cix
 
 		public IReadOnlyList<Element> AbstractSyntaxTree => abstractSyntaxTree.AsReadOnly();
 
-		public Compilation(string filePath) => initialFilePath = filePath;
+		public Compilation(string filePath, string hardwareDefinitionPath)
+		{
+			initialFilePath = filePath;
+
+			string hardwareDefinitionFile = System.IO.File.ReadAllText(hardwareDefinitionPath);
+			hardwareDefinition = JsonConvert.DeserializeObject<HardwareDefinition>(hardwareDefinitionFile);
+		}
 
 		public void LoadInputFile()
 		{
