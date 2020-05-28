@@ -10,7 +10,7 @@ namespace Cix.AST
 	{
 		public virtual string Name { get; }
 		public int PointerLevel { get; }
-		public int Size { get; }
+		public virtual int Size { get; }
 
 		public DataType(string name, int pointerLevel, int size)
 		{

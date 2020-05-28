@@ -152,7 +152,7 @@ namespace Cix.AST.Generator
 				CreateStructDeclaration(intermediateStruct, ref depthLevel);
 			}
 
-			structsTree.AddRange(NameTable.Instance.Names.Where(n => n.Value is StructDeclaration)
+			structsTree.AddRange(NameTable.Instance.Names.Where(n => n.Value is StructDataType)
 				.Select(kvp => kvp.Value));
 			return structsTree;
 		}
@@ -416,7 +416,7 @@ namespace Cix.AST.Generator
 			}
 		}
 
-		private StructDeclaration CreateStructDeclaration(IntermediateStruct intermediateStruct,
+		private StructDataType CreateStructDeclaration(IntermediateStruct intermediateStruct,
 			ref int depthLevel)
 		{
 			string structName = intermediateStruct.Name;
@@ -455,10 +455,10 @@ namespace Cix.AST.Generator
 					members.Add(memberDeclaration);
 					offsetCounter += memberDeclaration.Type.Size * member.ArraySize;
 				}
-				else if (typeEntry is StructDeclaration structDeclarationType)
+				else if (typeEntry is StructDataType structDataType)
 				{
 					// Scenario 2: Member has a struct type or is a pointer to a struct type
-					members.Add(GetDeclarationOfStructMember(structDeclarationType, member, ref offsetCounter));
+					members.Add(GetDeclarationOfStructMember(structDataType, member, ref offsetCounter));
 				}
 				else if (typeEntry is IntermediateStruct intermediateStructType)
 				{
@@ -474,7 +474,7 @@ namespace Cix.AST.Generator
 						continue;
 					}
 
-					StructDeclaration newlyDefinedStruct = CreateStructDeclaration(intermediateStructType, ref depthLevel);
+					StructDataType newlyDefinedStruct = CreateStructDeclaration(intermediateStructType, ref depthLevel);
 					members.Add(GetDeclarationOfStructMember(newlyDefinedStruct, member, ref offsetCounter));
 				}
 				else if (typeEntry == null && member.Name == "void" && member.PointerLevel > 0)
@@ -487,18 +487,17 @@ namespace Cix.AST.Generator
 				}
 			}
 
-			var result = new StructDeclaration(intermediateStruct.Name, members);
+			var result = new StructDataType(intermediateStruct.Name, 0, members);
 			NameTable.Instance[intermediateStruct.Name] = result;
 			return result;
 		}
 
-		private static StructMemberDeclaration GetDeclarationOfStructMember(StructDeclaration memberType,
+		private static StructMemberDeclaration GetDeclarationOfStructMember(StructDataType memberType,
 			IntermediateStructMember intermediateMember, ref int offsetCounter)
 		{
-			var fullType = new DataType(memberType.Name, intermediateMember.PointerLevel, memberType.Size);
-			var result = new StructMemberDeclaration(fullType, intermediateMember.Name,
+			var result = new StructMemberDeclaration(memberType, intermediateMember.Name,
 				intermediateMember.ArraySize, offsetCounter);
-			offsetCounter += result.Type.Size * result.ArraySize;
+			offsetCounter += result.Size;
 			return result;
 		}
 
@@ -538,7 +537,6 @@ namespace Cix.AST.Generator
 
 			// Double-check that the global's type actually exists.
 			bool typeExists = NameTable.Contains(globalType.Name);
-			bool typeNameIsStruct = NameTable.Instance[globalType.Name] is StructDeclaration;
 			if (globalType.Name == "void" && globalType.PointerLevel == 0)
 			{
 				errorList.AddError(ErrorSource.ASTGenerator, 18,
@@ -574,6 +572,8 @@ namespace Cix.AST.Generator
 			// cheat a bit and grab the current token here, under the assumption that the enumerator
 			// at least hasn't moved off this line.
 
+			// TODO: wait, do we actually need this?
+
 			Tuple<string, int> typeNameWithPointerLevel = typeName.SeparateTypeNameAndPointerLevel();
 			Element typeInNameTable = NameTable.Instance[typeNameWithPointerLevel.Item1];
 
@@ -583,9 +583,9 @@ namespace Cix.AST.Generator
 					errorList.AddError(ErrorSource.ASTGenerator, 22, $"No type named {typeName} exists.",
 						tokens.Current.FilePath, tokens.Current.LineNumber);
 					return null;
+				case StructDataType structDataType:
+					return structDataType.WithPointerLevel(typeNameWithPointerLevel.Item2);
 				case DataType dataType: return dataType.WithPointerLevel(typeNameWithPointerLevel.Item2);
-				case StructDeclaration structDeclaration:
-					return structDeclaration.ToDataType().WithPointerLevel(typeNameWithPointerLevel.Item2);
 				default:
 					errorList.AddError(ErrorSource.ASTGenerator, 23,
 						$"Tried to find a type named \"{typeName}\", but that name defines a {typeInNameTable.GetType().Name}.",
@@ -646,24 +646,7 @@ namespace Cix.AST.Generator
 
 				int pointerLevel = arg.Count - 2;
 
-				// WYLO: Okay, so types are kind of broken here.
-				// A data type can be a primitive or a pointer, but it can also be a struct
-				// type. Structs have to keep their member offsets so that we know what to
-				// translate myStruct.member into. But that creates other complications,
-				// namely that the rest of the AST generator (and probably the code generator)
-				// have to check every single type to see if it's a DataType or a StructDeclaration,
-				// including subexpression types.
-				//
-				// We also let structures reference each other before they're formally defined
-				// - A can have a member of type B before B is defined. This can still be done,
-				// but we have to have a way to set sizes after we find B. In fact, I think I have
-				// an idea:
-				//	- Remove StructDeclaration from the AST
-				//	- Add a list of struct members to DataType itself. Each member would have
-				//	  a type, name, array size, and offset. Primitives, pointers, and function
-				//	  pointers would have this list null.
-				//	- Add a property IsStruct to DataType that's true if the list of struct
-				//	  members is null.
+				// WYLO:
 				//
 				// We also need a better pattern for methods that return something (i.e. a
 				// parsed DataType) but may also return errors. Some options are returning

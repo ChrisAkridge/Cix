@@ -24,6 +24,8 @@ namespace Cix.AST
 			}
 		}
 
+		public override int Size => 8;
+
 		public FunctionPointerType(DataType returnType, IEnumerable<DataType> parameterTypes,
 			int pointerLevel) : base("", pointerLevel, 8)
 		{
