@@ -651,7 +651,7 @@ namespace Cix.AST.Generator
 				// We also need a better pattern for methods that return something (i.e. a
 				// parsed DataType) but may also return errors. Some options are returning
 				// null (probably the easiest), using the TryXXX pattern (ugh), or using
-				// exception (even worse). Null is probably the easiest pattern to use.
+				// exceptions (even worse). Null is probably the easiest pattern to use.
 				// 
 				// And we need to change how intermediate functions and their parameters parse
 				// their types.
