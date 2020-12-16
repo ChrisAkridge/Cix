@@ -2,124 +2,87 @@
 
 grammar Cix;
 
-primaryExpression
-    :   Identifier
-    |   StringLiteral
-	|	number
-    |   '(' expression ')'
+expressionAtom
+	: number
+	| Identifier
+	| StringLiteral
 	;
 
-postfixExpression
-    :   primaryExpression
-    |   postfixExpression '[' expression ']'
-	|	postfixExpression '(' argumentExpressionList? ')'
-    |   postfixExpression '.' Identifier
-    |   postfixExpression '->' Identifier
-    |   postfixExpression '++'
-    |   postfixExpression '--'
-    ;
-	
-argumentExpressionList
-	: assignmentExpression
-	| argumentExpressionList ',' assignmentExpression
+unaryPrefixOperator
+	: Plus
+	| Minus
+	| BitwiseNot
+	| LogicalNot
+	| Asterisk
+	| Ampersand
+	| Increment
+	| Decrement
+	| typeCast
 	;
 
-unaryExpression
-    :   postfixExpression
-    |   '++' unaryExpression
-    |   '--' unaryExpression
-    |   unaryOperator castExpression
-    |   'sizeof' unaryExpression
-    |   'sizeof' '(' typeName ')'
-    ;
+typeCast
+	: '(' typeName ')' expression
+	;
 
-unaryOperator
-    :   '&' | '*' | '+' | '-' | '~' | '!'
-    ;
+unaryPostfixOperator
+	: '(' argumentList ')'
+	| '[' expression ']'
+	| Increment
+	| Decrement
+	;
 
-castExpression
-    :   '(' typeName ')' castExpression
-    |   unaryExpression
-    ;
+argumentList
+	: expression
+	| expression ',' argumentList
+	;
 
-multiplicativeExpression
-    :   castExpression
-    |   multiplicativeExpression '*' castExpression
-    |   multiplicativeExpression '/' castExpression
-    |   multiplicativeExpression '%' castExpression
-    ;
+binaryOperator
+	: Plus
+	| Minus
+	| Asterisk
+	| Divide
+	| Modulus
+	| ShiftLeft
+	| ShiftRight
+	| LessThan
+	| LessThanOrEqualTo
+	| GreaterThan
+	| GreaterThanOrEqualTo
+	| Equals
+	| NotEquals
+	| BitwiseOr
+	| BitwiseXor
+	| LogicalAnd
+	| LogicalOr
+	| Assign
+	| AddAssign
+	| SubtractAssign
+	| MultiplyAssign
+	| DivideAssign
+	| ModulusAssign
+	| ShiftLeftAssign
+	| ShiftRightAssign
+	| BitwiseAndAssign
+	| BitwiseOrAssign
+	| BitwiseXorAssign
+	;
 
-additiveExpression
-    :   multiplicativeExpression
-    |   additiveExpression '+' multiplicativeExpression
-    |   additiveExpression '-' multiplicativeExpression
-    ;
+ternaryFirstOperator
+	: Question
+	;
 
-shiftExpression
-    :   additiveExpression
-    |   shiftExpression '<<' additiveExpression
-    |   shiftExpression '>>' additiveExpression
-    ;
-
-relationalExpression
-    :   shiftExpression
-    |   relationalExpression '<' shiftExpression
-    |   relationalExpression '>' shiftExpression
-    |   relationalExpression '<=' shiftExpression
-    |   relationalExpression '>=' shiftExpression
-    ;
-
-equalityExpression
-    :   relationalExpression
-    |   equalityExpression '==' relationalExpression
-    |   equalityExpression '!=' relationalExpression
-    ;
-
-andExpression
-    :   equalityExpression
-    |   andExpression '&' equalityExpression
-    ;
-
-exclusiveOrExpression
-    :   andExpression
-    |   exclusiveOrExpression '^' andExpression
-    ;
-
-inclusiveOrExpression
-    :   exclusiveOrExpression
-    |   inclusiveOrExpression '|' exclusiveOrExpression
-    ;
-
-logicalAndExpression
-    :   inclusiveOrExpression
-    |   logicalAndExpression '&&' inclusiveOrExpression
-    ;
-
-logicalOrExpression
-    :   logicalAndExpression
-    |   logicalOrExpression '||' logicalAndExpression
-    ;
-
-conditionalExpression
-    :   logicalOrExpression ('?' expression ':' conditionalExpression)?
-    ;
-
-assignmentExpression
-    :   conditionalExpression
-    |   unaryExpression assignmentOperator assignmentExpression
-    ;
-
-assignmentOperator
-    :   '=' | '*=' | '/=' | '%=' | '+=' | '-=' | '<<=' | '>>=' | '&=' | '^=' | '|='
-    ;
+ternarySecondOperator
+	: Colon
+	;
 
 expression
-    :   assignmentExpression
-    ;
-
-constantExpression
-    :   conditionalExpression
-    ;
+	: expressionAtom
+	| unaryPrefixOperator expression
+	| expression unaryPostfixOperator
+	| expression binaryOperator expression
+	| expression ternaryFirstOperator expression ternarySecondOperator
+	|
+	;
 	
 typeName
 	: Identifier pointerAsteriskList?

@@ -5,7 +5,7 @@
             "name": "Debug Cix grammar",
             "type": "antlr-debug",
             "request": "launch",
-            "input": "testFiles/tetris/cixlib.cix",
+            "input": "testFiles/tetris/example.cix",
             "grammar": "Cix.g4",
             "actionFile": null,
             "startRule": "sourceFile",
