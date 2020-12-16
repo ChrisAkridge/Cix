@@ -1,0 +1,4 @@
+void* malloc(uint size)
+{
+	return (void*)0;
+}

@@ -1,0 +1,134 @@
+struct Board
+{
+	byte* Cells;
+	int Width;
+	int Height;
+}
+
+struct Tetrimino
+{
+	byte Color;
+	int XO; int YO;
+	int X1; int Y1;
+	int X2; int Y2;
+	int X3; int Y3;
+}
+
+struct Game
+{
+	Board* Board;
+	Tetrimino* DropPiece;
+	Tetrimino* HoldPiece;
+	Tetrimino* NextPiece;
+	int DropRatePerSecond;
+	int ArrayMember[5];
+	int offsetCounter;
+}
+
+global Game* game;
+
+int Main(int argc, byte** argv)
+{
+	vgaBase = (void*)hwcall("System::GetMemoryMappedHWStartAddress", "VGAMonitor");
+
+	RNGInit();
+	
+	tetriminoFunctions[0] = &CreateI;
+	tetriminoFunctions[1] = &CreateO;
+	tetriminoFunctions[2] = &CreateJ;
+	tetriminoFunctions[3] = &CreateL;
+	tetriminoFunctions[4] = &CreateS;
+	tetriminoFunctions[5] = &CreateZ;
+	tetriminoFunctions[6] = &CreateT;
+
+	hwcall("Timer::CallOnLoop", 0.033f, &Update);
+
+	game = malloc(sizeof(Game));
+	game.Board = malloc(sizeof(Board));
+
+	game.Board.Width = 12;
+	game.Board.Height = 20;
+	game.Board.Cells = malloc(12 * 20);
+}
+
+Tetrimino* CreateI()
+{
+	Tetrimino* result = malloc(sizeof(Tetrimino));
+	result.Color = COLOR_CYAN;
+	result.XO = 0; result.YO = 0;
+	result.X1 = -1; result.Y1 = 0;
+	result.X2 = 1; result.Y2 = 0;
+	result.X3 = 2; result.Y2 = 0;
+}
+
+Tetrimino* CreateO()
+{
+	Tetrimino* result = malloc(sizeof(Tetrimino));
+	result.Color = COLOR_YELLOW;
+	result.XO = 0; result.YO = 0;
+	result.X1 = 1; result.Y1 = 0;
+	result.X2 = 0; result.Y2 = 1;
+	result.X3 = 1; result.Y2 = 1;
+}
+
+Tetrimino* CreateJ()
+{
+	Tetrimino* result = malloc(sizeof(Tetrimino));
+	result.Color = COLOR_BLUE;
+	result.XO = 0; result.YO = 0;
+	result.X1 = 0; result.Y1 = -1;
+	result.X2 = 0; result.Y2 = -2;
+	result.X3 = -1; result.Y2 = 0;
+}
+
+Tetrimino* CreateL()
+{
+	Tetrimino* result = malloc(sizeof(Tetrimino));
+	result.Color = COLOR_ORANGE;
+	result.XO = 0; result.YO = 0;
+	result.X1 = 0; result.Y1 = -1;
+	result.X2 = 0; result.Y2 = -2;
+	result.X3 = 1; result.Y2 = 0;
+}
+
+Tetrimino* CreateS()
+{
+	Tetrimino* result = malloc(sizeof(Tetrimino));
+	result.Color = COLOR_GREEN;
+	result.XO = 0; result.YO = 0;
+	result.X1 = 1; result.Y1 = 0;
+	result.X2 = 1; result.Y2 = -1;
+	result.X3 = 2; result.Y2 = -1;
+}
+
+Tetrimino* CreateT()
+{
+	Tetrimino* result = malloc(sizeof(Tetrimino));
+	result.Color = COLOR_PURPLE;
+	result.XO = 0; result.YO = 0;
+	result.X1 = -1; result.Y1 = 0;
+	result.X2 = 1; result.Y2 = 0;
+	result.X3 = 0; result.Y2 = 1;
+	return result;
+}
+
+Tetrimino* CreateZ()
+{
+	Tetrimino* result = malloc(sizeof(Tetrimino));
+	result.Color = COLOR_RED;
+	result.XO = 0; result.YO = 0;
+	result.X1 = -1; result.Y1 = 0;
+	result.X2 = 0; result.Y2 = -1;
+	result.X3 = 1; result.Y2 = -1;
+
+	return result;
+}
+
+global @funcptr<Tetrimino*>* tetriminoFunctions;
+global @funcptr<int, byte*, short, long**, ulong, float***, double, void****> lotsOPointers;
+
+Tetrimino* RandomTetrimino()
+{
+	int next = randomInt(0, 6);
+	return tetriminoFunctions[next]();
+}
