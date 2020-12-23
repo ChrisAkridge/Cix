@@ -408,10 +408,6 @@ fragment ExponentSign
 Digit
 	: [0-9]
 	;
-	
-HexDigit
-	: [0-9A-Fa-f]
-	;
 
 StringLiteral
 	: '"' ~[\r\n"]* '"'
@@ -427,4 +423,8 @@ IdentifierFirstChar
 
 IdentifierChar
 	: [A-Za-z0-9_]
+	;
+
+HexDigit
+	: [0-9A-Fa-f]
 	;

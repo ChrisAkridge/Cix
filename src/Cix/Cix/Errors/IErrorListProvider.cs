@@ -8,9 +8,12 @@ namespace Cix.Errors
 {
 	public interface IErrorListProvider
 	{
-		void AddError(ErrorSource source, int errorNumber, string message, Line line);
+		void AddLineError(ErrorSource source, int errorNumber, string message, Line line);
 
-		void AddError(ErrorSource source, int errorNumber, string message, string filePath,
+		void AddLineError(ErrorSource source, int errorNumber, string message, string filePath,
 			int lineNumber);
-	}
+
+        void AddCharError(ErrorSource source, int errorNumber, string message, string filePath,
+            int startIndex, int endIndex);
+    }
 }

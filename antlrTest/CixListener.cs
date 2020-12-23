@@ -541,16 +541,6 @@ public interface ICixListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitNumber([NotNull] CixParser.NumberContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="CixParser.stringLiteral"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterStringLiteral([NotNull] CixParser.StringLiteralContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="CixParser.stringLiteral"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitStringLiteral([NotNull] CixParser.StringLiteralContext context);
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="CixParser.sourceFile"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

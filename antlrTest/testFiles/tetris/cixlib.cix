@@ -1,4 +1,8 @@
-void* malloc(uint size)
-{
-	return (void*)0;
+struct a {
+	int b;
+}
+
+void func() {
+	int a;
+	return a = a = a = a;
 }

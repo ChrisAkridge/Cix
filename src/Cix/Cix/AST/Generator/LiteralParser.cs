@@ -9,6 +9,7 @@ using Cix.Parser;
 
 namespace Cix.AST.Generator
 {
+    [Obsolete]
 	internal static class LiteralParser
 	{
 		public static ExpressionConstant Parse(Token token, IErrorListProvider errorList)

@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Cix.AST.Generator.IntermediateForms;
 using Cix.Errors;
+using Cix.Extensions;
 using Cix.Parser;
 
 namespace Cix.AST.Generator
@@ -16,7 +17,8 @@ namespace Cix.AST.Generator
 	///     This stage creates a tree containing the complete declaration of all structures
 	///     and global variables, and the headers and locations of all functions.
 	/// </remarks>
-	public sealed class FirstPassGenerator
+	[Obsolete]
+    public sealed class FirstPassGenerator
 	{
 		/// <summary>
 		/// The maximum depth that structs can be members of other structs.

@@ -647,18 +647,6 @@ public partial class CixBaseListener : ICixListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitNumber([NotNull] CixParser.NumberContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="CixParser.stringLiteral"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterStringLiteral([NotNull] CixParser.StringLiteralContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="CixParser.stringLiteral"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitStringLiteral([NotNull] CixParser.StringLiteralContext context) { }
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="CixParser.sourceFile"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>

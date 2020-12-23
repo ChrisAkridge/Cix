@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Cix
+namespace Cix.Extensions
 {
 	public static class CharExtensions
 	{

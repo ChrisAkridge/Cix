@@ -59,6 +59,18 @@ public partial class CixBaseListener : ICixListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitPostfixExpression([NotNull] CixParser.PostfixExpressionContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="CixParser.argumentExpressionList"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterArgumentExpressionList([NotNull] CixParser.ArgumentExpressionListContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CixParser.argumentExpressionList"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitArgumentExpressionList([NotNull] CixParser.ArgumentExpressionListContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="CixParser.unaryExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
@@ -634,42 +646,6 @@ public partial class CixBaseListener : ICixListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitNumber([NotNull] CixParser.NumberContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="CixParser.integer"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterInteger([NotNull] CixParser.IntegerContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="CixParser.integer"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitInteger([NotNull] CixParser.IntegerContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="CixParser.floatingPoint"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterFloatingPoint([NotNull] CixParser.FloatingPointContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="CixParser.floatingPoint"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitFloatingPoint([NotNull] CixParser.FloatingPointContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="CixParser.stringLiteral"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterStringLiteral([NotNull] CixParser.StringLiteralContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="CixParser.stringLiteral"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitStringLiteral([NotNull] CixParser.StringLiteralContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="CixParser.sourceFile"/>.
 	/// <para>The default implementation does nothing.</para>

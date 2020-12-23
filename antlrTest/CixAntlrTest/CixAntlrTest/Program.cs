@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Antlr4.Runtime;
+using Antlr4.Runtime.Tree;
 using CixAntlrTest.Cix;
 
 namespace CixAntlrTest
@@ -16,14 +17,16 @@ namespace CixAntlrTest
             string filePath = args[0];
             var fileLines = new CommentRemover().RemoveComments(File.ReadAllLines(filePath));
             var fileText = string.Join(Environment.NewLine, fileLines);
-            File.WriteAllText(Path.Combine(Path.GetDirectoryName(filePath), "processed.cix"), fileText);
+            // File.WriteAllText(Path.Combine(Path.GetDirectoryName(filePath), "processed.cix"), fileText);
             
             var lexer = new CixLexer(new AntlrInputStream(fileText));
             var tokenStream = new CommonTokenStream(lexer);
             var parser = new CixParser(tokenStream);
 
             var sourceFile = parser.sourceFile();
-            var functions = sourceFile.function();
+            var walker = new ParseTreeWalker();
+            var listener = new CixListenerImpl();
+            walker.Walk(listener, sourceFile);
         }
 
         private static string RemoveComments(string file)

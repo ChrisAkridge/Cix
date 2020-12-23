@@ -8,7 +8,8 @@ using Cix.Parser;
 
 namespace Cix.AST.Generator
 {
-	internal static class TypeParser
+	[Obsolete]
+    internal static class TypeParser
 	{
 		/// <summary>
 		/// Given a token enumerator, parse in a type name.

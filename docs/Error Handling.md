@@ -18,27 +18,28 @@ Each stage of compilation can encouter errors any time during the stage. Each st
 ### I/O Stage
 No special considerations.
 
-### Comment Stage
-Certain comment-like constructs, like single forward slashes at the end of a line, are not valid.
+### Finding String Literals
+...
 
 ### Preprocessor
 Preprocessing is performed line-by-line. Thus, when an error is encountered, skip to the next line and continue the preprocessing from there.
 
-### Lexer
-Many, many character-and-context combinations are not valid in the grammar. Skip to the next character (perhaps the character after the next for some combinations), and continue lexing with the same context.
+### Comment Stage
+Certain comment-like constructs, like single forward slashes at the end of a line, are not valid.
 
-### Tokenizer
-Similar to the lexer, the tokenizer works on each lexed word with a context. When an error is encountered, continue processing from the next token with the same context.
+### Type Rewriting
+...
 
-### First-Pass AST Generator (structs, globals, function declarations)
-Each part of the first pass processes each individual thing (all structs, then all globals, then all function declarations). Each element is also made of smaller elements (structure members, global type and name, function name/return type/arguments).
+### ANTLR4 Parsing
 
-Each struct, global, or function declaration should be parsed as far as possible, with errors in each component placed in the error list.
+Cix uses an ANTLR4 grammar and related generated classes to parse a preprocessed Cix file. The errors that the ANTLR types report are recorded here.
 
-### Second-Pass AST Generator (statements and expressions)
+### AST Generation
+
+After ANTLR parses the preprocessed Cix file, Cix then converts ANTLR's parse tree classes into the AST types.
 
 ## Error List
-### I/O Errors:
+### I/O Errors
 
 * IO001: Null or empty file path.
 * IO002: File {file} is not a valid path or the file does not exist.
@@ -46,11 +47,16 @@ Each struct, global, or function declaration should be parsed as far as possible
 * IO004: File {file} is blank or empty.
 * IO005: I/O exception occurred. (include exception details)
 
-## Comment Remover Errors:
+### Finding String Literals
+
+* SL001: File ends with unterminated string literal.
+* SL002: Escaped double quote found outside string literal.
+
+## Comment Remover Errors
 
 * CR001: Single forward slash at end of line is not a valid comment.
 
-### Preprocessor Errors:
+### Preprocessor Errors
 
 * PR001: "{defineLine}" isn't valid; must be "#define SYMBOL" or "#define THIS THAT".
 * PR002: #define symbol {symbol} is not an identifier.
@@ -68,51 +74,6 @@ Each struct, global, or function declaration should be parsed as far as possible
 * PR014: An #endif was found without a matching #ifdef or #ifndef.
 * PR015: File "file.cix" was already included.
 
-### Lexer Errors:
+### ANTLR4 Parsing Errors
 
-* LX001: Invalid character '{char}'.
-* LX002: The character '{char}' isn't a valid numeric literal suffix; valid suffixes are "u", "l", "ul", "f", and "d".
-* LX003: The At Sign can only appear at the start of an identifier.
-
-### Tokenizer Errors:
-
-* TK001: The word "{word}" cannot be parsed.
-* TK002: The operator "{word}" cannot appear in this location.
-* TK003: The word "{word}" cannot be in the place of an operator.
-* TK004: The type "{typeNameWithAsterisks}" must be followed by a name or a close parenthesis.
-* TK005: Multiple asterisks must follow a type name, not "{word}".
-* TK006: A string literal cannot have unescaped single or double quotes.
-* TK007: An escaping backslash cannot be at the end of a string literal.
-* TK008: An string literal ends in a Unicode escape sequence, but there aren't enough hexadecimal digits to determine the codepoint.
-* TK009: The sequence {unicodesequence} is not a valid Unicode code point.
-* TK010: The escape sequence {sequence} is not valid.
-
-### AST Generator Errors
-
-* AG001: AST already generated; did you accidentally call GenerateFirstPassAST again?
-* AG002: Expected a token of type {expected}, got a token of type {actual}.
-* AG003: Expected a token of type anything except {notExpected}, but got it anyway.
-* AG004: Unexpected end of file.
-* AG005: There is already a structure named "{struct}".
-* AG006: Type "{type}" is not defined.
-* AG007: Function name "{name}" is not valid.
-* AG008: Expected "(".
-* AG009: Token "{token}" appears between arguments and openscope of {funcName}.
-* AG010: Function {funcName} has no closescope.
-* AG011: Invalid type for {structName}.{memberName}. lpstring- or void-typed members cannot be in structures. Consider a pointer to these * types instead.
-* AG012: Invalid token {token} of type {type} after type.
-* AG013: The size of the array {structAndMember} was not declared.
-* AG014: The size of the array {structAndMember} is out of range ({arraySize}). Array sizes must be between 0 and 2.1 billion.
-* AG015: Expected ']'.
-* AG016: Invalid type for {structAndMember}. Type {type} is not defined.
-* AG017: Maximum struct nesting depth of {depth} reached. Look for circular struct members.
-* AG018: Invalid type for {globalVariableName}. Type "void" is not valid; perhaps you meant "void*"?
-* AG019: Invalid type for {globalVariableName}. "{word}" is a {thing}, not a type.
-* AG020: Invalid type for {globalVariableName}. The type {type} is not defined.
-* AG021: Invalid type for {globalVariableName}. No global may have type "lpstring", perhaps you meant "lpstring*"?
-* AG022: Type "{type}" is not defined.
-* AG023: Token "{type}" is not actually a type, it's a {thing}.
-* AG024: The numeric literal {literal} is supposed to be a long but is out of range or invalid.
-* AG025: The numeric literal {literal} is supposed to be a uint but is out of range or invalid.
-* AG026: The numeric literal {literal} is supposed to be a float but is out of range or invalid.
-* AG027: The function named {function} collides with a hardware call function with the same name.
+* PA001: Syntax error: {message}

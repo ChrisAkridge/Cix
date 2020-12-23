@@ -7,59 +7,50 @@ using Cix.Text;
 
 namespace Cix.Errors
 {
-	public sealed class Error
+	public abstract class Error
 	{
 		public ErrorSource Source { get; }
 		public int ErrorNumber { get; }
 		public string Message { get; }
-		public string FilePath { get; }
-		public int LineNumber { get; }
-
-		public Error(ErrorSource source, int errorNumber, string message, Line line)
+		protected Error(ErrorSource source, int errorNumber, string message)
 		{
 			Source = source;
 			ErrorNumber = errorNumber;
 			Message = message;
-			FilePath = line.FilePath;
-			LineNumber = line.LineNumber;
 		}
 
-		public Error(ErrorSource source, int errorNumber, string message, string filePath, int lineNumber)
-		{
-			Source = source;
-			ErrorNumber = errorNumber;
-			Message = message;
-			FilePath = filePath;
-			LineNumber = lineNumber;
-		}
+		protected static string GetErrorSourceAbbreviation(ErrorSource source)
+        {
+            return source switch
+            {
+                ErrorSource.IO => "IO",
+                ErrorSource.StringLiteralFinder => "SL",
+				ErrorSource.Preprocessor => "PR",
+				ErrorSource.CommentRemover => "CR",
+                ErrorSource.TypeRewriter => "TR",
+                ErrorSource.Lexer => "LX",
+                ErrorSource.Tokenizer => "TK",
+                ErrorSource.ANTLR4Parser => "PA",
+                ErrorSource.ASTGenerator => "AG",
+                ErrorSource.Lowering => "LW",
+                ErrorSource.CodeGeneration => "CG",
+                _ => throw new ArgumentOutOfRangeException(nameof(source), source, null)
+            };
+        }
 
-		private static string GetErrorSourceAbbreviation(ErrorSource source)
-		{
-			switch (source)
-			{
-				case ErrorSource.IO: return "IO";
-				case ErrorSource.CommentRemover: return "CR";
-				case ErrorSource.Preprocessor: return "PR";
-				case ErrorSource.Lexer: return "LX";
-				case ErrorSource.Tokenizer: return "TK";
-				case ErrorSource.ASTGenerator: return "AG";
-				case ErrorSource.Lowering: return "LW";
-				case ErrorSource.CodeGeneration: return "CG";
-				default: throw new ArgumentOutOfRangeException(nameof(source), source, null);
-			}
-		}
-
-		public override string ToString()
-			=> $"{GetErrorSourceAbbreviation(Source)}{ErrorNumber:D3}: {Message} ({Path.GetFileName(FilePath)}:{LineNumber + 1})";
+		public override string ToString() => $"{GetErrorSourceAbbreviation(Source)}{ErrorNumber:D3}: {Message}";
 	}
 
 	public enum ErrorSource
 	{
 		IO,
-		CommentRemover,
-		Preprocessor,
-		Lexer,
+        StringLiteralFinder,
+        Preprocessor,
+        CommentRemover,
+        TypeRewriter,
+        Lexer,
 		Tokenizer,
+        ANTLR4Parser,
 		ASTGenerator,
 		Lowering,
 		CodeGeneration

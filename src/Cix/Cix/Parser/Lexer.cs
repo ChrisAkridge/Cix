@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Cix.Errors;
+using Cix.Extensions;
 using Cix.Text;
 
 namespace Cix.Parser

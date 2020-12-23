@@ -51,6 +51,16 @@ public interface ICixListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitPostfixExpression([NotNull] CixParser.PostfixExpressionContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="CixParser.argumentExpressionList"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterArgumentExpressionList([NotNull] CixParser.ArgumentExpressionListContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="CixParser.argumentExpressionList"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitArgumentExpressionList([NotNull] CixParser.ArgumentExpressionListContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="CixParser.unaryExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -530,36 +540,6 @@ public interface ICixListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitNumber([NotNull] CixParser.NumberContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="CixParser.integer"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterInteger([NotNull] CixParser.IntegerContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="CixParser.integer"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitInteger([NotNull] CixParser.IntegerContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="CixParser.floatingPoint"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterFloatingPoint([NotNull] CixParser.FloatingPointContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="CixParser.floatingPoint"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitFloatingPoint([NotNull] CixParser.FloatingPointContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="CixParser.stringLiteral"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterStringLiteral([NotNull] CixParser.StringLiteralContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="CixParser.stringLiteral"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitStringLiteral([NotNull] CixParser.StringLiteralContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="CixParser.sourceFile"/>.
 	/// </summary>

@@ -9,6 +9,7 @@ namespace Cix.AST.Generator
 	/// <summary>
 	/// Associates names with the thing they represent.
 	/// </summary>
+	[Obsolete]
 	internal class NameTable
 	{
 		/// <summary>

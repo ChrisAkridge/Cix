@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,76 +10,111 @@ namespace Cix.Text
 {
 	internal sealed class CommentRemover
 	{
-		private IErrorListProvider errorList;
+        private enum CommentRemoverStates
+        {
+            Default,
+            StringLiteral,
+            SingleLineComment,
+            MultilineComment
+        }
+        
+		private readonly IErrorListProvider errorList;
 
 		public CommentRemover(IErrorListProvider errorList) => this.errorList = errorList;
 
-		public IList<Line> RemoveComments(IList<Line> file)
+		public string RemoveComments(string filePath, string fileText)
 		{
-			var fileWithoutComments = new List<Line>();
-			var inMultilineComment = false;
+			// States:
+            //	- Default
+            //	- StringLiteral
+            //	- SingleLineComment
+            //	- MultilineComment
+            // State transitions:
+            //	Default => " => StringLiteral
+            //	Default => \" => (error, escaped double quote outside of literal)
+            //	Default => // => SingleLineComment
+            //	Default => /* => MultilineComment
+            //	Default => */ => (error, multiline comment end without start)
+            //	StringLiteral => " => Default
+            //	SingleLineComment => \r\n, \r, or \n => Default
+            //	MultilineComment => */ => Default
+            
+            var spansToRemove = new List<SpanIndices>();
+            int currentSpanStart = -1;
+            var state = CommentRemoverStates.Default;
 
-			foreach (Line line in file)
-			{
-				if (line.Text.Contains("//"))
-				{
-					string lineWithoutComment = RemoveCommentFromEndOfLine(line.Text, "//");
+            for (var i = 0; i < fileText.Length; i++)
+            {
+                var current = fileText[i];
+                var prev = (i > 0) ? fileText[i - 1] : (char?)null;
+                var next = (i < fileText.Length) ? fileText[i + 1] : (char?)null;
 
-					if (!string.IsNullOrEmpty(lineWithoutComment))
-					{
-						fileWithoutComments.Add(new Line(line.FilePath, line.LineNumber,
-							lineWithoutComment));
-					}
-				}
-				else if (line.Text.Contains("/*") && !inMultilineComment)
-				{
-					if (!line.Text.Contains("*/"))
-					{
-						inMultilineComment = true;
-					}
-					else
-					{
-						inMultilineComment = false;
-						fileWithoutComments.Add(new Line(line.FilePath, line.LineNumber,
-							RemoveCommentFromMiddleOfLine(line.Text)));
-					}
-				}
-				else if (inMultilineComment)
-				{
-					if (line.Text.Contains("*/"))
-					{
-						inMultilineComment = false;
-						fileWithoutComments.Add(new Line(line.FilePath, line.LineNumber,
-							RemoveCommentFromStartOfLine(line.Text)));
-					}
-				}
-				else { fileWithoutComments.Add(line); }
-			}
+                switch (current)
+                {
+                    case '\"' when prev != '\\':
+                        continue;
+                    case '\"' when state == CommentRemoverStates.Default:
+                        errorList.AddCharError(ErrorSource.CommentRemover, 1, "Escaped double quote outside of string literal.", filePath, i, i + 1);
 
-			return fileWithoutComments;
-		}
+                        continue;
+                    case '\"':
+                        state = CommentRemoverStates.StringLiteral;
 
-		private static string RemoveCommentFromStartOfLine(string lineText)
-		{
-			int indexOfCommentEnd = lineText.IndexOf("*/", StringComparison.Ordinal);
-			return lineText.Substring(indexOfCommentEnd + 2);
-		}
+                        break;
+                    case '/' when state == CommentRemoverStates.Default:
+                    {
+                        if (next != '/') { continue; }
 
-		private static string RemoveCommentFromEndOfLine(string lineText, string commentStart)
-		{
-			int indexOfDoubleSlash = lineText.IndexOf(commentStart, StringComparison.Ordinal);
-			return StringExtensions.Substring(lineText, 0, indexOfDoubleSlash);
-		}
+                        state = CommentRemoverStates.SingleLineComment;
+                        currentSpanStart = i;
 
-		private static string RemoveCommentFromMiddleOfLine(string lineText)
-		{
-			int indexOfCommentStart = lineText.IndexOf("/*", StringComparison.Ordinal);
-			int indexOfCommentEnd = lineText.IndexOf("*/", StringComparison.Ordinal);
+                        break;
+                    }
+                    case '/' when next == '*' && state == CommentRemoverStates.Default:
+                        state = CommentRemoverStates.MultilineComment;
+                        currentSpanStart = i;
 
-			string lineStart = StringExtensions.Substring(lineText, 0, indexOfCommentStart);
-			string lineEnd = lineText.Substring(indexOfCommentEnd + 2);
+                        break;
+                    case '*' when next == '/' && state == CommentRemoverStates.MultilineComment:
+                        state = CommentRemoverStates.Default;
+                        spansToRemove.Add(new SpanIndices(currentSpanStart, i + 1));
 
-			return string.Concat(lineStart, lineEnd);
-		}
+                        break;
+                    case '\r' when state == CommentRemoverStates.SingleLineComment:
+                        state = CommentRemoverStates.Default;
+                        spansToRemove.Add(new SpanIndices(currentSpanStart, i));
+
+                        break;
+                }
+            }
+
+            return RemoveSpans(fileText, spansToRemove);
+        }
+
+        private static string RemoveSpans(string text, IList<SpanIndices> spansToRemove)
+        {
+            if (!spansToRemove.Any()) { return text; }
+            
+            var builder = new StringBuilder(text.Length);
+            var removedChars = new BitArray(text.Length);
+
+            foreach (var span in spansToRemove)
+            {
+                for (var i = span.Start; i <= span.End; i++)
+                {
+                    removedChars[i] = true;
+                }
+            }
+
+            for (var i = 0; i < text.Length; i++)
+            {
+                if (!removedChars[i])
+                {
+                    builder.Append(text[i]);
+                }
+            }
+
+            return builder.ToString();
+        }
 	}
 }

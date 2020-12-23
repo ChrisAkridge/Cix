@@ -24,7 +24,7 @@ namespace Cix.AST
 				case ExpressionOperators.UnaryArrayAccess:
 				case ExpressionOperators.BinaryMemberAccess:
 				case ExpressionOperators.BinaryPointerMemberAccess:
-					return 12;
+					return 13;
 				case ExpressionOperators.UnaryPreincrement:
 				case ExpressionOperators.UnaryPredecrement:
 				case ExpressionOperators.UnaryIdentity:
@@ -33,32 +33,35 @@ namespace Cix.AST
 				case ExpressionOperators.UnaryBitwiseNOT:
 				case ExpressionOperators.UnaryDerefence:
 				case ExpressionOperators.UnaryAddressOf:
-					return 11;
+					return 12;
 				case ExpressionOperators.BinaryMultiplication:
 				case ExpressionOperators.BinaryDivision:
 				case ExpressionOperators.BinaryModulus:
-					return 10;
+					return 11;
 				case ExpressionOperators.BinaryAddition:
 				case ExpressionOperators.BinarySubtraction:
-					return 9;
+					return 10;
 				case ExpressionOperators.BinaryShiftLeft:
 				case ExpressionOperators.BinaryShiftRight:
-					return 8;
+					return 9;
 				case ExpressionOperators.BinaryLessThan:
 				case ExpressionOperators.BinaryLessThanOrEqualTo:
 				case ExpressionOperators.BinaryGreaterThan:
 				case ExpressionOperators.BinaryGreaterThanOrEqualTo:
-					return 7;
+					return 8;
 				case ExpressionOperators.BinaryBitwiseAND:
-					return 6;
+					return 7;
 				case ExpressionOperators.BinaryBitwiseXOR:
-					return 5;
+					return 6;
 				case ExpressionOperators.BinaryBitwiseOR:
-					return 4;
+					return 5;
 				case ExpressionOperators.BinaryLogicalAND:
-					return 3;
+					return 4;
 				case ExpressionOperators.BinaryLogicalOR:
-					return 2;
+					return 3;
+				case ExpressionOperators.TernaryTrueBranch:
+				case ExpressionOperators.TernaryFalseBranch:
+                    return 2;
 				case ExpressionOperators.BinaryAssignment:
 				case ExpressionOperators.BinaryAddAssign:
 				case ExpressionOperators.BinarySubAssign:
@@ -80,15 +83,15 @@ namespace Cix.AST
 		{
 			switch (Operator)
 			{
-				case ExpressionOperators.UnaryIdentity: return "<idn>";
-				case ExpressionOperators.UnaryInverse: return "<inv>";
+				case ExpressionOperators.UnaryIdentity: return "+";
+				case ExpressionOperators.UnaryInverse: return "-";
 				case ExpressionOperators.UnaryLogicalNOT: return "!";
 				case ExpressionOperators.UnaryBitwiseNOT: return "~";
-				case ExpressionOperators.UnaryPreincrement: return "<preincr>";
-				case ExpressionOperators.UnaryPredecrement: return "<predecr>";
-				case ExpressionOperators.UnaryPostincrement: return "<postincr>";
-				case ExpressionOperators.UnaryPostdecrement: return "<postdecr>";
-				case ExpressionOperators.UnaryDerefence: return "<deref>";
+				case ExpressionOperators.UnaryPreincrement: return "++";
+				case ExpressionOperators.UnaryPredecrement: return "--";
+				case ExpressionOperators.UnaryPostincrement: return "++";
+				case ExpressionOperators.UnaryPostdecrement: return "--";
+				case ExpressionOperators.UnaryDerefence: return "*";
 				case ExpressionOperators.UnaryAddressOf: return "&";
 				case ExpressionOperators.BinaryAddition: return "+";
 				case ExpressionOperators.BinarySubtraction: return "-";
@@ -121,7 +124,9 @@ namespace Cix.AST
 				case ExpressionOperators.BinaryShiftRightAssign: return ">>=";
 				case ExpressionOperators.BinaryMemberAccess: return ".";
 				case ExpressionOperators.BinaryPointerMemberAccess: return "->";
-				case ExpressionOperators.UnaryArrayAccess: return "<arrayacc>";
+				case ExpressionOperators.UnaryArrayAccess: return "[]";
+				case ExpressionOperators.TernaryTrueBranch: return "?";
+				case ExpressionOperators.TernaryFalseBranch: return ":";
 				default: throw new ArgumentOutOfRangeException();
 			}
 		}
@@ -170,6 +175,8 @@ namespace Cix.AST
 		BinaryShiftRightAssign,
 		BinaryMemberAccess,
 		BinaryPointerMemberAccess,
-		UnaryArrayAccess
+		UnaryArrayAccess,
+        TernaryTrueBranch,
+        TernaryFalseBranch
 	}
 }

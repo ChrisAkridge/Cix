@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Cix
+namespace Cix.Extensions
 {
     public static class EnumerableExtensions
     {
@@ -39,5 +40,7 @@ namespace Cix
             }
             return -1;
         }
+        
+        public static IReadOnlyList<T> AsReadOnly<T>(this IList<T> list) => new ReadOnlyCollection<T>(list);
     }
 }
