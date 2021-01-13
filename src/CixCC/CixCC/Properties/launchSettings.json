@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "CixCC": {
-      "commandName": "Project",
-      "commandLineArgs": "\"D:\\Documents\\GitHub\\Cix\\samples\\tetris\\tetris.cix\""
-    }
-  }
-}
