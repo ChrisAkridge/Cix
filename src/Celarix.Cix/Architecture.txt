@@ -1,0 +1,76 @@
+Processors:
+	- I/O
+		- Load string from path										[string => string]
+		- Split string into lines									[string => List<Line>]
+		- Rejoin list of lines into string							[List<Line> => string]
+		- Save string to path										[side effects only]
+		- Get --save-temps path										[string => string]
+	- Preprocessor
+		- Preprocess list of lines									[List<Line> => List<Line>]
+		- Set overall line and starting character indices			[side effects only]
+	- String Literal Marker
+		- Mark locations of string literals on line					[List<Line> => List<Line>]
+	- Comment Remover
+		- Replaces comments with spaces								[List<Line> => List<Line>]
+		- Write preprocessed file if --save-temps is enabled		[side effects only]
+	- Type Finder
+		- Get list of types defined in file plus primitive types	[List<Line> => (List<Line>, List<string>)]
+	- Pointer Type Rewriter
+		- Rewrite asterisks in pointer types to backticks			[List<Line> => List<Line>]
+	- ANTLR Parser
+		- Create ANTLR parse tree from source file					[string => ANTLR program node]
+	- AST Generator
+		- Create AST from ANTLR parse tree							[ANTLR program node => Program]
+		- Write AST as JSON											[side effects only]
+		- Pretty-print AST as Cix									[Program => string]
+	- Lowerer
+		- Rewrite for loops as while loops							[Program => Program]
+	- Code Generation
+		- Emit IronArc assembly										[Program => string]
+		
+Assistants:
+	- List<Line> character enumerator
+	- List<Line> word enumerator
+
+Models:
+	- System.String
+	- System.Collections.Generic.List<T>
+	- Line: { text, file path, file line number, overall line number, file start character index, overall start character index, List<Range> string literal locations }
+	- Range<T> { minimum, maximum }
+	- ANTLR and AST types
+		- AST types implement a string PrettyPrint() method
+	- CompilationOptions { input path, output path, bool saveTemps, List<string> declaredSymbols }
+	- Compilation:
+		- CompilationOptions Options { get; init; }
+		- IReadOnlyList<Line> PreprocessedFile { get; }
+		- Program AbstractSyntaxTreeRoot { get; private set; }
+		- string IronArcAssemblyFile { get; private set; }
+		- Compilation FromSourceText(CompilationOptions, string)	// static method that takes source text directly, source file path is null
+		- Compilation WithOptions(CompilationOptions)	// calling this clears PreprocessedFile, AbstractSyntaxTreeRoot, and IronArcAssemblyFile
+		- Compilation WithPreprocessedFile(IEnumerable<Line>)	// calling this clears AbstractSyntaxTreeRoot and IronArcAssemblyFile
+		- Compilation WithAbstractSyntaxTree(Program) // calling this clears IronArcAssemblyFile
+		- void Preparse()	// sets PreprocessedFile
+		- void Parse()	// sets AbstractSyntaxTreeRoot
+		- void GenerateCode()	// sets IronArcAssemblyFile
+		- void SaveAssembledFile()
+		- void Compile()	// runs above four methods
+		
+Test Generator:
+	- A Windows Forms application
+	- Type or load Cix code into the first textbox and click Compile
+	- The second textbox displays the AST JSON
+	- The third textbox displays the IronArc Assembly Code
+	- The fourth textbox displays all the errors, if any
+	- A second button generates a test method that calls Compilation.WithSourceText and asserts that the AST and IronArc assembly OR the errors match expected values
+	
+Included libraries:
+	- Celarix.Cix.Compiler
+		- Newtonsoft.Json for polymorphic JSON deserialization (yes, there are security concerns, but we're already on this side of the airtight hatchway)
+		- NLog
+		- ANTLR4
+	- Celarix.Cix.Console
+		- CommandLine to parse command-line options
+	- Celarix.Cix.Testing
+		- xUnit
+	- Celarix.Cix.TestGenerator
+		- No extra references

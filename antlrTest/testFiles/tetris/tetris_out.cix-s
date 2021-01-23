@@ -1,42 +1,49 @@
-// Implementation of Tetris on Cix
-// Uses the VGA-mode memory mapped monitor
+                                  
+                                          
 
-// NOTE: this code file and all others in this folder
-// are currently just for testing the Cix compiler
-// it doesn't actually work yet
+                                                     
+                                                  
+                               
 
-// VGA monitor is 640x480 at 8bpp
-// Color mode is RGB 3:3:2
-// Uses 307,200 bytes (base to 0x49FFF)
+                                 
+                          
+                                       
 
-/*
- * Tetris: A block-stacking game. Tetriminoes, made of four squares connected
- * on their edges, fall from the top of the board. Rotate and drop them to
- * fill and clear lines. The more lines you clear at once, the more points
- * you get!
- *
- */
+  
+                                                                             
+                                                                          
+                                                                          
+           
+  
+   
 
 global void** doublePointer;
 
 global void* vgaBase;
 
-#define COLOR_CYAN 0x03 // I
-#define COLOR_YELLOW 0xFC // O
-#define COLOR_BLUE 0x1C // J
-#define COLOR_ORANGE 0xE8 // L
-#define COLOR_GREEN 0x1C // S
-#define COLOR_RED 0xE0 // Z
-#define COLOR_PURPLE 0xE3 // T
 
-#include <cixlib.cix>
-#include <vga_text.cix>
-#include <game_input.cix>
-#include <random.cix>
+struct a {
+	int b;
+}
+
+void func() {
+	int a;
+	return a = a = a = a;
+}
+               
+                 
+             
+
+void InitRNG() {}
+
+int randomInt(int min, int max)
+{
+	return min;
+}
 
 struct Board
 {
-	byte* Cells;	// address of 0,0
+	byte* Cells;	                 
 	int Width;
 	int Height;
 }
@@ -62,17 +69,17 @@ struct Game
 }
 
 global Game* game;
-// global int[5] globalArray;
+                             
 
 int Main(int argc, byte** argv)
 {
-	// Find the VGA monitor's address
+	                                 
 	vgaBase = (void*)hwcall("System::GetMemoryMappedHWStartAddress", "VGAMonitor");
 
-	// Initialize the RNG
+	                     
 	RNGInit();
 	
-	// Fill the tetrimino creation functions
+	                                        
 	tetriminoFunctions[0] = &CreateI;
 	tetriminoFunctions[1] = &CreateO;
 	tetriminoFunctions[2] = &CreateJ;
@@ -81,10 +88,10 @@ int Main(int argc, byte** argv)
 	tetriminoFunctions[5] = &CreateZ;
 	tetriminoFunctions[6] = &CreateT;
 
-	// Register the game loop to be called
+	                                      
 	hwcall("Timer::CallOnLoop", 0.033f, &Update);
 
-	// Create the game and initialize it
+	                                    
 	game = malloc(sizeof(Game));
 	game.Board = malloc(sizeof(Board));
 
