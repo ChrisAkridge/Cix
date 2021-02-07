@@ -23,5 +23,40 @@ namespace Celarix.Cix.Compiler.Extensions
             
             return new WindowedEnumerator<LineCharacter>(charEnumerator);
         }
+
+        public static IEnumerable<LineWord> EnumerateWords(this IEnumerable<Line> lines)
+        {
+            var wordBuilder = new StringBuilder();
+            var currentWordStartIndex = 0;
+            var currentWordEndIndex = 0;
+
+            foreach (var line in lines)
+            {
+                foreach (var character in line.Text)
+                {
+                    if (character == ' ' || character == '\t')
+                    {
+                        if (wordBuilder.Length > 0)
+                        {
+                            yield return new LineWord
+                            {
+                                Text = wordBuilder.ToString(),
+                                FromLine = line,
+                                OverallCharacterRange = new Range(new Index(currentWordStartIndex), new Index(currentWordEndIndex))
+                            };
+                        }
+
+                        wordBuilder.Clear();
+                        currentWordStartIndex += 1;
+                        currentWordEndIndex = currentWordStartIndex;
+                    }
+                    else
+                    {
+                        wordBuilder.Append(character);
+                        currentWordEndIndex += 1;
+                    }
+                }
+            }
+        }
     }
 }

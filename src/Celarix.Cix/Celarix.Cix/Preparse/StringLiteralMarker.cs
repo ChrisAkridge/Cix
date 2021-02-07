@@ -12,7 +12,7 @@ namespace Celarix.Cix.Compiler.Preparse
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public static void MarkStringLiterals(IEnumerable<Line> lines)
+        public static void MarkStringLiterals(IList<Line> lines)
         {
             logger.Trace($"Marking string literal locations...");
 

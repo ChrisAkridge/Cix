@@ -12,17 +12,9 @@ namespace Celarix.Cix.Compiler.Preparse
 {
     internal static class CommentRemover
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        private enum CommentRemoverStates
-        {
-            Default,
-            StringLiteral,
-            SingleLineComment,
-            MultilineComment
-        }
-
-        public static void RemoveComments(IEnumerable<Line> lines)
+        public static void RemoveComments(IList<Line> lines)
         {
             bool inMultilineComment = false;
 

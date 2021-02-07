@@ -17,7 +17,7 @@ namespace Celarix.Cix.Compiler.Preparse
 	/// </summary>
 	internal sealed class Preprocessor
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         
 		private readonly List<Line> file;                                   // the contents of the file itself
 		private readonly string basePath;                                   // the path to the directory holding the file
@@ -30,7 +30,7 @@ namespace Celarix.Cix.Compiler.Preparse
         /// </summary>
         /// <param name="file">The text of the Cix file to preprocess.</param>
         /// <param name="declaredSymbols">Symbols declared by the invoker, typically from command-line options.</param>
-        public Preprocessor(IEnumerable<Line> file, IEnumerable<string> declaredSymbols)
+        public Preprocessor(IList<Line> file, IList<string> declaredSymbols)
 		{
 			this.file = file?.ToList();
 
@@ -54,9 +54,9 @@ namespace Celarix.Cix.Compiler.Preparse
 		/// A string containing the preprocessed file, including any token substitutions, code
 		/// that was conditionally included, and any #included files.
 		/// </returns>
-		public IEnumerable<Line> Preprocess()
+		public IList<Line> Preprocess()
 		{
-            logger.Trace($"Starting preprocessing on \"{file.First().SourceFilePath}\"...");
+            logger.Trace($"Starting preprocessing on \"{file.First().SourceFileName}\"...");
             
 			var preprocessedFile = new List<Line>();
 			var conditionalValue = ConditionalInclustionState.NotInConditional; // we evaluate the condition as soon as we find it; this field holds the result
@@ -250,7 +250,7 @@ namespace Celarix.Cix.Compiler.Preparse
 			return preprocessedFile;
 		}
 
-        public static void SetOverallLineAndCharacterIndices(IEnumerable<Line> lines)
+        public static void SetOverallLineAndCharacterIndices(IList<Line> lines)
         {
             logger.Trace("Setting overall line and starting character indices...");
             
@@ -276,7 +276,7 @@ namespace Celarix.Cix.Compiler.Preparse
 		/// <param name="fileName">The path of the file to load.</param>
 		/// <param name="declaredSymbols">Symbols declared by the invoker, typically from command-line options.</param>
 		/// <returns>The text of the Cix file at that para, preprocessed.</returns>
-		private IEnumerable<Line> LoadIncludeFile(Line includingLine, string fileName, IEnumerable<string> declaredSymbols)
+		private IList<Line> LoadIncludeFile(Line includingLine, string fileName, IList<string> declaredSymbols)
 		{
 			// For now, we'll just make #include "file" and #include <file> do the same thing
 			// They'll look in the current dir for the file to include

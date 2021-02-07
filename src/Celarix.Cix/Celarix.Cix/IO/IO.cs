@@ -11,9 +11,9 @@ namespace Celarix.Cix.Compiler.IO
 {
     internal static class IO
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         
-        public static IEnumerable<Line> SplitFileIntoLines(string filePath)
+        public static IList<Line> SplitFileIntoLines(string filePath)
         {
             logger.Trace($"Splitting {filePath} into lines...");
             string fileText = File.ReadAllText(filePath);
