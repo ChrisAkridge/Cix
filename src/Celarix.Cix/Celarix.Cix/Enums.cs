@@ -24,6 +24,7 @@ namespace Celarix.Cix.Compiler
         ANTLR4Parser,
         ASTGenerator,
         Lowering,
-        CodeGeneration
+        CodeGeneration,
+        InternalCompilerError
     }
 }

@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Celarix.Cix.Compiler.Exceptions;
 
 namespace Celarix.Cix.Compiler.IO.Models
 {
-	public sealed class Line
+	internal sealed class Line
     {
         private List<Range> stringLiteralLocations;
         
@@ -36,5 +37,23 @@ namespace Celarix.Cix.Compiler.IO.Models
                 OverallStartCharacterIndex = original.OverallStartCharacterIndex,
                 stringLiteralLocations = original.stringLiteralLocations    /* oh god this works */
             };
+
+        public void ReplaceWord(int oldWordPosition, string newWordText)
+        {
+            var textBeforeNewWord = Text.Substring(0, oldWordPosition);
+            var textAfterNewWord = Text.Substring(oldWordPosition + newWordText.Length);
+            var newText = textBeforeNewWord + newWordText + textAfterNewWord;
+
+            if (newText.Length != Text.Length)
+            {
+                throw new ErrorFoundException(ErrorSource.InternalCompilerError,
+                    1,
+                    $"Internal compiler error: rewrite phase changed length of source file, desynchronizing all future errors.",
+                    this,
+                    oldWordPosition);
+            }
+
+            Text = newText;
+        }
     }
 }

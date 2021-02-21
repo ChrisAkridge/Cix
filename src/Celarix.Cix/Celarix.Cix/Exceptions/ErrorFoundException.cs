@@ -12,15 +12,19 @@ namespace Celarix.Cix.Compiler.Exceptions
         public ErrorSource ErrorSource { get; }
         public int ErrorNumber { get; }
         public string ErrorMessage { get; }
-        public Line ErrorLine { get; }
+        public string SourceFilePath { get; }
+        public int LineNumber { get; }
+        public int LineCharacterIndex { get; }
 
-        public ErrorFoundException(ErrorSource errorSource, int errorNumber, string errorMessage, Line errorLine)
+        internal ErrorFoundException(ErrorSource errorSource, int errorNumber, string errorMessage, Line errorLine, int lineCharacterIndex)
             : base($"{GetErrorSourceAbbreviation(errorSource)}{errorNumber:D3}: {errorMessage}")
         {
             ErrorSource = errorSource;
             ErrorNumber = errorNumber;
             ErrorMessage = errorMessage;
-            ErrorLine = errorLine;
+            SourceFilePath = errorLine.SourceFilePath;
+            LineNumber = errorLine.FileLineNumber;
+            LineCharacterIndex = lineCharacterIndex;
         }
 
         public static string GetErrorSourceAbbreviation(ErrorSource source) =>
@@ -37,6 +41,7 @@ namespace Celarix.Cix.Compiler.Exceptions
                 ErrorSource.ASTGenerator => "AG",
                 ErrorSource.Lowering => "LW",
                 ErrorSource.CodeGeneration => "CG",
+                ErrorSource.InternalCompilerError => "IC",
                 _ => throw new ArgumentOutOfRangeException(nameof(source), source, null)
             };
 

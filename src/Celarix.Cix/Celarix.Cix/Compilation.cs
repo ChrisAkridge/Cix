@@ -18,7 +18,7 @@ namespace Celarix.Cix.Compiler
         
         public CompilationOptions CompilationOptions { get; init; }
 
-        public IReadOnlyList<Line> PreprocessedFile => preprocessedFile.AsReadOnly();
+        internal IReadOnlyList<Line> PreprocessedFile => preprocessedFile.AsReadOnly();
         // public Program AbstractSyntaxTreeRoot { get; private set; }
         public string IronArcAssemblyFile { get; private set; }
 

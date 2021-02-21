@@ -14,7 +14,7 @@ namespace Celarix.Cix.Compiler
         public string OutputFilePath { get; init; }
         public bool SaveTemps { get; init; }
 
-        public IEnumerable<string> DeclaredSymbols
+        public IList<string> DeclaredSymbols
         {
             get => declaredSymbols;
             init => declaredSymbols = value.ToList();
