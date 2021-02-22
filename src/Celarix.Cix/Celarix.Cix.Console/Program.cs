@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO.Enumeration;
+using System.Linq;
 using Celarix.Cix.Compiler;
 using CommandLine;
 using NLog;
@@ -20,7 +21,7 @@ namespace Celarix.Cix.Console
                         InputFilePath = o.InputFilePath,
                         OutputFilePath = o.OutputFilePath,
                         SaveTemps = o.SaveTemps,
-                        DeclaredSymbols = o.Symbols
+                        DeclaredSymbols = o.Symbols.ToList()
                     };
                     
                     LoggingConfigurer.ConfigureLogging(o.LogLevel);

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Celarix.Cix.Compiler.Extensions;
 using Celarix.Cix.Compiler.IO.Models;
+using Celarix.Cix.Compiler.Preparse.Models;
 using NLog;
 
 namespace Celarix.Cix.Compiler.Preparse
@@ -13,7 +15,13 @@ namespace Celarix.Cix.Compiler.Preparse
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        private static IList<string> GetDefinedTypes(IList<Line> lines)
+        public static void RewriteTypes(SourceFile file)
+        {
+            var definedTypes = GetDefinedTypes(file);
+            RewritePointerTypes(file, definedTypes);
+        }
+
+        private static IList<string> GetDefinedTypes(SourceFile file)
         {
             var definedTypes = new List<string>
             {
@@ -31,7 +39,7 @@ namespace Celarix.Cix.Compiler.Preparse
             };
             string previousWord = null;
 
-            foreach (var word in lines.EnumerateWords())
+            foreach (var word in file.EnumerateWords())
             {
                 var wordLine = word.FromLine;
 
@@ -53,12 +61,13 @@ namespace Celarix.Cix.Compiler.Preparse
             return definedTypes;
         }
 
-        private static IList<Line> RewritePointerTypes(IList<Line> lines, IList<string> definedTypes)
+        private static void RewritePointerTypes(SourceFile file, IList<string> definedTypes)
         {
             // WYLO: ugh.
             // We need to rewrite:
             //  - type***
             //  - type ***
+            //  - type ***ident
             //  - type
             //  ***
             //
@@ -99,6 +108,41 @@ namespace Celarix.Cix.Compiler.Preparse
             //      ii. A word starting with asterisks, or is entirely asterisks?
             //          Replace the asterisks with backticks and set the state to
             //          Default.
+            //      iii. If anything else, switch to Default state.
+
+            var replaceAsterisksInNextWord = false;
+
+            foreach (var word in file.EnumerateWords())
+            {
+                var matchingType = definedTypes.FirstOrDefault(t =>
+                    word.Text.StartsWith(t, StringComparison.InvariantCultureIgnoreCase));
+
+                if (matchingType != null)
+                {
+                    string wordWithoutType = word.Text.Substring(matchingType.Length);
+
+                    if (wordWithoutType.All(c => c == '*'))
+                    {
+                        replaceAsterisksInNextWord = false;
+                        var wordWithBackticks = word.Text.Replace('*', '`');
+                        word.FromLine.ReplaceWord(word.OverallCharacterRange.Start.Value, wordWithBackticks);
+                    }
+                    else
+                    {
+                        replaceAsterisksInNextWord = true;
+                    }
+                }
+                else if (word.Text.StartsWith("*", StringComparison.InvariantCultureIgnoreCase)
+                    && replaceAsterisksInNextWord)
+                {
+                    var wordWithBackticks = word.Text.Replace('*', '`');
+                    word.FromLine.ReplaceWord(word.OverallCharacterRange.Start.Value, wordWithBackticks);
+                }
+                else
+                {
+                    replaceAsterisksInNextWord = false;
+                }
+            }
         }
     }
 }

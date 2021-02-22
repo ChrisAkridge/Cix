@@ -98,7 +98,7 @@ namespace Celarix.Cix.Compiler.Preparse
 						{
 							throw new ErrorFoundException(ErrorSource.Preprocessor, 1,
                                 $"{trimmedLine} isn't valid; must be \"#define SYMBOL\" or \"#define THIS THAT\".",
-                                line);
+                                line, 0);
 						}
 						else
                         {
@@ -112,7 +112,7 @@ namespace Celarix.Cix.Compiler.Preparse
                                     break;
                                 case 2:
                                     throw new ErrorFoundException(ErrorSource.Preprocessor, 2,
-                                        $"Defined symbol {words[1]} is not an identifier.", line);
+                                        $"Defined symbol {words[1]} is not an identifier.", line, 0);
                                 case 3:
                                 {
                                     // Matches either (at string start, 0x then one or more chars in 0-9,
@@ -127,7 +127,7 @@ namespace Celarix.Cix.Compiler.Preparse
                                         if (definedSubstitutions.ContainsKey(words[1]))
                                         {
                                             throw new ErrorFoundException(ErrorSource.Preprocessor, 3,
-                                                $"Symbol {words[1]} is already defined.", line);
+                                                $"Symbol {words[1]} is already defined.", line, 0);
                                         }
 
                                         logger.Trace($"Declared substitution \"{words[1]}\" for \"{words[2]}\"");
@@ -137,7 +137,7 @@ namespace Celarix.Cix.Compiler.Preparse
                                     {
                                         throw new ErrorFoundException(ErrorSource.Preprocessor, 4,
                                             $"Substitution {words[2]} for symbol {words[1]} isn't valid; must be an identifier or integer.",
-                                            line);
+                                            line, 0);
                                     }
 
                                     break;
@@ -153,7 +153,7 @@ namespace Celarix.Cix.Compiler.Preparse
 						if (words.Length == 1 || words.Length > 2)
 						{
 							throw new ErrorFoundException(ErrorSource.Preprocessor, 5,
-                                $"{trimmedLine} isn't valid; must be \"#undefine SYMBOL\".", line);
+                                $"{trimmedLine} isn't valid; must be \"#undefine SYMBOL\".", line, 0);
 						}
 						else
 						{
@@ -163,7 +163,7 @@ namespace Celarix.Cix.Compiler.Preparse
 								if (!definedSubstitutions.ContainsKey(constantToUndefine))
 								{
 									throw new ErrorFoundException(ErrorSource.Preprocessor, 6,
-                                        $"Cannot undefine {words[1]} as it was not previously defined.", line);
+                                        $"Cannot undefine {words[1]} as it was not previously defined.", line, 0);
 								}
                                 else
                                 {
@@ -187,7 +187,7 @@ namespace Celarix.Cix.Compiler.Preparse
 
                         conditionalValue = words.Length == 1 || words.Length > 2
                             ? throw new ErrorFoundException(ErrorSource.Preprocessor, 7,
-                                $"\"{line.Text}\" isn't valid; must be #ifdef SYMBOL", line)
+                                $"\"{line.Text}\" isn't valid; must be #ifdef SYMBOL", line, 0)
                             : (definedConstants.Contains(words[1]))
                                 ? ConditionalInclustionState.ConditionalTrue
                                 : ConditionalInclustionState.ConditionalFalse;
@@ -199,7 +199,7 @@ namespace Celarix.Cix.Compiler.Preparse
 						var words = line.Text.Split(' ');
 						conditionalValue = words.Length != 2
                             ? throw new ErrorFoundException(ErrorSource.Preprocessor, 8,
-                                $"\"{line.Text}\" isn't valid; must be #ifndef SYMBOL", line)
+                                $"\"{line.Text}\" isn't valid; must be #ifndef SYMBOL", line, 0)
                             : (!definedConstants.Contains(words[1]))
                                 ? ConditionalInclustionState.ConditionalTrue
                                 : ConditionalInclustionState.ConditionalFalse;
@@ -212,7 +212,7 @@ namespace Celarix.Cix.Compiler.Preparse
 						if (words.Length != 2)
 						{
 							throw new ErrorFoundException(ErrorSource.Preprocessor, 9,
-                                $"\"{line.Text}\" isn't valid; must be #include \"file\" or #include <file>", line);
+                                $"\"{line.Text}\" isn't valid; must be #include \"file\" or #include <file>", line, 0);
 						}
 						string fileName = words[1].Substring(1, words[1].Length - 2); // get all the text from after the first char and before the last one
 						var includedFile = LoadIncludeFile(line, fileName, definedConstants);
@@ -287,14 +287,14 @@ namespace Celarix.Cix.Compiler.Preparse
 			if (!File.Exists(includeFilePath))
 			{
 				throw new ErrorFoundException(ErrorSource.Preprocessor, 10,
-                    $"The include file {fileName} doesn't exist or has an invalid path.", includingLine);
+                    $"The include file {fileName} doesn't exist or has an invalid path.", includingLine, 0);
 			}
 
 			if (includedFilePaths.Contains(includeFilePath))
 			{
 				throw new ErrorFoundException(ErrorSource.Preprocessor, 15,
                     $"The file {includeFilePath} was already included.",
-                    includingLine);
+                    includingLine, 0);
 			}
 
             logger.Trace($"Including \"{includeFilePath}\"...");

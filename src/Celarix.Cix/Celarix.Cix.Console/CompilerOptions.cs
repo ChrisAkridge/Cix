@@ -7,7 +7,6 @@ using CommandLine;
 
 namespace Celarix.Cix.Console
 {
-
 	internal sealed class CompilerOptions
 	{
 		[Option('i', "input", Required = true, HelpText = "The path to the Cix file you wish to compile.")]
