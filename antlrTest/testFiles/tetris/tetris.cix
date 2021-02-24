@@ -57,7 +57,7 @@ struct Game
 	Tetrimino* HoldPiece;
 	Tetrimino* NextPiece;
 	int DropRatePerSecond;
-	int[5] ArrayMember;
+	int ArrayMember[5];
 	int offsetCounter;
 }
 

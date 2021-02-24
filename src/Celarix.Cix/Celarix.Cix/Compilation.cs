@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Celarix.Cix.Compiler.IO.Models;
+using Celarix.Cix.Compiler.Parse.ANTLR;
 using Celarix.Cix.Compiler.Preparse;
 using Celarix.Cix.Compiler.Preparse.Models;
 using NLog;
@@ -43,9 +44,18 @@ namespace Celarix.Cix.Compiler
             File.WriteAllText(CompilationOptions.OutputFilePath, tempFileText);
 
             preparseFile = new SourceFile(preprocessedFile);
-            TypeRewriter.RewriteTypes(preparseFile);
             
             logger.Trace("End preparse phase...");
+        }
+
+        public void Parse()
+        {
+            logger.Trace("Starting parse phase...");
+            
+            var sourceFileContext = ParserInvoker.Invoke(preparseFile);
+            var sourceFile = new ASTGenerator().GenerateSourceFile(sourceFileContext);
+            
+            logger.Trace("Ending parse phase...");
         }
     }
 }

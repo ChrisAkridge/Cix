@@ -15,7 +15,7 @@ Processors:
 		- Write preprocessed file if --save-temps is enabled		[side effects only]
 	- Type Finder
 		- Get list of types defined in file plus primitive types	[List<Line> => (List<Line>, List<string>)]
-	- Pointer Type Rewriter
+	- ~~Pointer Type Rewriter~~
 		- Rewrite asterisks in pointer types to backticks			[List<Line> => List<Line>]
 	- ANTLR Parser
 		- Create ANTLR parse tree from source file					[string => ANTLR program node]

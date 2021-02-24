@@ -42,7 +42,7 @@ namespace Celarix.Cix.Compiler.Extensions
                             {
                                 Text = wordBuilder.ToString(),
                                 FromLine = line,
-                                OverallCharacterRange = new Range(new Index(currentWordStartIndex), new Index(currentWordEndIndex))
+                                LineCharacterRange = new Range(new Index(currentWordStartIndex), new Index(currentWordEndIndex))
                             };
                         }
 

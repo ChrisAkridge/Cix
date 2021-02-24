@@ -11,6 +11,7 @@ using NLog;
 
 namespace Celarix.Cix.Compiler.Preparse
 {
+    [Obsolete] // ughhhhhhhhhhh
     internal static class TypeRewriter
     {
         private static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -43,8 +44,8 @@ namespace Celarix.Cix.Compiler.Preparse
             {
                 var wordLine = word.FromLine;
 
-                if (wordLine.StringLiteralLocations.Any(sll => word.OverallCharacterRange.Start.Value >= sll.Start.Value
-                    && word.OverallCharacterRange.End.Value <= sll.End.Value))
+                if (wordLine.StringLiteralLocations.Any(sll => word.LineCharacterRange.Start.Value >= sll.Start.Value
+                    && word.LineCharacterRange.End.Value <= sll.End.Value))
                 {
                     previousWord = null;
                     continue;
@@ -125,7 +126,7 @@ namespace Celarix.Cix.Compiler.Preparse
                     {
                         replaceAsterisksInNextWord = false;
                         var wordWithBackticks = word.Text.Replace('*', '`');
-                        word.FromLine.ReplaceWord(word.OverallCharacterRange.Start.Value, wordWithBackticks);
+                        word.FromLine.ReplaceWord(word.LineCharacterRange.Start.Value, wordWithBackticks);
                     }
                     else
                     {
@@ -136,7 +137,7 @@ namespace Celarix.Cix.Compiler.Preparse
                     && replaceAsterisksInNextWord)
                 {
                     var wordWithBackticks = word.Text.Replace('*', '`');
-                    word.FromLine.ReplaceWord(word.OverallCharacterRange.Start.Value, wordWithBackticks);
+                    word.FromLine.ReplaceWord(word.LineCharacterRange.Start.Value, wordWithBackticks);
                 }
                 else
                 {

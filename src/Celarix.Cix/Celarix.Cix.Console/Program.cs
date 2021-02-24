@@ -29,6 +29,7 @@ namespace Celarix.Cix.Console
 
             var compilation = new Compilation { CompilationOptions = cixCompilationOptions };
             compilation.Preparse();
+            compilation.Parse();
         }
 	}
 }

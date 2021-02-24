@@ -11,6 +11,10 @@ namespace Celarix.Cix.Compiler.Preparse.Models
     {
         public string Text { get; init; }
         public Line FromLine { get; init; }
-        public Range OverallCharacterRange { get; init; }
+        public Range LineCharacterRange { get; init; }
+
+        /// <summary>Returns a string that represents the current object.</summary>
+        /// <returns>A string that represents the current object.</returns>
+        public override string ToString() => Text;
     }
 }
