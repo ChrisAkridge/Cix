@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <Folder Include="Emit\" />
-    <Folder Include="Parse\Models\AST\" />
   </ItemGroup>
 
   <ItemGroup>
