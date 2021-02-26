@@ -8,12 +8,18 @@ using Antlr4.Runtime.Tree;
 using Celarix.Cix.Compiler.Common.Models;
 using Celarix.Cix.Compiler.Parse.AST;
 using Celarix.Cix.Compiler.Parse.Models.AST;
+using Celarix.Cix.Compiler.Parse.Models.AST.v1;
 
 namespace Celarix.Cix.Compiler.Parse.ANTLR
 {
     public sealed class ASTGenerator
     {
-        public SourceFile GenerateSourceFile(CixParser.SourceFileContext sourceFile)
+        // TODO: Make everything here static
+        // TODO: Add line number to AST nodes (https://stackoverflow.com/a/19799925)
+
+        private const int CurrentASTVersion = 1;
+        
+        public SourceFileRoot GenerateSourceFile(CixParser.SourceFileContext sourceFile)
         {
             var structs = sourceFile.@struct().Select(GenerateStruct).ToList();
 
@@ -22,8 +28,9 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
 
             var functions = sourceFile.function().Select(GenerateFunction).ToList();
 
-            return new SourceFile
+            return new SourceFileRoot
             {
+                ASTVersion = CurrentASTVersion,
                 Structs = structs,
                 GlobalVariableDeclarations = globalVariableDeclarations,
                 Functions = functions
@@ -130,18 +137,31 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             return ulong.Parse(integerPart);
         }
 
-        public ASTNode GenerateGlobalVariableDeclaration(CixParser.GlobalVariableDeclarationContext globalVariableDeclaration) =>
-            globalVariableDeclaration.variableDeclarationStatement() != null
-                ? (ASTNode)new GlobalVariableDeclaration
+        public GlobalVariableDeclaration GenerateGlobalVariableDeclaration(CixParser.GlobalVariableDeclarationContext globalVariableDeclaration)
+        {
+            if (globalVariableDeclaration.variableDeclarationStatement() != null)
+            {
+                var declaration =
+                    GenerateVariableDeclarationStatement(globalVariableDeclaration.variableDeclarationStatement());
+
+                return new GlobalVariableDeclaration
                 {
-                    Declaration =
-                        GenerateVariableDeclarationStatement(globalVariableDeclaration.variableDeclarationStatement())
-                }
-                : new GlobalVariableDeclarationWithInitialization
-                {
-                    Declaration = GenerateVariableDeclarationWithInitializationStatement(globalVariableDeclaration
-                        .variableDeclarationWithInitializationStatement())
+                    Type = declaration.Type,
+                    Name = declaration.Name
                 };
+            }
+            else
+            {
+                var declaration = GenerateVariableDeclarationWithInitializationStatement(globalVariableDeclaration
+                    .variableDeclarationWithInitializationStatement());
+                return new GlobalVariableDeclarationWithInitialization
+                {
+                    Type = declaration.Type,
+                    Name = declaration.Name,
+                    Initializer = declaration.Initializer
+                };
+            }
+        }
 
         public Function GenerateFunction(CixParser.FunctionContext function)
         {
@@ -170,6 +190,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
 
         private CarCdr<FunctionParameter> GenerateFunctionParameterListCDR(CixParser.FunctionParameterListContext functionParameterList)
         {
+            if (functionParameterList == null) { return null; }
             var car = GenerateFunctionParameter(functionParameterList.functionParameter());
             var cdr = GenerateFunctionParameterListCDR(functionParameterList.functionParameterList());
 
@@ -655,10 +676,24 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
 
         public Literal GenerateNumber(CixParser.NumberContext number) =>
             number.Integer() != null
-                ? new IntegerLiteral { ValueBits = ParseInteger(number.Integer().GetText()) }
+                ? new IntegerLiteral
+                {
+                    ValueBits = ParseInteger(number.Integer().GetText())
+                }
                 : (Literal)new FloatingPointLiteral
                 {
-                    ValueBits = double.Parse(number.FloatingPoint().GetText(), NumberStyles.Float)
+                    ValueBits = double.Parse(GetFloatingPointNumberText(number.FloatingPoint().GetText()), NumberStyles.Float)
                 };
+
+        public string GetFloatingPointNumberText(string nodeText)
+        {
+            if (nodeText.EndsWith("f", StringComparison.InvariantCultureIgnoreCase)
+                || nodeText.EndsWith("d", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return nodeText[0..^1];
+            }
+
+            return nodeText;
+        }
     }
 }

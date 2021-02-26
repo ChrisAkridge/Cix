@@ -6,8 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Celarix.Cix.Compiler.IO.Models;
 using Celarix.Cix.Compiler.Parse.ANTLR;
+using Celarix.Cix.Compiler.Parse.Models.AST;
+using Celarix.Cix.Compiler.Parse.Models.AST.v1;
 using Celarix.Cix.Compiler.Preparse;
 using Celarix.Cix.Compiler.Preparse.Models;
+using Newtonsoft.Json;
 using NLog;
 
 namespace Celarix.Cix.Compiler
@@ -25,7 +28,8 @@ namespace Celarix.Cix.Compiler
         internal IReadOnlyList<Line> PreprocessedFile => preprocessedFile.AsReadOnly();
 
         internal SourceFile PreparseFile => preparseFile;
-        // public Program AbstractSyntaxTreeRoot { get; private set; }
+        
+        public SourceFileRoot AbstractSyntaxTreeRoot { get; private set; }
         public string IronArcAssemblyFile { get; private set; }
 
         public void Preparse()
@@ -40,9 +44,6 @@ namespace Celarix.Cix.Compiler
 
             CommentRemover.RemoveComments(preprocessedFile);
 
-            var tempFileText = IO.IO.JoinLinesIntoString(preprocessedFile);
-            File.WriteAllText(CompilationOptions.OutputFilePath, tempFileText);
-
             preparseFile = new SourceFile(preprocessedFile);
             
             logger.Trace("End preparse phase...");
@@ -53,7 +54,14 @@ namespace Celarix.Cix.Compiler
             logger.Trace("Starting parse phase...");
             
             var sourceFileContext = ParserInvoker.Invoke(preparseFile);
-            var sourceFile = new ASTGenerator().GenerateSourceFile(sourceFileContext);
+            AbstractSyntaxTreeRoot = new ASTGenerator().GenerateSourceFile(sourceFileContext);
+
+            var tempFileText = JsonConvert.SerializeObject(AbstractSyntaxTreeRoot, Formatting.Indented,
+                new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.All
+                });
+            File.WriteAllText(CompilationOptions.OutputFilePath, tempFileText);
             
             logger.Trace("Ending parse phase...");
         }

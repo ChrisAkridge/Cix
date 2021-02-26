@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
+using System.Linq;
 using Antlr4.Runtime;
-using Antlr4.Runtime.Atn;
-using Antlr4.Runtime.Dfa;
-using Antlr4.Runtime.Sharpen;
 
-namespace Celarix.Cix.Compiler.Parse.AST
+namespace Celarix.Cix.Compiler.Parse.ANTLR
 {
     internal sealed class ParsingErrorListener : BaseErrorListener
     {
