@@ -7,5 +7,6 @@ namespace Celarix.Cix.Compiler.Parse.Models.AST.v1
     public sealed class NamedDataType : DataType
     {
         public string Name { get; set; }
+        public override string PrettyPrint(int indentLevel) => $"{Name}{new string('*', PointerLevel)}";
     }
 }

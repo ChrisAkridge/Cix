@@ -54,7 +54,7 @@ namespace Celarix.Cix.Compiler
             logger.Trace("Starting parse phase...");
             
             var sourceFileContext = ParserInvoker.Invoke(preparseFile);
-            AbstractSyntaxTreeRoot = new ASTGenerator().GenerateSourceFile(sourceFileContext);
+            AbstractSyntaxTreeRoot = ASTGenerator.GenerateSourceFile(sourceFileContext);
 
             var tempFileText = JsonConvert.SerializeObject(AbstractSyntaxTreeRoot, Formatting.Indented,
                 new JsonSerializerSettings

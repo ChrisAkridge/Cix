@@ -18,8 +18,12 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
 
         public static CixParser.SourceFileContext Invoke(SourceFile file)
         {
+            logger.Trace($"Invoking ANTLR4 parser...");
+            
             var sourceFileText = file.JoinLines();
             var charStream = CharStreams.fromString(sourceFileText);
+            
+            logger.Trace($"Parse file has {sourceFileText.Length} characters");
 
             var lexerOutWriter = new StringWriter();
             var lexerErrorWriter = new StringWriter();

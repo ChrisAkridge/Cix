@@ -21,7 +21,7 @@ namespace Celarix.Cix.Compiler.Preparse
                 line.StringLiteralLocations = GetStringLiteralLocationsOnLine(line.Text).ToList();
             }
             
-            logger.Trace($"Marked string literal locations");
+            logger.Trace("Marked string literal locations");
         }
 
         private static IEnumerable<Range> GetStringLiteralLocationsOnLine(string text)

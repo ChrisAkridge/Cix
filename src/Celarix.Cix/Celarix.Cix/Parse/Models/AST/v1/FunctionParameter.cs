@@ -8,5 +8,6 @@ namespace Celarix.Cix.Compiler.Parse.Models.AST.v1
     {
         public DataType Type { get; set; }
         public string Name { get; set; }
+        public override string PrettyPrint(int indentLevel) => $"{Type.PrettyPrint(0)} {Name}";
     }
 }

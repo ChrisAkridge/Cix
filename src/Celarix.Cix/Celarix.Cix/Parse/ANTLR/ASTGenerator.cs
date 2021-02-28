@@ -2,25 +2,26 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Antlr4.Runtime.Tree;
 using Celarix.Cix.Compiler.Common.Models;
 using Celarix.Cix.Compiler.Parse.AST;
-using Celarix.Cix.Compiler.Parse.Models.AST;
 using Celarix.Cix.Compiler.Parse.Models.AST.v1;
+using NLog;
 
 namespace Celarix.Cix.Compiler.Parse.ANTLR
 {
-    public sealed class ASTGenerator
+    internal static class ASTGenerator
     {
-        // TODO: Make everything here static
         // TODO: Add line number to AST nodes (https://stackoverflow.com/a/19799925)
+        // TODO: Throw ErrorFoundExceptions instead of ArgumentOutOfRangeExceptions
 
         private const int CurrentASTVersion = 1;
+
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         
-        public SourceFileRoot GenerateSourceFile(CixParser.SourceFileContext sourceFile)
+        public static SourceFileRoot GenerateSourceFile(CixParser.SourceFileContext sourceFile)
         {
+            logger.Trace("Converting ANTLR4 parse tree into Cix AST...");
+            
             var structs = sourceFile.@struct().Select(GenerateStruct).ToList();
 
             var globalVariableDeclarations =
@@ -37,11 +38,13 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             };
         }
 
-        public Struct GenerateStruct(CixParser.StructContext @struct)
+        private static Struct GenerateStruct(CixParser.StructContext @struct)
         {
             var name = @struct.Identifier().GetText();
             var members = @struct.structMember().Select(GenerateStructMember).ToList();
 
+            logger.Trace($"Found struct {name}");
+            
             return new Struct
             {
                 Name = name,
@@ -49,7 +52,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             };
         }
 
-        public StructMember GenerateStructMember(CixParser.StructMemberContext structMember)
+        private static StructMember GenerateStructMember(CixParser.StructMemberContext structMember)
         {
             var type = GenerateTypeName(structMember.typeName());
             var name = structMember.Identifier().GetText();
@@ -66,7 +69,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             };
         }
 
-        public DataType GenerateTypeName(CixParser.TypeNameContext typeName)
+        private static DataType GenerateTypeName(CixParser.TypeNameContext typeName)
         {
             var pointerLevel = 0;
             var pointerAsteriskList = typeName.pointerAsteriskList();
@@ -77,7 +80,11 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             
             if (typeName.funcptrTypeName() != null)
             {
-                return new FuncptrDataType { Types = GenerateTypeNameList(typeName.funcptrTypeName().typeNameList()), PointerLevel = pointerLevel };
+                return new FuncptrDataType
+                {
+                    Types = GenerateTypeNameList(typeName.funcptrTypeName().typeNameList()),
+                    PointerLevel = pointerLevel
+                };
             }
             else
             {
@@ -89,14 +96,10 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             }
         }
 
-        public List<DataType> GenerateTypeNameList(CixParser.TypeNameListContext typeNameList)
-        {
-            var carCdr = GenerateTypeNameListCdr(typeNameList);
+        private static List<DataType> GenerateTypeNameList(CixParser.TypeNameListContext typeNameList) =>
+            GenerateTypeNameListCdr(typeNameList).ToList();
 
-            return carCdr.ToList();
-        }
-
-        public CarCdr<DataType> GenerateTypeNameListCdr(CixParser.TypeNameListContext typeNameList)
+        private static CarCdr<DataType> GenerateTypeNameListCdr(CixParser.TypeNameListContext typeNameList)
         {
             var typeListCAR = GenerateTypeName(typeNameList.typeName());
             CarCdr<DataType> typeListCDR = null;
@@ -109,12 +112,10 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             return new CarCdr<DataType>() { Car = typeListCAR, Cdr = typeListCDR };
         }
 
-        public int GenerateStructArraySize(CixParser.StructArraySizeContext structArraySize)
-        {
-            return (int)ParseInteger(structArraySize.Integer().GetText());
-        }
+        private static int GenerateStructArraySize(CixParser.StructArraySizeContext structArraySize) =>
+            (int)ParseInteger(structArraySize.Integer().GetText());
 
-        public ulong ParseInteger(string integerText)
+        private static ulong ParseInteger(string integerText)
         {
             int suffixLength = 0;
             if (integerText.EndsWith("u", StringComparison.InvariantCultureIgnoreCase)
@@ -129,21 +130,20 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
 
             string integerPart = integerText.Substring(0, integerText.Length - suffixLength);
 
-            if (integerPart.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return ulong.Parse(integerPart.Substring(2), NumberStyles.AllowHexSpecifier);
-            }
-
-            return ulong.Parse(integerPart);
+            return integerPart.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase)
+                ? ulong.Parse(integerPart.Substring(2), NumberStyles.AllowHexSpecifier)
+                : ulong.Parse(integerPart);
         }
 
-        public GlobalVariableDeclaration GenerateGlobalVariableDeclaration(CixParser.GlobalVariableDeclarationContext globalVariableDeclaration)
+        private static GlobalVariableDeclaration GenerateGlobalVariableDeclaration(CixParser.GlobalVariableDeclarationContext globalVariableDeclaration)
         {
             if (globalVariableDeclaration.variableDeclarationStatement() != null)
             {
                 var declaration =
                     GenerateVariableDeclarationStatement(globalVariableDeclaration.variableDeclarationStatement());
 
+                logger.Trace($"Found global variable {declaration.Name}");
+                
                 return new GlobalVariableDeclaration
                 {
                     Type = declaration.Type,
@@ -154,6 +154,9 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             {
                 var declaration = GenerateVariableDeclarationWithInitializationStatement(globalVariableDeclaration
                     .variableDeclarationWithInitializationStatement());
+
+                logger.Trace($"Found global variable {declaration.Name}");
+
                 return new GlobalVariableDeclarationWithInitialization
                 {
                     Type = declaration.Type,
@@ -163,7 +166,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             }
         }
 
-        public Function GenerateFunction(CixParser.FunctionContext function)
+        private static Function GenerateFunction(CixParser.FunctionContext function)
         {
             var returnType = GenerateTypeName(function.typeName());
             var name = function.Identifier().GetText();
@@ -172,8 +175,10 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
                 ? GenerateFunctionParameterList(function.functionParameterList())
                 : new List<FunctionParameter>();
 
-            var statements = function?.statement().Select(GenerateStatement).ToList() ?? new List<Statement>();
+            var statements = function.statement()?.Select(GenerateStatement).ToList() ?? new List<Statement>();
 
+            logger.Trace($"Found function {name}");
+            
             return new Function
             {
                 ReturnType = returnType, 
@@ -183,12 +188,10 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             };
         }
 
-        public List<FunctionParameter> GenerateFunctionParameterList(CixParser.FunctionParameterListContext functionParameterList)
-        {
-            return GenerateFunctionParameterListCDR(functionParameterList).ToList();
-        }
+        private static List<FunctionParameter> GenerateFunctionParameterList(CixParser.FunctionParameterListContext functionParameterList) =>
+            GenerateFunctionParameterListCDR(functionParameterList).ToList();
 
-        private CarCdr<FunctionParameter> GenerateFunctionParameterListCDR(CixParser.FunctionParameterListContext functionParameterList)
+        private static CarCdr<FunctionParameter> GenerateFunctionParameterListCDR(CixParser.FunctionParameterListContext functionParameterList)
         {
             if (functionParameterList == null) { return null; }
             var car = GenerateFunctionParameter(functionParameterList.functionParameter());
@@ -197,16 +200,14 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             return new CarCdr<FunctionParameter> { Car = car, Cdr = cdr };
         }
 
-        public FunctionParameter GenerateFunctionParameter(CixParser.FunctionParameterContext functionParameter)
-        {
-            return new FunctionParameter
+        private static FunctionParameter GenerateFunctionParameter(CixParser.FunctionParameterContext functionParameter) =>
+            new FunctionParameter
             {
                 Type = GenerateTypeName(functionParameter.typeName()),
                 Name = functionParameter.Identifier().GetText()
             };
-        }
 
-        public Statement GenerateStatement(CixParser.StatementContext statement)
+        private static Statement GenerateStatement(CixParser.StatementContext statement)
         {
             if (statement.block() != null) { return GenerateBlock(statement.block()); }
             else if (statement.breakStatement() != null) { return new BreakStatement(); /* BreakStatement */ }
@@ -223,12 +224,9 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             else { throw new ArgumentOutOfRangeException(); }
         }
 
-        public Block GenerateBlock(CixParser.BlockContext block)
-        {
-            return new Block { Statements = block.statement().Select(GenerateStatement).ToList() };
-        }
+        private static Block GenerateBlock(CixParser.BlockContext block) => new Block { Statements = block.statement().Select(GenerateStatement).ToList() };
 
-        public ConditionalStatement GenerateConditionalStatement(CixParser.ConditionalStatementContext conditionalStatement)
+        private static ConditionalStatement GenerateConditionalStatement(CixParser.ConditionalStatementContext conditionalStatement)
         {
             var expression = GenerateExpression(conditionalStatement.expression());
             var statement = GenerateStatement(conditionalStatement.statement());
@@ -245,7 +243,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             };
         }
 
-        public DoWhileStatement GenerateDoWhileStatement(CixParser.DoWhileStatementContext doWhileStatement)
+        private static DoWhileStatement GenerateDoWhileStatement(CixParser.DoWhileStatementContext doWhileStatement)
         {
             var statement = GenerateStatement(doWhileStatement.statement());
             var whileExpression = GenerateExpression(doWhileStatement.expression());
@@ -253,48 +251,42 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             return new DoWhileStatement { LoopStatement = statement, Condition = whileExpression };
         }
 
-        public ExpressionStatement GenerateExpressionStatement(CixParser.ExpressionStatementContext expressionStatement) =>
+        private static ExpressionStatement GenerateExpressionStatement(CixParser.ExpressionStatementContext expressionStatement) =>
             new ExpressionStatement { Expression = GenerateExpression(expressionStatement.expression()) };
 
-        public ForStatement GenerateForStatement(CixParser.ForStatementContext forStatement)
-        {
-            return new ForStatement
+        private static ForStatement GenerateForStatement(CixParser.ForStatementContext forStatement) =>
+            new ForStatement
             {
                 Initializer = GenerateExpression(forStatement.expression(0)),
                 Condition = GenerateExpression(forStatement.expression(1)),
                 Iterator = GenerateExpression(forStatement.expression(2)),
                 LoopStatement = GenerateStatement(forStatement.statement())
             };
-        }
 
-        public ReturnStatement GenerateReturnStatement(CixParser.ReturnStatementContext returnStatement)
-        {
-            return new ReturnStatement
+        private static ReturnStatement GenerateReturnStatement(CixParser.ReturnStatementContext returnStatement) =>
+            new ReturnStatement
             {
                 ReturnValue = (returnStatement.expression() != null)
                     ? GenerateExpression(returnStatement.expression())
                     : null
             };
-        }
 
-        public SwitchStatement GenerateSwitchStatement(CixParser.SwitchStatementContext switchStatement)
-        {
-            return new SwitchStatement
+        private static SwitchStatement GenerateSwitchStatement(CixParser.SwitchStatementContext switchStatement) =>
+            new SwitchStatement
             {
                 Expression = GenerateExpression(switchStatement.expression()),
                 Cases = switchStatement.caseStatement().Select(GenerateCaseStatement).ToList()
             };
-        }
 
-        public CaseStatement GenerateCaseStatement(CixParser.CaseStatementContext caseStatement)
+        private static CaseStatement GenerateCaseStatement(CixParser.CaseStatementContext caseStatement)
         {
             if (caseStatement.literalCaseStatement() != null)
             {
                 var literalCase = caseStatement.literalCaseStatement();
 
-                Literal literal = (literalCase.Integer() != null)
-                    ? (Literal)(new IntegerLiteral { ValueBits = ParseInteger(literalCase.Integer().GetText()) })
-                    : (Literal)(new StringLiteral { Value = literalCase.StringLiteral().GetText() });
+                var literal = (literalCase.Integer() != null)
+                    ? new IntegerLiteral { ValueBits = ParseInteger(literalCase.Integer().GetText()) }
+                    : (Literal)new StringLiteral { Value = literalCase.StringLiteral().GetText() };
 
                 return new CaseStatement
                 {
@@ -312,40 +304,31 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             }
         }
 
-        public WhileStatement GenerateWhileStatement(CixParser.WhileStatementContext whileStatement)
-        {
-            return new WhileStatement()
+        private static WhileStatement GenerateWhileStatement(CixParser.WhileStatementContext whileStatement) =>
+            new WhileStatement()
             {
                 Condition = GenerateExpression(whileStatement.expression()),
                 LoopStatement = GenerateStatement(whileStatement.statement())
             };
-        }
 
-        public VariableDeclaration GenerateVariableDeclarationStatement(CixParser.VariableDeclarationStatementContext variableDeclarationStatement)
-        {
-            return new VariableDeclaration
+        private static VariableDeclaration GenerateVariableDeclarationStatement(CixParser.VariableDeclarationStatementContext variableDeclarationStatement) =>
+            new VariableDeclaration
             {
                 Type = GenerateTypeName(variableDeclarationStatement.typeName()),
                 Name = variableDeclarationStatement.Identifier().GetText()
             };
-        }
 
-        public VariableDeclarationWithInitialization GenerateVariableDeclarationWithInitializationStatement(CixParser.VariableDeclarationWithInitializationStatementContext variableDeclarationWithInitializationStatementContext)
-        {
-            return new VariableDeclarationWithInitialization
+        private static VariableDeclarationWithInitialization GenerateVariableDeclarationWithInitializationStatement(CixParser.VariableDeclarationWithInitializationStatementContext variableDeclarationWithInitializationStatementContext) =>
+            new VariableDeclarationWithInitialization
             {
                 Type = GenerateTypeName(variableDeclarationWithInitializationStatementContext.typeName()),
                 Name = variableDeclarationWithInitializationStatementContext.Identifier().GetText(),
                 Initializer = GenerateExpression(variableDeclarationWithInitializationStatementContext.expression())
             };
-        }
 
-        public Expression GenerateExpression(CixParser.ExpressionContext expression)
-        {
-            return GenerateAssignmentExpression(expression.assignmentExpression());
-        }
+        private static Expression GenerateExpression(CixParser.ExpressionContext expression) => GenerateAssignmentExpression(expression.assignmentExpression());
 
-        public Expression GenerateAssignmentExpression(CixParser.AssignmentExpressionContext assignmentExpression)
+        private static Expression GenerateAssignmentExpression(CixParser.AssignmentExpressionContext assignmentExpression)
         {
             if (assignmentExpression.conditionalExpression() != null)
             {
@@ -360,9 +343,8 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             };
         }
 
-        public Expression GenerateConditionalExpression(CixParser.ConditionalExpressionContext conditionalExpression)
-        {
-            return conditionalExpression.expression() == null
+        private static Expression GenerateConditionalExpression(CixParser.ConditionalExpressionContext conditionalExpression) =>
+            conditionalExpression.expression() == null
                 ? GenerateLogicalOrExpression(conditionalExpression.logicalOrExpression())
                 : new TernaryExpression
                 {
@@ -372,11 +354,9 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
                     Operator2 = ":",
                     Operand3 = GenerateConditionalExpression(conditionalExpression.conditionalExpression())
                 };
-        }
 
-        public Expression GenerateLogicalOrExpression(CixParser.LogicalOrExpressionContext logicalOrExpression)
-        {
-            return logicalOrExpression.logicalOrExpression() == null
+        private static Expression GenerateLogicalOrExpression(CixParser.LogicalOrExpressionContext logicalOrExpression) =>
+            logicalOrExpression.logicalOrExpression() == null
                 ? GenerateLogicalAndExpression(logicalOrExpression.logicalAndExpression())
                 : new BinaryExpression
                 {
@@ -384,11 +364,9 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
                     Operator = "||",
                     Right = GenerateLogicalAndExpression(logicalOrExpression.logicalAndExpression())
                 };
-        }
 
-        public Expression GenerateLogicalAndExpression(CixParser.LogicalAndExpressionContext logicalAndExpression)
-        {
-            return logicalAndExpression.logicalAndExpression() == null
+        private static Expression GenerateLogicalAndExpression(CixParser.LogicalAndExpressionContext logicalAndExpression) =>
+            logicalAndExpression.logicalAndExpression() == null
                 ? GenerateInclusiveOrExpression(logicalAndExpression.inclusiveOrExpression())
                 : new BinaryExpression
                 {
@@ -396,11 +374,9 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
                     Operator = "&&",
                     Right = GenerateInclusiveOrExpression(logicalAndExpression.inclusiveOrExpression())
                 };
-        }
 
-        public Expression GenerateInclusiveOrExpression(CixParser.InclusiveOrExpressionContext inclusiveOrExpression)
-        {
-            return inclusiveOrExpression.inclusiveOrExpression() == null
+        private static Expression GenerateInclusiveOrExpression(CixParser.InclusiveOrExpressionContext inclusiveOrExpression) =>
+            inclusiveOrExpression.inclusiveOrExpression() == null
                 ? GenerateExclusiveOrExpression(inclusiveOrExpression.exclusiveOrExpression())
                 : new BinaryExpression
                 {
@@ -408,11 +384,9 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
                     Operator = "|",
                     Right = GenerateExclusiveOrExpression(inclusiveOrExpression.exclusiveOrExpression())
                 };
-        }
 
-        public Expression GenerateExclusiveOrExpression(CixParser.ExclusiveOrExpressionContext exclusiveOrExpression)
-        {
-            return exclusiveOrExpression.exclusiveOrExpression() == null
+        private static Expression GenerateExclusiveOrExpression(CixParser.ExclusiveOrExpressionContext exclusiveOrExpression) =>
+            exclusiveOrExpression.exclusiveOrExpression() == null
                 ? GenerateAndExpression(exclusiveOrExpression.andExpression())
                 : new BinaryExpression()
                 {
@@ -420,11 +394,9 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
                     Operator = "^",
                     Right = GenerateAndExpression(exclusiveOrExpression.andExpression())
                 };
-        }
 
-        public Expression GenerateAndExpression(CixParser.AndExpressionContext andExpression)
-        {
-            return (andExpression.andExpression() == null)
+        private static Expression GenerateAndExpression(CixParser.AndExpressionContext andExpression) =>
+            (andExpression.andExpression() == null)
                 ? GenerateEqualityExpression(andExpression.equalityExpression())
                 : new BinaryExpression
                 {
@@ -432,9 +404,8 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
                     Operator = "&",
                     Right = GenerateEqualityExpression(andExpression.equalityExpression())
                 };
-        }
 
-        public Expression GenerateEqualityExpression(CixParser.EqualityExpressionContext equalityExpressionContext)
+        private static Expression GenerateEqualityExpression(CixParser.EqualityExpressionContext equalityExpressionContext)
         {
             if (equalityExpressionContext.equalityExpression() == null)
             {
@@ -449,7 +420,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             };
         }
 
-        public Expression GenerateRelationalExpression(CixParser.RelationalExpressionContext relationalExpression)
+        private static Expression GenerateRelationalExpression(CixParser.RelationalExpressionContext relationalExpression)
         {
             if (relationalExpression.shiftExpression() != null)
             {
@@ -459,9 +430,9 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             string operatorSymbol;
 
             if (relationalExpression.LessThan() != null) { operatorSymbol = "<"; }
-            if (relationalExpression.LessThanOrEqualTo() != null) { operatorSymbol = "<="; }
-            if (relationalExpression.GreaterThan() != null) { operatorSymbol = ">"; }
-            if (relationalExpression.GreaterThanOrEqualTo() != null) { operatorSymbol = ">="; }
+            else if (relationalExpression.LessThanOrEqualTo() != null) { operatorSymbol = "<="; }
+            else if (relationalExpression.GreaterThan() != null) { operatorSymbol = ">"; }
+            else if (relationalExpression.GreaterThanOrEqualTo() != null) { operatorSymbol = ">="; }
             else { throw new ArgumentOutOfRangeException(); }
 
             return new BinaryExpression
@@ -472,7 +443,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             };
         }
 
-        public Expression GenerateShiftExpression(CixParser.ShiftExpressionContext shiftExpression)
+        private static Expression GenerateShiftExpression(CixParser.ShiftExpressionContext shiftExpression)
         {
             if (shiftExpression.shiftExpression() == null)
             {
@@ -487,7 +458,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             };
         }
 
-        public Expression GenerateAdditiveExpression(CixParser.AdditiveExpressionContext additiveExpression)
+        private static Expression GenerateAdditiveExpression(CixParser.AdditiveExpressionContext additiveExpression)
         {
             if (additiveExpression.additiveExpression() == null)
             {
@@ -502,7 +473,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             };
         }
 
-        public Expression GenerateMultiplicativeExpression(CixParser.MultiplicativeExpressionContext multiplicativeExpression)
+        private static Expression GenerateMultiplicativeExpression(CixParser.MultiplicativeExpressionContext multiplicativeExpression)
         {
             if (multiplicativeExpression.multiplicativeExpression() == null)
             {
@@ -524,7 +495,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             };
         }
 
-        public Expression GenerateCastExpression(CixParser.CastExpressionContext castExpression)
+        private static Expression GenerateCastExpression(CixParser.CastExpressionContext castExpression)
         {
             if (castExpression.unaryExpression() != null)
             {
@@ -538,7 +509,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             };
         }
 
-        public Expression GenerateUnaryExpression(CixParser.UnaryExpressionContext unaryExpression)
+        private static Expression GenerateUnaryExpression(CixParser.UnaryExpressionContext unaryExpression)
         {
             if (unaryExpression.postfixExpression() != null)
             {
@@ -567,9 +538,14 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
 
                 var operatorContext = unaryExpression.unaryOperator();
 
-                var operatorTerminals = new ITerminalNode[]
+                var operatorTerminals = new[]
                 {
-                    operatorContext.Plus(), operatorContext.Minus(), operatorContext.BitwiseNot(), operatorContext.LogicalNot(), operatorContext.Ampersand(), operatorContext.Asterisk()
+                    operatorContext.Plus(),
+                    operatorContext.Minus(),
+                    operatorContext.BitwiseNot(),
+                    operatorContext.LogicalNot(),
+                    operatorContext.Ampersand(),
+                    operatorContext.Asterisk()
                 };
                 var operatorTerminal = operatorTerminals.First(t => t != null);
 
@@ -591,7 +567,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             return new SizeOfExpression { Type = GenerateTypeName(unaryExpression.typeName()) };
         }
 
-        public Expression GeneratePostfixExpression(CixParser.PostfixExpressionContext postfixExpression)
+        private static Expression GeneratePostfixExpression(CixParser.PostfixExpressionContext postfixExpression)
         {
             if (postfixExpression.primaryExpression() != null)
             {
@@ -637,12 +613,10 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             }
         }
 
-        public List<Expression> GenerateArgumentExpressionList(CixParser.ArgumentExpressionListContext argumentExpressionList)
-        {
-            return GenerateArgumentExpressionListCdr(argumentExpressionList).ToList();
-        }
+        private static List<Expression> GenerateArgumentExpressionList(CixParser.ArgumentExpressionListContext argumentExpressionList) =>
+            GenerateArgumentExpressionListCdr(argumentExpressionList).ToList();
 
-        public CarCdr<Expression> GenerateArgumentExpressionListCdr(CixParser.ArgumentExpressionListContext argumentExpressionList)
+        private static CarCdr<Expression> GenerateArgumentExpressionListCdr(CixParser.ArgumentExpressionListContext argumentExpressionList)
         {
             if (argumentExpressionList == null) { return null; }
             
@@ -652,29 +626,16 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             return new CarCdr<Expression> { Car = car, Cdr = cdr };
         }
 
-        public Expression GeneratePrimaryExpression(CixParser.PrimaryExpressionContext primaryExpression)
-        {
-            if (primaryExpression.Identifier() != null)
-            {
-                return new Identifier { IdentifierText = primaryExpression.Identifier().GetText() };
-            }
-            else if (primaryExpression.StringLiteral() != null)
-            {
-                return new StringLiteral
-                {
-                    Value =
-                        primaryExpression.StringLiteral().GetText()
-                };
-            }
-            else
-            {
-                return primaryExpression.number() != null
-                    ? (Expression)GenerateNumber(primaryExpression.number())
-                    : GenerateExpression(primaryExpression.expression());
-            }
-        }
+        private static Expression GeneratePrimaryExpression(CixParser.PrimaryExpressionContext primaryExpression) =>
+            primaryExpression.Identifier() != null
+                ? new Identifier { IdentifierText = primaryExpression.Identifier().GetText() }
+                : primaryExpression.StringLiteral() != null
+                    ? new StringLiteral { Value = primaryExpression.StringLiteral().GetText() }
+                    : primaryExpression.number() != null
+                        ? GenerateNumber(primaryExpression.number())
+                        : GenerateExpression(primaryExpression.expression());
 
-        public Literal GenerateNumber(CixParser.NumberContext number) =>
+        private static Literal GenerateNumber(CixParser.NumberContext number) =>
             number.Integer() != null
                 ? new IntegerLiteral
                 {
@@ -685,15 +646,10 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
                     ValueBits = double.Parse(GetFloatingPointNumberText(number.FloatingPoint().GetText()), NumberStyles.Float)
                 };
 
-        public string GetFloatingPointNumberText(string nodeText)
-        {
-            if (nodeText.EndsWith("f", StringComparison.InvariantCultureIgnoreCase)
-                || nodeText.EndsWith("d", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return nodeText[0..^1];
-            }
-
-            return nodeText;
-        }
+        private static string GetFloatingPointNumberText(string nodeText) =>
+            nodeText.EndsWith("f", StringComparison.InvariantCultureIgnoreCase)
+            || nodeText.EndsWith("d", StringComparison.InvariantCultureIgnoreCase)
+                ? nodeText[0..^1]
+                : nodeText;
     }
 }
