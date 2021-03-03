@@ -102,6 +102,7 @@ namespace Celarix.Cix.Compiler.Preparse
 						}
 						else
                         {
+                            words = words.Take(3).ToArray();
                             switch (words.Length)
                             {
                                 case 2 when words[1].IsIdentifier():
@@ -238,7 +239,7 @@ namespace Celarix.Cix.Compiler.Preparse
 
                     preprocessedFile.Add(new Line
                     {
-                        Text = line.Text,
+                        Text = resultLine,
                         SourceFilePath = line.SourceFilePath,
                         FileLineNumber = line.FileLineNumber,
                         FileStartCharacterIndex = line.FileStartCharacterIndex

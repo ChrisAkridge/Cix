@@ -14,6 +14,9 @@ namespace Celarix.Cix.Console
 
 		[Option('o', "output", Required = true, HelpText = "The path to the IronArc assembly file you wish to compile to.")]
 		public string OutputFilePath { get; set; }
+        
+        [Option('h', "hardware-definition", Required = true, HelpText = "The path to a JSON file describing available hardware devices on an IronArc VM.")]
+        public string HardwareDefinitionPath { get; set; }
 
 		[Option('t', "save-temps", Required = false, HelpText = "Outputs the preprocessed Cix file and its AST as JSON to the output folder.")]
 		public bool SaveTemps { get; set; }

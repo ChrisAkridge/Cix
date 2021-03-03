@@ -15,7 +15,7 @@ namespace Celarix.Cix.Compiler.Parse.Models.AST.v1
             var indent = new string(' ', indentLevel * 4);
             var arraySize = (StructArraySize > 1) ? $"[{StructArraySize}]" : "";
 
-            return $"{indent}{Type.PrettyPrint(0)} {Name}{StructArraySize};";
+            return $"{indent}{Type.PrettyPrint(0)} {Name}{arraySize};";
         }
     }
 }

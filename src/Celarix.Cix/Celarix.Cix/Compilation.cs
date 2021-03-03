@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Celarix.Cix.Compiler.IO.Models;
+using Celarix.Cix.Compiler.Lowering;
+using Celarix.Cix.Compiler.Lowering.Models;
 using Celarix.Cix.Compiler.Parse.ANTLR;
 using Celarix.Cix.Compiler.Parse.Models.AST;
 using Celarix.Cix.Compiler.Parse.Models.AST.v1;
@@ -55,15 +57,23 @@ namespace Celarix.Cix.Compiler
             
             var sourceFileContext = ParserInvoker.Invoke(preparseFile);
             AbstractSyntaxTreeRoot = ASTGenerator.GenerateSourceFile(sourceFileContext);
-
-            var tempFileText = JsonConvert.SerializeObject(AbstractSyntaxTreeRoot, Formatting.Indented,
-                new JsonSerializerSettings
-                {
-                    TypeNameHandling = TypeNameHandling.All
-                });
-            File.WriteAllText(CompilationOptions.OutputFilePath, tempFileText);
             
             logger.Trace("Ending parse phase...");
+        }
+
+        public void Lower()
+        {
+            logger.Trace("Start lowering phase...");
+
+            var hardwareDefinitionJson = File.ReadAllText(CompilationOptions.HardwareDefinitionPath);
+            var hardwareDefinition = JsonConvert.DeserializeObject<HardwareDefinition>(hardwareDefinitionJson);
+            var hardwareCallFunctions = HardwareCallWriter.WriteHardwareCallFunctions(hardwareDefinition);
+            AbstractSyntaxTreeRoot.Functions.AddRange(hardwareCallFunctions);
+
+            var tempFileText = AbstractSyntaxTreeRoot.PrettyPrint(0);
+            File.WriteAllText(CompilationOptions.OutputFilePath, tempFileText);
+            
+            logger.Trace("End lowering phase...");
         }
     }
 }

@@ -614,7 +614,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
         }
 
         private static List<Expression> GenerateArgumentExpressionList(CixParser.ArgumentExpressionListContext argumentExpressionList) =>
-            GenerateArgumentExpressionListCdr(argumentExpressionList).ToList();
+            GenerateArgumentExpressionListCdr(argumentExpressionList).Reverse().ToList();
 
         private static CarCdr<Expression> GenerateArgumentExpressionListCdr(CixParser.ArgumentExpressionListContext argumentExpressionList)
         {

@@ -2,7 +2,7 @@
   "profiles": {
     "Celarix.Cix.Console": {
       "commandName": "Project",
-      "commandLineArgs": "--input \"..\\..\\..\\..\\..\\..\\antlrTest\\testFiles\\tetris\\tetris.cix\" -o \"..\\..\\..\\..\\..\\..\\antlrTest\\testFiles\\tetris\\tetris_out.cix\"-s DEBUG,TRACE,HELP --save-temps --log-level trace"
+      "commandLineArgs": "--input \"..\\..\\..\\..\\..\\..\\antlrTest\\testFiles\\tetris\\tetris.cix\" -o \"..\\..\\..\\..\\..\\..\\antlrTest\\testFiles\\tetris\\tetris_out.cix\" -h \"D:\\Documents\\GitHub\\Cix\\hardware_20210302.json\" -s DEBUG,TRACE,HELP --save-temps --log-level trace"
     }
   }
 }

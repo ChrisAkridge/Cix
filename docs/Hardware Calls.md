@@ -42,7 +42,7 @@ The member `HardwareCall.ReturnType` can be `null` - if it is, the hardware call
 
 ### Providing the Hardware Definition file
 
-A hardware definition file is provided to the compiler through the `#include` preprocessor directive. For more information on the inclusion process, please see the Preprocessor document.
+The path to a hardware definition file is provided to the compiler through the `-h` or `--hardware-definition` command-line option.
 
 ## Adding Support for Hardware Calls in Cix Code
 

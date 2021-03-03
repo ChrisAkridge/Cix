@@ -8,6 +8,6 @@ namespace Celarix.Cix.Compiler.Parse.Models.AST.v1
     {
         public DataType ToType { get; set; }
         public Expression Operand { get; set; }
-        public override string PrettyPrint() => $"({ToType.PrettyPrint(0)})({Operand})";
+        public override string PrettyPrint() => $"({ToType.PrettyPrint(0)})({Operand.PrettyPrint()})";
     }
 }

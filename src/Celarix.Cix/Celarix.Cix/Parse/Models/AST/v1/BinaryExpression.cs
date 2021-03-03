@@ -10,6 +10,9 @@ namespace Celarix.Cix.Compiler.Parse.Models.AST.v1
         public string Operator { get; set; }
         public Expression Right { get; set; }
 
-        public override string PrettyPrint() => $"{Left.PrettyPrint()} {Operator} {Right.PrettyPrint()}";
+        public override string PrettyPrint() =>
+            Operator != "." && Operator != "->"
+                ? $"{Left.PrettyPrint()} {Operator} {Right.PrettyPrint()}"
+                : $"{Left.PrettyPrint()}{Operator}{Right.PrettyPrint()}";
     }
 }

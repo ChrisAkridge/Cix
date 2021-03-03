@@ -12,6 +12,7 @@ namespace Celarix.Cix.Compiler
         
         public string InputFilePath { get; init; }
         public string OutputFilePath { get; init; }
+        public string HardwareDefinitionPath { get; init; }
         public bool SaveTemps { get; init; }
 
         public IList<string> DeclaredSymbols

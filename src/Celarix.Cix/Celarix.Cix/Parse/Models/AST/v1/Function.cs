@@ -18,7 +18,7 @@ namespace Celarix.Cix.Compiler.Parse.Models.AST.v1
             var indent = new string(' ', indentLevel * 4);
             var parameters = string.Join(", ", Parameters.Select(p => p.PrettyPrint(0)));
 
-            builder.AppendLine($"{indent}{ReturnType.PrettyPrint(0)} {Name}({Parameters})");
+            builder.AppendLine($"{indent}{ReturnType.PrettyPrint(0)} {Name}({parameters})");
             builder.AppendLine($"{indent}{{");
 
             foreach (var statement in Statements)

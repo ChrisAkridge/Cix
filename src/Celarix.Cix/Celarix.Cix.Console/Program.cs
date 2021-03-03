@@ -20,6 +20,7 @@ namespace Celarix.Cix.Console
                     {
                         InputFilePath = o.InputFilePath,
                         OutputFilePath = o.OutputFilePath,
+                        HardwareDefinitionPath = o.HardwareDefinitionPath,
                         SaveTemps = o.SaveTemps,
                         DeclaredSymbols = o.Symbols.ToList()
                     };
@@ -30,6 +31,7 @@ namespace Celarix.Cix.Console
             var compilation = new Compilation { CompilationOptions = cixCompilationOptions };
             compilation.Preparse();
             compilation.Parse();
+            compilation.Lower();
         }
 	}
 }

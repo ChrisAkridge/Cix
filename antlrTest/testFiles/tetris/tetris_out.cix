@@ -1,0 +1,288 @@
+struct a
+{
+    int b;
+}
+
+struct Board
+{
+    byte* Cells;
+    int Width;
+    int Height;
+}
+
+struct Tetrimino
+{
+    byte Color;
+    int X0;
+    int Y0;
+    int X1;
+    int Y1;
+    int X2;
+    int Y2;
+    int X3;
+    int Y3;
+}
+
+struct Game
+{
+    Board* Board;
+    Tetrimino* DropPiece;
+    Tetrimino* HoldPiece;
+    Tetrimino* NextPiece;
+    int DropRatePerSecond;
+    int ArrayMember[5];
+    int offsetCounter;
+}
+
+
+global void** doublePointer;
+global void* vgaBase;
+global Game* game;
+global @funcptr<Tetrimino*>* tetriminoFunctions;
+global @funcptr<int, byte*, short, long**, ulong, float***, double, void****> lotsOPointers;
+
+void func()
+{
+    int a;
+    return a = a = a = a;
+}
+
+void InitRNG()
+{
+}
+
+int randomInt(int min, int max)
+{
+    return min;
+}
+
+int Main(int argc, byte** argv)
+{
+    vgaBase = (void*)(hwcall("System::GetMemoryMappedHWStartAddress", "VGAMonitor"));
+    RNGInit();
+    tetriminoFunctions[0] = &(CreateI);
+    tetriminoFunctions[1] = &(CreateO);
+    tetriminoFunctions[2] = &(CreateJ);
+    tetriminoFunctions[3] = &(CreateL);
+    tetriminoFunctions[4] = &(CreateS);
+    tetriminoFunctions[5] = &(CreateZ);
+    tetriminoFunctions[6] = &(CreateT);
+    hwcall("Timer::CallOnLoop", 0.033, &(Update));
+    game = malloc(sizeof(Game));
+    game.Board = malloc(sizeof(Board));
+    game.Board.Width = 12;
+    game.Board.Height = 20;
+    game.Board.Cells = malloc(12 * 20);
+}
+
+Tetrimino* CreateI()
+{
+    Tetrimino* result = malloc(sizeof(Tetrimino));
+    result.Color = 3;
+    result.X0 = 0;
+    result.Y0 = 0;
+    result.X1 = -(1);
+    result.Y1 = 0;
+    result.X2 = 1;
+    result.Y2 = 0;
+    result.X3 = 2;
+    result.Y2 = 0;
+}
+
+Tetrimino* CreateO()
+{
+    Tetrimino* result = malloc(sizeof(Tetrimino));
+    result.Color = 252;
+    result.X0 = 0;
+    result.Y0 = 0;
+    result.X1 = 1;
+    result.Y1 = 0;
+    result.X2 = 0;
+    result.Y2 = 1;
+    result.X3 = 1;
+    result.Y2 = 1;
+}
+
+Tetrimino* CreateJ()
+{
+    Tetrimino* result = malloc(sizeof(Tetrimino));
+    result.Color = 28;
+    result.X0 = 0;
+    result.Y0 = 0;
+    result.X1 = 0;
+    result.Y1 = -(1);
+    result.X2 = 0;
+    result.Y2 = -(2);
+    result.X3 = -(1);
+    result.Y2 = 0;
+}
+
+Tetrimino* CreateL()
+{
+    Tetrimino* result = malloc(sizeof(Tetrimino));
+    result.Color = 232;
+    result.X0 = 0;
+    result.Y0 = 0;
+    result.X1 = 0;
+    result.Y1 = -(1);
+    result.X2 = 0;
+    result.Y2 = -(2);
+    result.X3 = 1;
+    result.Y2 = 0;
+}
+
+Tetrimino* CreateS()
+{
+    Tetrimino* result = malloc(sizeof(Tetrimino));
+    result.Color = 28;
+    result.X0 = 0;
+    result.Y0 = 0;
+    result.X1 = 1;
+    result.Y1 = 0;
+    result.X2 = 1;
+    result.Y2 = -(1);
+    result.X3 = 2;
+    result.Y2 = -(1);
+}
+
+Tetrimino* CreateT()
+{
+    Tetrimino* result = malloc(sizeof(Tetrimino));
+    result.Color = 227;
+    result.X0 = 0;
+    result.Y0 = 0;
+    result.X1 = -(1);
+    result.Y1 = 0;
+    result.X2 = 1;
+    result.Y2 = 0;
+    result.X3 = 0;
+    result.Y2 = 1;
+    return result;
+}
+
+Tetrimino* CreateZ()
+{
+    Tetrimino* result = malloc(sizeof(Tetrimino));
+    result.Color = 224;
+    result.X0 = 0;
+    result.Y0 = 0;
+    result.X1 = -(1);
+    result.Y1 = 0;
+    result.X2 = 0;
+    result.Y2 = -(1);
+    result.X3 = 1;
+    result.Y2 = -(1);
+    return result;
+}
+
+Tetrimino* RandomTetrimino()
+{
+    int next = randomInt(0, 6);
+    return tetriminoFunctions[next]();
+}
+
+byte HW_System_RegisterInterruptHandler(uint deviceId, lpstring* interruptName, void* handlerAddress)
+{
+    return 0 /* hardware call: RegisterInterruptHandler */;
+}
+
+void HW_System_UnregisterInterruptHandler(uint deviceId, lpstring* interruptName, byte handlerIndex)
+{
+    return 0 /* hardware call: UnregisterInterruptHandler */;
+}
+
+void HW_System_RaiseError(uint errorCode)
+{
+    return 0 /* hardware call: RaiseError */;
+}
+
+void HW_System_RegisterErrorHandler(uint errorCode, void* handlerAddress)
+{
+    return 0 /* hardware call: RegisterErrorHandler */;
+}
+
+void HW_System_UnregisterErrorHandler(uint errorCode)
+{
+    return 0 /* hardware call: UnregisterErrorHandler */;
+}
+
+ulong HW_System_GetLastErrorDescriptionSize()
+{
+    return 0 /* hardware call: GetLastErrorDescriptionSize */;
+}
+
+void HW_System_GetLastErrorDescription(void* destination)
+{
+    return 0 /* hardware call: GetLastErrorDescription */;
+}
+
+int HW_System_GetHardwareDeviceCount()
+{
+    return 0 /* hardware call: GetHardwareDeviceCount */;
+}
+
+ulong HW_System_GetHardwareDeviceDescriptionSize(uint deviceId)
+{
+    return 0 /* hardware call: GetHardwareDeviceDescriptionSize */;
+}
+
+void HW_System_GetHardwareDeviceDescription(uint deviceId, void* destination)
+{
+    return 0 /* hardware call: GetHardwareDeviceDescription */;
+}
+
+ulong HW_System_GetAllHardwareDeviceDescriptionsSize()
+{
+    return 0 /* hardware call: GetAllHardwareDeviceDescriptionsSize */;
+}
+
+void HW_System_GetAllHardwareDeviceDescriptions(void* destination)
+{
+    return 0 /* hardware call: GetAllHardwareDeviceDescriptions */;
+}
+
+uint HW_System_CreatePageTable()
+{
+    return 0 /* hardware call: CreatePageTable */;
+}
+
+void HW_System_DestroyPageTable(uint pageTableId)
+{
+    return 0 /* hardware call: DestroyPageTable */;
+}
+
+void HW_System_ChangeCurrentPageTable(uint pageTableId)
+{
+    return 0 /* hardware call: ChangeCurrentPageTable */;
+}
+
+void HW_System_CopyMemory(byte direction, uint pageTableId, void* srcAddress, void* destAddress, ulong length)
+{
+    return 0 /* hardware call: CopyMemory */;
+}
+
+void HW_TerminalDevice_Write(lpstring* text)
+{
+    /* hardware call: Write */;
+}
+
+void HW_TerminalDevice_WriteLine(lpstring* text)
+{
+    /* hardware call: WriteLine */;
+}
+
+ushort HW_TerminalDevice_Read()
+{
+    return 0 /* hardware call: Read */;
+}
+
+void HW_TerminalDevice_ReadLine(void* destination)
+{
+    /* hardware call: ReadLine */;
+}
+
+void HW_Debugger_Break()
+{
+    /* hardware call: Break */;
+}
+
