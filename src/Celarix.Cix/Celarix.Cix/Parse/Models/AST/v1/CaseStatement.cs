@@ -15,7 +15,7 @@ namespace Celarix.Cix.Compiler.Parse.Models.AST.v1
             var builder = new StringBuilder();
             var indent = new string(' ', indentLevel * 4);
 
-            builder.AppendLine($"{indent}case {CaseLiteral.PrettyPrint()}:");
+            builder.AppendLine($"{indent}case {CaseLiteral?.PrettyPrint() ?? "default"}:");
             builder.AppendLine(Statement.PrettyPrint(indentLevel + 1));
 
             return builder.ToString();

@@ -299,7 +299,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
                 return new CaseStatement
                 {
                     CaseLiteral = null,
-                    Statement = GenerateStatement(caseStatement.literalCaseStatement().statement())
+                    Statement = GenerateStatement(caseStatement.defaultCaseStatement().statement())
                 };
             }
         }
