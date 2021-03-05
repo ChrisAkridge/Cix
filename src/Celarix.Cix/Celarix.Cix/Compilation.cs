@@ -69,6 +69,9 @@ namespace Celarix.Cix.Compiler
             var hardwareDefinition = JsonConvert.DeserializeObject<HardwareDefinition>(hardwareDefinitionJson);
             var hardwareCallFunctions = HardwareCallWriter.WriteHardwareCallFunctions(hardwareDefinition);
             AbstractSyntaxTreeRoot.Functions.AddRange(hardwareCallFunctions);
+            
+            AsteriskDisambiguator.Disambiguate(AbstractSyntaxTreeRoot);
+            Lowerings.PerformLowerings(AbstractSyntaxTreeRoot);
 
             var tempFileText = AbstractSyntaxTreeRoot.PrettyPrint(0);
             File.WriteAllText(CompilationOptions.OutputFilePath, tempFileText);

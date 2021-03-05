@@ -422,7 +422,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
 
         private static Expression GenerateRelationalExpression(CixParser.RelationalExpressionContext relationalExpression)
         {
-            if (relationalExpression.shiftExpression() != null)
+            if (relationalExpression.relationalExpression() == null)
             {
                 return GenerateShiftExpression(relationalExpression.shiftExpression());
             }

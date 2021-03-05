@@ -25,7 +25,6 @@ namespace Celarix.Cix.Compiler.Parse.Models.AST.v1
             // 
             // Ew. So we'll just decrement the indent level here to make the brackets
             // align with the above statement.
-            indentLevel -= 1;
             
             var builder = new StringBuilder();
             var indent = new string(' ', indentLevel * 4);

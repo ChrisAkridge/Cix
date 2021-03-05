@@ -70,9 +70,23 @@ int Main(int argc, byte** argv)
     hwcall("Timer::CallOnLoop", 0.033, &(Update));
     game = malloc(sizeof(Game));
     game.Board = malloc(sizeof(Board));
-    game.Board.Width = 12;
+    game.Board.Width = 10;
     game.Board.Height = 20;
-    game.Board.Cells = malloc(12 * 20);
+    game.Board.Cells = malloc(10 * 20);
+    int i;
+    {
+        i = 0;
+        while (i < 200)
+            {
+                {
+                    game.Board.Cells[i] = 0;
+                }
+
+                (i)++;
+            }
+
+    }
+
 }
 
 Tetrimino* CreateI()
