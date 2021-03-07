@@ -37,4 +37,12 @@ namespace Celarix.Cix.Compiler
         Single,
         Double
     }
+
+    public enum OperatorSize
+    {
+        Byte,
+        Word,
+        Dword,
+        Qword
+    }
 }

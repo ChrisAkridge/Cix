@@ -10,8 +10,6 @@ The code generator for Cix, as of right now, does not perform optimizations agai
 
 As the code generator converts the AST to IronAssembler, it keeps a number of data structures and classes to represent various stages of the code generation that do not end up in the final assembler file. These data structures are called **compilation assistant** (CA) structures. Among these are the struct declarations.
 
-The code generator first generates a list of all defined structs and the offsets of all their members. These offsets are used to calculate addresses to read or write data from, but no information about the structs are written to the IronAssembler file.
-
 The size, in bytes, of all global variables, is added together and used to generate the `globals:` block in the IronAssembler file. A CA is created to store the addresses of all the global variables in the program.
 
 For example, given the following globals:
