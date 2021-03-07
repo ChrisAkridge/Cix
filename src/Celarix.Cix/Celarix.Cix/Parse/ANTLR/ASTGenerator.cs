@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Antlr4.Runtime.Tree;
 using Celarix.Cix.Compiler.Common.Models;
 using Celarix.Cix.Compiler.Parse.AST;
 using Celarix.Cix.Compiler.Parse.Models.AST.v1;
@@ -113,10 +114,12 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
         }
 
         private static int GenerateStructArraySize(CixParser.StructArraySizeContext structArraySize) =>
-            (int)ParseInteger(structArraySize.Integer().GetText());
+            (int)GenerateIntegerLiteral(structArraySize.Integer()).ValueBits;
 
-        private static ulong ParseInteger(string integerText)
+        private static IntegerLiteral GenerateIntegerLiteral(ITerminalNode integer)
         {
+            var integerText = integer.GetText();
+            
             int suffixLength = 0;
             if (integerText.EndsWith("u", StringComparison.InvariantCultureIgnoreCase)
                 || integerText.EndsWith("l", StringComparison.InvariantCultureIgnoreCase))
@@ -129,10 +132,21 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             }
 
             string integerPart = integerText.Substring(0, integerText.Length - suffixLength);
+            string suffix = integerText.Substring(integerText.Length - suffixLength).ToLowerInvariant();
 
-            return integerPart.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase)
-                ? ulong.Parse(integerPart.Substring(2), NumberStyles.AllowHexSpecifier)
-                : ulong.Parse(integerPart);
+            return new IntegerLiteral
+            {
+                ValueBits = integerPart.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase)
+                    ? ulong.Parse(integerPart.Substring(2), NumberStyles.AllowHexSpecifier)
+                    : ulong.Parse(integerPart),
+                LiteralType = (suffix == "u")
+                    ? NumericLiteralType.UnsignedInteger
+                    : (suffix == "l")
+                        ? NumericLiteralType.Long
+                        : (suffix == "ul")
+                            ? NumericLiteralType.UnsignedLong
+                            : NumericLiteralType.Integer
+            };
         }
 
         private static GlobalVariableDeclaration GenerateGlobalVariableDeclaration(CixParser.GlobalVariableDeclarationContext globalVariableDeclaration)
@@ -285,7 +299,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
                 var literalCase = caseStatement.literalCaseStatement();
 
                 var literal = (literalCase.Integer() != null)
-                    ? new IntegerLiteral { ValueBits = ParseInteger(literalCase.Integer().GetText()) }
+                    ? GenerateIntegerLiteral(literalCase.Integer())
                     : (Literal)new StringLiteral { Value = literalCase.StringLiteral().GetText() };
 
                 return new CaseStatement
@@ -637,19 +651,27 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
 
         private static Literal GenerateNumber(CixParser.NumberContext number) =>
             number.Integer() != null
-                ? new IntegerLiteral
-                {
-                    ValueBits = ParseInteger(number.Integer().GetText())
-                }
-                : (Literal)new FloatingPointLiteral
-                {
-                    ValueBits = double.Parse(GetFloatingPointNumberText(number.FloatingPoint().GetText()), NumberStyles.Float)
-                };
+                ? (Literal)GenerateIntegerLiteral(number.Integer())
+                : GenerateFloatingPointLiteral(number.FloatingPoint());
 
-        private static string GetFloatingPointNumberText(string nodeText) =>
-            nodeText.EndsWith("f", StringComparison.InvariantCultureIgnoreCase)
-            || nodeText.EndsWith("d", StringComparison.InvariantCultureIgnoreCase)
-                ? nodeText[0..^1]
-                : nodeText;
+        private static FloatingPointLiteral GenerateFloatingPointLiteral(ITerminalNode floatingPoint)
+        {
+            var literalType = NumericLiteralType.Single;
+            var literalText = floatingPoint.GetText();
+
+            if (literalText.EndsWith("d", StringComparison.InvariantCultureIgnoreCase))
+            {
+                literalType = NumericLiteralType.Double;
+            }
+
+            return new FloatingPointLiteral
+            {
+                ValueBits = (literalType == NumericLiteralType.Double
+                    || literalText.EndsWith("f", StringComparison.InvariantCultureIgnoreCase))
+                    ? double.Parse(literalText[0..^1], NumberStyles.Float)
+                    : double.Parse(literalText, NumberStyles.Float),
+                NumericLiteralType = literalType
+            };
+        }
     }
 }

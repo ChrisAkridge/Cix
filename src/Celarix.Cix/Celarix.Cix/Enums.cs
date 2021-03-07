@@ -27,4 +27,14 @@ namespace Celarix.Cix.Compiler
         CodeGeneration,
         InternalCompilerError
     }
+
+    public enum NumericLiteralType
+    {
+        Integer,
+        UnsignedInteger,
+        Long,
+        UnsignedLong,
+        Single,
+        Double
+    }
 }

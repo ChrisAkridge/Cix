@@ -114,7 +114,7 @@ An ampersand `&` is a bitwise AND with:
 * Preceding identifier, closeparen, closebracket, one of `++ --`
 * Succeeding identifier, openparen, or one of `+ - ! ~ ++ -- *`.
 
-A dot `*` is a member access operator with:
+A dot `.` is a member access operator with:
 * Preceding identifier, closeparen, closebracket.
 * Succeeding identifier.
 

@@ -6,7 +6,7 @@ One of the more powerful facts about Cix code is that every part of the code is 
 
 The code generator for Cix, as of right now, does not perform optimizations against the code, neither for speed or for size. This may change in future versions.
 
-## Structures and Globals Generation
+## Globals Generation
 
 As the code generator converts the AST to IronAssembler, it keeps a number of data structures and classes to represent various stages of the code generation that do not end up in the final assembler file. These data structures are called **compilation assistant** (CA) structures. Among these are the struct declarations.
 
@@ -38,6 +38,30 @@ globals: 32
 
 Globals will be defined in the CA in the order they're defined in the AST, which is the order they're defined in the preprocessed source. Any usage of a global variable first requires some code to add the address to the `ERP` register so that, if the program is loaded at an address other than 0, the address is correct.
 
+## Structs and Offsets
+
+Another CA records information about structs declared in the AST. This information is the struct's name, size in bytes, and list of members. Each member stores its name, type (which may be a primitive type or another struct), size in bytes, and offset.
+
+The offset of a struct member is `0` for the first member, the size of the first member for the second, the size of the second member for the third, and so forth. For example:
+
+```c
+struct Offsets
+{
+    int a;      // Offset 0
+    short b;    // Offset 4
+    ulong c;    // Offset 6
+    void* d;    // Offset 14
+}
+```
+
+Pointers, including function pointer, always have a size of 8 bytes.
+
+## String Literals
+
+In an IronArc executable file, string literals are stored as length-prefixed UTF-8 strings at the end of the file. In assembly, the strings are stored in the `strings:` section at the end of the file. To refer to these strings, instruction operands use the `str:0` notation, where the number is the index of the string in the table. These indices are rewritten into addresses into the string table during assembly.
+
+Before code generation, the AST is walked to find all string literals, which are added to a list. The indices of this list are used as indices in operands using strings and in the order of the generated `strings:` section.
+
 ## Initialization Code
 Cix expects that any preprocessed source file contains one function named `main`. It must have no return type or arguments. The function `main` may appear anywhere in the Cix code, but it will be the first function in the IronArc assembly file.
 
@@ -50,7 +74,7 @@ The function context stores the name of the function, a list of at least one **a
 
 An assembly block is a CA that stores the assembly code for one block or section of the code. Assembly blocks could map to code at the top level of a function, code inside a `while` loop, or the condition of an `if` block. Assembly blocks contain a name, the kind of block this assembly block holds the code for, and a string containing the instructions of the block.
 
-Kinds of Assembly Blocks are:
+The kinds of assembly blocks are:
 * Function
 * `if` condition
 * `if` body
@@ -76,7 +100,7 @@ Each kind of block (`if`, `while`, `switch`, etc.) gets one or more assembly blo
 
 For example, consider an `if` block. Such a block has a condition and a sequence of code to execute if the condition is true. If the `if` block occurs in a function named `InitRNG`, two assembly blocks are defined with the names `InitRNG__if_0_condition` and `InitRNG__if_0_true`.
 
-Any code following a block but not inside another is suffixed with "after", i.e. `InitRNG__if_0_after`.
+Any code following a block is suffixed with "after", i.e. `InitRNG__if_0_after`. If a block is followed immediately by another block (i.e. an `if` followed by a `while`), the after block contains only a jump to the start of the second block.
 
 ### Determing the Kind of an Assembly Block
 An assembly block has a kind, taken from the list above. The kind of the assembly block is usually pretty easy to determine, as it is set when the code generator enters a particular block. The only complicated kind of assembly blocks are the ones that come after blocks; the `_after` blocks.
@@ -87,13 +111,13 @@ Determining the parent kind is done by checking back with the AST. Whatever bloc
 
 ### Code Generation for a Function
 
-When the compiler begins to generate code for a function, it generates a new function context, a new assembly block to put in that context, and a virtual stack. The virtual stack is then populated with VSEs for each of the function arguments, such that the last argument is at the top of the stack
+When the compiler begins to generate code for a function, it generates a new function context, a new assembly block to put in that context, and a virtual stack. The virtual stack is then populated with VSEs for each of the function arguments, such that the last argument is at the top of the stack.
 
 For a function called `RandomInt(int min, int max)`, here's what the VSEs would look like:
 
 ```
-0: Kind: Variable, Type: int, Name: "min", Address: *ebp+0
-1: Kind: Variable: Type: int, Name: "max", Address: *ebp+4
+0: Kind: Variable, Type: int, Name: "min", Size: 4, Address: *ebp+0
+1: Kind: Variable: Type: int, Name: "max", Size: 4, Address: *ebp+4
 ```
 
 An assembly block with the label `RandomInt` is generated. Then, each element inside the function is evaluated and has code generated for it. Let's see how code is generated for each kind of AST element.
@@ -108,13 +132,10 @@ When an `if` block is found, an unconditional jump to a label named `funcName__i
 
 Code is then emitted that has a conditional jump to `funcName__if_#_true` if the condition is true, followed by an unconditional jump to either:
 
-* `funcName__if_#_after` if there are no `else if`/`else` blocks
-* `funcName__elseif_#_condition` if there are one or more `else if` blocks
-* `funcName__else_#` if there is an `else` block but no `else if` blocks
+* `funcName__if_#_after` if there are no `else` blocks
+* `funcName__if_#_false` if there is an `else` block.
 
-The `funcName__if_#_true` block contains the code for the `if` block's body.
-
-`else if` blocks function in much the same way, except that `if` is replaced with `elseif` in the label. The same jumps are generated inside the `funcName__elseif_#_condition` assembly block as they would be in an `if` condition assembly block.
+The `funcName__if_#_true` block contains the code for the `if` block's body and the `funcName__if_#_false` block contains the code for the `else` block, if there is one.
 
 #### Continue
 The `continue;` statement is only legal inside loops. When encountered, the code generator emits an unconditional jump to `funcName__while_#_condition` or `funcName__dowhile_#_condition`.
@@ -144,7 +165,7 @@ The return value statement returns a value computed from a given expression. It 
 
 When a return value statement is found, the code generator first emits code to evaluate the expression. The resulting value of this expression would then sit at the top of the stack.
 
-If the return type is a primitive type or a pointer, code is emitted that pops it into a register. Then, the stack is reset using `mov QWORD ebp esp`, an instruction pushes the return value from the register onto the stack, and the `ret` instruction is emitted.
+If the return type is a primitive type or a pointer (that is to say, 8 bytes or less), code is emitted that pops it into a register. Then, the stack is reset using `mov QWORD ebp esp`, an instruction pushes the return value from the register onto the stack, and the `ret` instruction is emitted.
 
 If the return type is a struct type, code is emitted to perform the following steps:
 
@@ -167,10 +188,12 @@ When a switch block is found, an unconditional jump is generated to a new assemb
 
 Then, the code generator creates assembly blocks for every `case` block, as named in step 4 above.
 
+Note that case block generation is an exception to the typical block arrangement: **case blocks are stored contiguously in the generated code, with their child blocks, if any, occurring after all the case blocks**. This is to allow fall-through.
+
 #### Variable Declaration
 A variable declaration creates a new variable without assigning it a value.
 
-When a variable declaration is encountered, the code generator emits either a `push` instruction (if the type of the variable in primitive or a pointer), or, for a struct, adds the number of bytes in the struct to ESP. The code generator also adds a VSE to the virtual stack representing this local variable.
+When a variable declaration is encountered, the code generator emits code to add the size of the variable to `ESP`. The code generator also adds a VSE to the virtual stack representing this local variable.
 
 #### Variable Declaration with Initialization
 A variable declaration with initialization creates a new variable and assigns it a value based on an expression.
@@ -194,15 +217,16 @@ The primitive types can be separated into the following categories:
 * Signed integer types: `sbyte`, `short`, `int`, `long`
 * Unsigned integer types: `byte`, `ushort`, `uint`, `ulong`
 * Floating-point types: `float`, `double`
+* Pointers: `T*` and its variants of increasing asteriskitivity
 
 Some types are wider (have more bytes) than others. For example, a short is 2 bytes, and an int is 4 bytes.
-Conversions from a narrow type to a wider type are always implicit as long as both types are either signed or unsigned. That is, a short -> int conversion, an `sbyte` -> `long` conversion, and a uint -> ulong conversion are all implicit. This is because a wider type is always able to represent all values of a narrower type.
+Conversions from a narrow type to a wider type are always implicit as long as both types have the same signedness. That is, a `short` -> `int` conversion, an `sbyte` -> `long` conversion, and a `uint` -> `ulong` conversion are all implicit. This is because a wider type is always able to represent all values of a narrower type.
 
 Conversions from a wider type to a narrower type, or between types of different signedness, are always explicit and require a cast. This is because narrower types cannot store all the values of wider types, and because a signed negative integer would convert to an unsigned positive integer and vice versa.
 
 Casting to a narrower type removes the top bytes of the value. For example, a cast from `long` (8 bytes) to `short` (2 bytes) would store only the lowest two bytes in the resulting `short`.
 
-The conversion from float to double is implicit, as every float can be represented as a double. The reverse conversion, however, is explicit, as doubles have values that are either out of range (resulting in +/-Infinity), or too precise (resulting in the nearest float) for floats.
+The conversion from `float` to `double` is implicit, as every float can be represented as a double. The reverse conversion, however, is explicit, as doubles have values that are either out of range (resulting in `+/-Infinity`), or too precise (resulting in the nearest float) for floats.
 
 Conversions from integer types to float or double is explicit, as some integers cannot be accurately represnted as a float or double. For example, 8,388,603 is the last odd integer that can be stored in a float.
 
@@ -214,11 +238,37 @@ Struct types cannot be converted to or from anything.
 
 Function pointers cannot be cast to or from anything except `void*`. `void*` can be cast to any function pointer type.
 
+Widening conversions are handled as follows:
+
+1. Push a `0` value of the right size onto the stack, creating a VSE for it.
+2. Use `mov` to move the right number of bytes to the widened variable at the right location.
+
+Narrowing conversions are similar:
+
+1. Push a `0` value of the right size onto the stack, creating a VSE for it.
+2. Use `mov` to move the right number of bytes to the narrowed variable from the right location in the original.
+
 ### Determining the Type of an Expression
 
 Every expression has a type; this type is what results from an expression's evaluation. For instance, the expression `5 + 3` has type `int`. Additionally, each subexpression in an expression has its own type, which may not be the same as the expression's type. For instance, the expression `5 + (int)(3.0f + 1.0f)` has type `int`, but the parenthesized expression has type `float`.
 
-*TODO: remember why this is important to figure out*
+We'll start from the bottom: literals and references to variables, both direct and to members of a struct. Integer and floating point literals store their type (`int`, `uint`, `long`, `ulong`, `float`, or `double`), and therefore their size. String literals have type `byte*` - string literals are described below.
+
+Variable references have the type of their declared variable. Access to struct members, either directly or through a pointer, have the type of that member.
+
+Let's now specify the types of each expression node:
+
+* Array Access: Applied to members of type `T*`, has the type of `T`.
+* Binary Expression: Except for `.` and `->`, whose behavior is described above, a binary expression takes the widest type of the two operands - that is, `long + int` would be `long`. The operands' types must be implicitly convertible, or one side must be cast to a convertible type if not.
+* Cast Expression: Has the type the operand is casted to.
+* Function Invocation: Has the return type of the function being invoked. Expressions producing a function pointer have their return type explicitly specified.
+* Hardware Call Returning a Value: Has the return type of the function call.
+* Size-Of Expression: Has the type `long`.
+* Ternary Expression: For `? :`, the first operand must have an integral type. The second and third operands must be the same type, or the third operand must be implicitly convertible to the second operand's type.
+* Unary Expression:
+    * `&`: Operates on `T`, returns `T*`.
+    * `*`: Operates on `T*`, returns `T`.
+    * `~`, `!`, `-`, `+`, `++`, `--` (both pre- and postfix): The same type as the operand.
 
 ## Expression Generation
 
@@ -230,18 +280,63 @@ An array access is an operator with an expression producing an index of type `in
 
 Next, code is generated that multiplies the index by the size of an element of the array's type. For instance, if the code accesses an element of a `long` array, the index is multiplied by `sizeof(long) == 8`.
 
-Finally, code is produced that copies the desired array element to atop the stack. This may be a simple `mov` for primitive types, or a `movln` for struct types.
+Finally, code is produced that copies the desired array element to atop the stack. This may be a simple `mov` for primitive types, or a `movln` for struct types. `ESP` is then adjusted to include this result.
 
-### Constants
+### Binary Expressions
 
-A constant is any numeric value or string literal used in an expression. For instance, `5 + 3` has the constants `5` and `3`. For the numeric types, a simple `push` is emitted that places the desired constant atop the stack.
+Generally, a binary expression is handled as follows:
 
-For string literals, which will be stored in the strings section of the assembly code, code is emitted that pushes the string's index atop the stack. The index is converted to a pointer into the string table when the code is assembled.
+1. Push the first operand. If it needs to be widened, emit code to do the widening.
+2. Push the second operand. If it needs to be widened, emit code to do the widening.
+3. Perform the required operation. The result is atop the stack.
 
-### Function Calls and Arguments
+Some operators require special handling:
 
-A function call changes the currently running function by setting `eip`. First, though, there may be function arguments that need to be evaluated.
+- Direct member access `x.y`: `x` must be a struct type here, directly on the stack. Push the address of `x` atop the stack and add the offset of `y`. `mov` or `movln` the value of `x.y` onto the top of the stack, adjusting `ESP`. Copy it in the place of the temporary holding `&(x.y)` and subtract `8` from `ESP`.
+- Pointer member access `x->y`: `x` must be a pointer type here. Push `x` and then the offset of `y`. Add the two to get `&(x.y)`. `mov` or `movln` the value of `x.y` onto the top of the stack, adjusting `ESP`. Copy it in the place of the temporary holding `&(x.y)` and subtract `8` from `ESP`.
+- Comparison operators:
+    1. Emits `cmp` to perform the comparison, setting flags in `EFLAGS`. Then, `EFLAGS` is bitwise-ANDed with the following values to mask out the desired comparison flag:
+        * `==`, `!=`: `0x40_00_00_00_00_00_00_00`
+        * `<`: `0x20_00_00_00_00_00_00_00`
+        * `>`: `0x10_00_00_00_00_00_00_00`
+        * `<=`: `0x08_00_00_00_00_00_00_00`
+        * `>=`: `0x04_00_00_00_00_00_00_00`
+    2. If the operator is `!=`, we then push `0x40_00_00_00_00_00_00_00` again and bitwise-XOR it with the top of the stack to invert the equality value.
+    3. We then shift the top of the stack right by `62` (`==`, `!=`), `61` (`<`), `60` (`>`), `59` (`<=`), or `58` (`>=`) to shift the comparison bit into the lowest bit.
+- Assignment:
+    - Assignment to a local variable or function argument simply moves the value atop the stack into the stack location of the local or argument.
+    - Assignment to a global variable: Pushes `ERP`, then the offset of the global, then adds them together. Then, moves the value one beneath the top of the stack to the address pointed to by the value atop the stack, then moves `ESP` to remove the pointer off the stack.
+    - Assignment to a pointer: Pushes the pointer, evaluating it if necessary, and moves the value as if it was a global variable pointer, described above. Then, `ESP` is moved to remove the pointer.
+- Compound assignment: The value of the left-hand side is pushed atop the stack, then the assignment's operation is performed on it. Then the result is treated as an assignment. This ensures that the left-hand side is evaluated for its value only once.
 
-Each argument is an expression, and they're calculated in the order that they're specified in the function.
+### Cast Expressions
 
-### Temporary Register Allocation
+Casting a value to a wider or narrower type is done as noted in **Implicit and Explicit Conversions** above. Casting to a type of the same width is done by just pushing the value again - the only thing that changes is the type specified in the VSE.
+
+### Literals
+
+Integer literals just push the value onto the stack. Floating point literals push the value atop the stack using the `float()` or `double()` notation in IronArc assembly.
+
+String literals are pushed by their index in the strings table, as generated before code generation: `push str:0` pushes a pointer to the start of the 0th string in the table.
+
+### Size-Of Expressions
+
+The type's size in bytes is pushed atop the stack.
+
+### Ternary Conditional (`? :`)
+
+This operator requires the generation of three new blocks: `funcName__ternary_#_true`,  `funcName__ternary_#_false`, and `funcName__ternary_#_after`. First, code to evaluate the condition is emitted, followed by a conditional jump to one of the first two blocks. The block then evaluates its expression, leaving it atop the stack and unconditionally jumping to the after block.
+
+### Unary Expression
+
+* Identity `+`: No code is emitted.
+* Inverse `-`: A `0` value of the operand's type is pushed, then the value, then a `sub` instruction to compute the value's inverse.
+* Bitwise NOT `~`: Emits a `bwnot` instruction.
+* Logical NOT `!`: Emits an `lnot` instruction.
+* Value-at `*`: Adds the type's size minus 8 to `ESP`, then emits `mov` or `movln` to move the value at the pointer atop the stack, overwriting the pointer atop the stack.
+* Address-of `&`:
+    - For local variables and function arguments, which are on the stack, push `EBP`, push the offset from `EBP` that's stored in the VSE, and add them together.
+    - For global variables, push `ERP`, push the global's offset from the start of the program, then add them together.
+    - For stack temporaries, we're forced to emit an error, unfortunately. Something like `&(x.y)` would not work at the moment, you'd have to do `&x + 1`.
+* Pre-increment `++`, pre-decrement `--`: Changes the variable, then leaves the changed variable atop the stack. The emitted code is the same as what would be emitted if `x += 1` or `x -= 1`.
+* Post-increment `++`, post-decrement `--`: Conceptually, this operator pushes the operand's value onto the stack, then changes the variable. The emitted code is the same as what would be emitted if `(x += 1) - 1` or `(x -= 1) + 1`.
