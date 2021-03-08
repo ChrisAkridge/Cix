@@ -108,63 +108,70 @@ namespace Celarix.Cix.Compiler.Emit
                 },
             };
 
-            // Build a dictionary to quickly lookup vertices without having to do .First() a billion times
-            var vertices = structInfos
+            var declaredTypes = structInfos
                 .Concat<DependencyVertex>(primitiveInfos)
-                .ToDictionary(v => v.Name, v => v);
+                .ToDictionary(dv => dv.Name, dv => dv);
             
-            // Make the graph
-            var dependencyGraph = new BidirectionalGraph<DependencyVertex, Edge<DependencyVertex>>(allowParallelEdges: false);
-            dependencyGraph.AddVertexRange(vertices.Values);
-            
-            // Make a root element so that we don't end up with disjoint graphs
-            var rootVertex = new StructInfo
+            foreach (var structInfo in structInfos)
             {
-                Name = "<>root",
-            };
-            dependencyGraph.AddVertex(rootVertex);
-            dependencyGraph.AddEdgeRange(structInfos.Select(si => new Edge<DependencyVertex>(rootVertex, si)));
+                SetStructAndMemberSizes(structInfo, declaredTypes, 1);
+            }
+            
+            return null;
+        }
 
-            // ReSharper disable once PossibleInvalidCastExceptionInForeachLoop
-            foreach (StructInfo @struct in dependencyGraph.Vertices.Where(v => v is StructInfo && v.Name != "<>root" /* ugh */))
+        private static void SetStructAndMemberSizes(StructInfo structInfo,
+            IDictionary<string, DependencyVertex> declaredTypes,
+            int recursionDepth)
+        {
+            if (recursionDepth == 1000)
             {
-                foreach (var member in @struct.Members)
+                throw new ErrorFoundException(ErrorSource.CodeGeneration, -1, $"cycle!", null, -1);
+            }
+            else if (structInfo.Size > 0)
+            {
+                return;
+            }
+
+            foreach (var member in structInfo.Members)
+            {
+                if (member.Type.PointerLevel > 0 || member.Type is FuncptrDataType)
                 {
-                    // Set size if pointer
-                    if (member.Type.PointerLevel > 0 || member.Type is FuncptrDataType)
-                    {
-                        member.Size = 8;
+                    member.Size = 8;
+                    continue;
+                }
 
-                        continue;
+                var memberTypeName = ((NamedDataType)member.Type).Name;
+
+                if (memberTypeName == structInfo.Name)
+                {
+                    throw new ErrorFoundException(ErrorSource.CodeGeneration, -1, $"cycle!", null, -1);
+                }
+                else
+                {
+                    if (!declaredTypes.TryGetValue(memberTypeName, out var declaredType))
+                    {
+                        throw new ErrorFoundException(ErrorSource.CodeGeneration, -1, $"type not found", null, -1);
                     }
-
-                    // Get type vertex, or throw if not present
-                    var namedType = (NamedDataType)member.Type;
-
-                    if (!vertices.TryGetValue(namedType.Name, out var typeVertex))
+                    else if (declaredType.Name == "void")
                     {
-                        throw new ErrorFoundException(ErrorSource.CodeGeneration, -1,
-                            $"Struct member {@struct.Name}.{member.Name} is of undeclared type {namedType.Name}", null,
+                        throw new ErrorFoundException(ErrorSource.CodeGeneration, -1, $"type can't be void", null,
                             -1);
                     }
-                    
-                    dependencyGraph.AddEdge(new Edge<DependencyVertex>(@struct, (DependencyVertex)typeVertex));
+                    else if (declaredType.Size == 0)
+                    {
+                        SetStructAndMemberSizes(structInfo, declaredTypes, recursionDepth + 1);
+                    }
+
+                    member.Size = declaredType.Size;
                 }
             }
 
-            // Determine if graph is acyclic and throw if it isn't
-            try
-            {
-                dependencyGraph.SourceFirstTopologicalSort();
-            }
-            catch (NonAcyclicGraphException nagex)
-            {
-                throw new ErrorFoundException(ErrorSource.CodeGeneration, -1, $"cycle!", null, -1);
-
-                throw;
-            }
-
-            return null;
+            // Set it here instead of having Size be an auto-property. If Size
+            // is an auto-property, partially initializing its members makes
+            // the == 0 check fail and allows circular dependencies with the wrong
+            // sizes.
+            structInfo.Size = structInfo.Members.Sum(m => m.Size);
         }
     }
 }

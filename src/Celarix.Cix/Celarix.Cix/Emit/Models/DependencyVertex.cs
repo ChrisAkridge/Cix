@@ -9,5 +9,7 @@ namespace Celarix.Cix.Compiler.Emit.Models
     public abstract class DependencyVertex
     {
         public string Name { get; set; }
+        
+        public int Size { get; set; }
     }
 }

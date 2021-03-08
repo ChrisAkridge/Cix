@@ -8,6 +8,7 @@ struct Board
     byte* Cells;
     int Width;
     int Height;
+    Tetrimino circular;
 }
 
 struct Tetrimino
@@ -21,6 +22,7 @@ struct Tetrimino
     int Y2;
     int X3;
     int Y3;
+    Board board;
 }
 
 struct Game

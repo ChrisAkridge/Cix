@@ -9,6 +9,6 @@ namespace Celarix.Cix.Compiler.Emit.Models
     public sealed class StructInfo : DependencyVertex
     {
         public List<StructMemberInfo> Members { get; set; }
-        public int Size => Members.Sum(m => m.Size);
+        public int Size { get; set; }
     }
 }
