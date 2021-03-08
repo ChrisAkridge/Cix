@@ -45,4 +45,10 @@ namespace Celarix.Cix.Compiler
         Dword,
         Qword
     }
+
+    public enum DependencyGraphEdgeType
+    {
+        HasMemberOfType,
+        UsedByMemberOfOtherType
+    }
 }

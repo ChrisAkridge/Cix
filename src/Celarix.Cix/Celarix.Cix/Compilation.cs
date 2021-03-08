@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Celarix.Cix.Compiler.Emit;
 using Celarix.Cix.Compiler.IO.Models;
 using Celarix.Cix.Compiler.Lowering;
 using Celarix.Cix.Compiler.Lowering.Models;
@@ -76,6 +77,15 @@ namespace Celarix.Cix.Compiler
             File.WriteAllText(CompilationOptions.OutputFilePath, tempFileText);
             
             logger.Trace("End lowering phase...");
+        }
+
+        public void Emit()
+        {
+            logger.Trace("Start emit phase...");
+
+            CodeGenerator.GenerateCode(AbstractSyntaxTreeRoot);
+            
+            logger.Trace("End emit phase...");
         }
     }
 }

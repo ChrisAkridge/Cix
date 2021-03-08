@@ -22,8 +22,8 @@ namespace Celarix.Cix.Compiler.Exceptions
             ErrorSource = errorSource;
             ErrorNumber = errorNumber;
             ErrorMessage = errorMessage;
-            SourceFilePath = errorLine.SourceFilePath;
-            LineNumber = errorLine.FileLineNumber;
+            SourceFilePath = errorLine?.SourceFilePath;
+            LineNumber = errorLine?.FileLineNumber ?? -1;
             LineCharacterIndex = lineCharacterIndex;
         }
 

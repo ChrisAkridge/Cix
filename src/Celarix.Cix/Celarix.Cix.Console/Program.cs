@@ -32,6 +32,7 @@ namespace Celarix.Cix.Console
             compilation.Preparse();
             compilation.Parse();
             compilation.Lower();
+            compilation.Emit();
         }
 	}
 }

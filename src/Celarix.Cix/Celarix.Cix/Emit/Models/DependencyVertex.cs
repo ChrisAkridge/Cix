@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace Celarix.Cix.Compiler.Emit.Models
 {
-    public sealed class StructInfo : DependencyVertex
+    public abstract class DependencyVertex
     {
-        public List<StructMemberInfo> Members { get; set; }
-        public int Size => Members.Sum(m => m.Size);
+        public string Name { get; set; }
     }
 }

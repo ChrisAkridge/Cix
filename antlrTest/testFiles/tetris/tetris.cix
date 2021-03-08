@@ -39,6 +39,7 @@ struct Board
 	byte* Cells;	// address of 0,0
 	int Width;
 	int Height;
+	// Board circular;
 }
 
 struct Tetrimino
