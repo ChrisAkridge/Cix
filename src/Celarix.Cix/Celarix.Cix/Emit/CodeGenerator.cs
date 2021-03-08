@@ -11,10 +11,12 @@ namespace Celarix.Cix.Compiler.Emit
 {
     public static class CodeGenerator
     {
-        //public static object GenerateCode(SourceFileRoot sourceFile)
-        //{
-
-        //}
+        public static object GenerateCode(SourceFileRoot sourceFile)
+        {
+            var stringLiterals = GetAllStringLiterals(sourceFile);
+            
+            
+        }
 
         private static List<string> GetAllStringLiterals(SourceFileRoot sourceFile)
         {
@@ -22,6 +24,11 @@ namespace Celarix.Cix.Compiler.Emit
             ASTVisitor.VisitSourceFile(stringLiteralFinder, sourceFile);
 
             return stringLiteralFinder.FoundLiterals;
+        }
+
+        private static StructInfo GenerateStructInfo(StructInfo structInfo)
+        {
+            
         }
     }
 }

@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Celarix.Cix.Compiler.Parse.Models.AST.v1;
 using Celarix.Cix.Compiler.Parse.Visitor;
 
-namespace Celarix.Cix.Compiler.Emit.Models
+namespace Celarix.Cix.Compiler.Emit
 {
     internal sealed class StringLiteralFinder : ASTVisitor
     {
