@@ -8,7 +8,6 @@ struct Board
     byte* Cells;
     int Width;
     int Height;
-    Tetrimino circular;
 }
 
 struct Tetrimino
@@ -22,7 +21,6 @@ struct Tetrimino
     int Y2;
     int X3;
     int Y3;
-    Board board;
 }
 
 struct Game
@@ -42,6 +40,7 @@ global void* vgaBase;
 global Game* game;
 global @funcptr<Tetrimino*>* tetriminoFunctions;
 global @funcptr<int, byte*, short, long**, ulong, float***, double, void****> lotsOPointers;
+global byte* stringLiteral = "Hello, world!";
 
 void func()
 {
@@ -236,12 +235,12 @@ Tetrimino* RandomTetrimino()
     return tetriminoFunctions[next]();
 }
 
-byte HW_System_RegisterInterruptHandler(uint deviceId, lpstring* interruptName, void* handlerAddress)
+byte HW_System_RegisterInterruptHandler(uint deviceId, byte* interruptName, void* handlerAddress)
 {
     return 0 /* hardware call: RegisterInterruptHandler */;
 }
 
-void HW_System_UnregisterInterruptHandler(uint deviceId, lpstring* interruptName, byte handlerIndex)
+void HW_System_UnregisterInterruptHandler(uint deviceId, byte* interruptName, byte handlerIndex)
 {
     return 0 /* hardware call: UnregisterInterruptHandler */;
 }
@@ -316,12 +315,12 @@ void HW_System_CopyMemory(byte direction, uint pageTableId, void* srcAddress, vo
     return 0 /* hardware call: CopyMemory */;
 }
 
-void HW_TerminalDevice_Write(lpstring* text)
+void HW_TerminalDevice_Write(byte* text)
 {
     /* hardware call: Write */;
 }
 
-void HW_TerminalDevice_WriteLine(lpstring* text)
+void HW_TerminalDevice_WriteLine(byte* text)
 {
     /* hardware call: WriteLine */;
 }
@@ -339,5 +338,10 @@ void HW_TerminalDevice_ReadLine(void* destination)
 void HW_Debugger_Break()
 {
     /* hardware call: Break */;
+}
+
+void <>globals_init()
+{
+    stringLiteral = "Hello, world!";
 }
 

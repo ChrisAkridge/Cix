@@ -39,7 +39,6 @@ struct Board
 	byte* Cells;	// address of 0,0
 	int Width;
 	int Height;
-	Tetrimino circular;
 }
 
 struct Tetrimino
@@ -49,7 +48,6 @@ struct Tetrimino
 	int X1; int Y1;
 	int X2; int Y2;
 	int X3; int Y3;
-	Board board;
 }
 
 struct Game
@@ -185,6 +183,7 @@ Tetrimino* CreateZ()
 
 global @funcptr<Tetrimino*>* tetriminoFunctions;
 global @funcptr<int, byte*, short, long**, ulong, float***, double, void****> lotsOPointers;
+global byte* stringLiteral = "Hello, world!";
 
 Tetrimino* RandomTetrimino()
 {

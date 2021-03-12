@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Celarix.Cix.Compiler.Parse.Models.AST.v1;
 
 namespace Celarix.Cix.Compiler.Emit.Models
 {
-    public sealed class GlobalVariableInfo
+    public sealed class VirtualStackEntity
     {
         public string Name { get; set; }
-        public TypeInfo Type { get; set; }
-        public int OffsetFromHeaderEnd { get; set; }
+        public int OffsetFromEBP { get; set; }
+        public int Size { get; set; }
     }
 }

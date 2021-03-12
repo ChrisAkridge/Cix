@@ -217,7 +217,10 @@ namespace Celarix.Cix.Compiler.Parse.Visitor
                         expression = castExpression.Operand;
 
                         continue;
+                    case FloatingPointLiteral floatingPointLiteral:
+                        visitor.VisitFloatingPointLiteral(floatingPointLiteral);
 
+                        break;
                     case FunctionInvocation functionInvocation:
                     {
                         visitor.VisitFunctionInvocation(functionInvocation);
@@ -240,8 +243,16 @@ namespace Celarix.Cix.Compiler.Parse.Visitor
                         visitor.VisitIdentifier(identifier);
 
                         break;
+                    case IntegerLiteral integerLiteral:
+                        visitor.VisitIntegerLiteral(integerLiteral);
+
+                        break;
                     case SizeOfExpression sizeOfExpression:
                         visitor.VisitSizeOfExpression(sizeOfExpression);
+
+                        break;
+                    case StringLiteral stringLiteral:
+                        visitor.VisitStringLiteral(stringLiteral);
 
                         break;
                     case TernaryExpression ternaryExpression:

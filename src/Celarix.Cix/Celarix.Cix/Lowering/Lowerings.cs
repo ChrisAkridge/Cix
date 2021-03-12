@@ -18,6 +18,10 @@ namespace Celarix.Cix.Compiler.Lowering
 
             var definedTypes = GetDefinedTypes(sourceFile.Structs);
 
+            sourceFile.Functions.Add(GenerateGlobalAssignments(sourceFile.GlobalVariableDeclarations
+                .Where(g => g is GlobalVariableDeclarationWithInitialization)
+                .Cast<GlobalVariableDeclarationWithInitialization>()));
+
             foreach (var function in sourceFile.Functions)
             {
                 for (int i = 0; i < function.Statements.Count; i++)
@@ -28,6 +32,35 @@ namespace Celarix.Cix.Compiler.Lowering
             }
         }
 
+        private static Function GenerateGlobalAssignments(IEnumerable<GlobalVariableDeclarationWithInitialization> globals)
+        {
+            var function = new Function
+            {
+                Name = "__globals_init",
+                Parameters = new List<FunctionParameter>(),
+                ReturnType = new NamedDataType { Name = "void", PointerLevel = 0 },
+                Statements = new List<Statement>()
+            };
+
+            foreach (var global in globals)
+            {
+                function.Statements.Add(new ExpressionStatement
+                {
+                    Expression = new BinaryExpression
+                    {
+                        Left = new Identifier
+                        {
+                            IdentifierText = global.Name
+                        },
+                        Operator = "=",
+                        Right = global.Initializer
+                    }
+                });
+            }
+
+            return function;
+        }
+        
         private static Statement DisambiguateAsterisksInStatement(Statement statement, IList<string> definedTypes)
         {
             switch (statement)

@@ -15,11 +15,31 @@ namespace Celarix.Cix.Compiler.Emit
 {
     public static class CodeGenerator
     {
+        private static readonly List<PrimitiveInfo> primitiveInfos = new List<PrimitiveInfo>
+        {
+            new PrimitiveInfo { Name = "byte", Size = 1 },
+            new PrimitiveInfo { Name = "sbyte", Size = 1 },
+            new PrimitiveInfo { Name = "short", Size = 2 },
+            new PrimitiveInfo { Name = "ushort", Size = 2 },
+            new PrimitiveInfo { Name = "int", Size = 4 },
+            new PrimitiveInfo { Name = "uint", Size = 4 },
+            new PrimitiveInfo { Name = "long", Size = 8 },
+            new PrimitiveInfo { Name = "ulong", Size = 8 },
+            new PrimitiveInfo { Name = "float", Size = 4 },
+            new PrimitiveInfo { Name = "double", Size = 8 },
+            new PrimitiveInfo { Name = "void", Size = 0 },
+        };
+
         public static object GenerateCode(SourceFileRoot sourceFile)
         {
             var stringLiterals = GetAllStringLiterals(sourceFile);
-            var structInfos = GenerateStructInfos(sourceFile.Structs);
-        
+            var declaredTypes = GenerateTypeInfo(sourceFile.Structs);
+            var globalInfos = GenerateGlobalInfos(sourceFile.GlobalVariableDeclarations, declaredTypes);
+            var functionAssemblies = sourceFile.Functions.Select(f =>
+                string.Join(Environment.NewLine,
+                    new FunctionCodeGenerator(f, declaredTypes, globalInfos).GenerateCode()))
+                .ToList();
+            
             return null;
         }
 
@@ -31,7 +51,7 @@ namespace Celarix.Cix.Compiler.Emit
             return stringLiteralFinder.FoundLiterals;
         }
 
-        private static IList<StructInfo> GenerateStructInfos(IList<Struct> structs)
+        private static IDictionary<string, TypeInfo> GenerateTypeInfo(IList<Struct> structs)
         {
             // Convert all structs into StructInfos
             var structInfos = structs
@@ -48,68 +68,8 @@ namespace Celarix.Cix.Compiler.Emit
                 })
                 .ToList();
 
-            // Build the list of primitives
-            var primitiveInfos = new List<PrimitiveInfo>
-            {
-                new PrimitiveInfo
-                {
-                    Name = "byte",
-                    Size = 1
-                },
-                new PrimitiveInfo
-                {
-                    Name = "sbyte",
-                    Size = 1
-                },
-                new PrimitiveInfo
-                {
-                    Name = "short",
-                    Size = 2
-                },
-                new PrimitiveInfo
-                {
-                    Name = "ushort",
-                    Size = 2
-                },
-                new PrimitiveInfo
-                {
-                    Name = "int",
-                    Size = 4
-                },
-                new PrimitiveInfo
-                {
-                    Name = "uint",
-                    Size = 4
-                },
-                new PrimitiveInfo
-                {
-                    Name = "long",
-                    Size = 8
-                },
-                new PrimitiveInfo
-                {
-                    Name = "ulong",
-                    Size = 8
-                },
-                new PrimitiveInfo
-                {
-                    Name = "float",
-                    Size = 4
-                },
-                new PrimitiveInfo
-                {
-                    Name = "double",
-                    Size = 8
-                },
-                new PrimitiveInfo
-                {
-                    Name = "void",
-                    Size = 0
-                },
-            };
-
             var declaredTypes = structInfos
-                .Concat<DependencyVertex>(primitiveInfos)
+                .Concat<TypeInfo>(primitiveInfos)
                 .ToDictionary(dv => dv.Name, dv => dv);
             
             foreach (var structInfo in structInfos)
@@ -117,11 +77,11 @@ namespace Celarix.Cix.Compiler.Emit
                 SetStructAndMemberSizes(structInfo, declaredTypes, 1);
             }
             
-            return null;
+            return declaredTypes;
         }
 
         private static void SetStructAndMemberSizes(StructInfo structInfo,
-            IDictionary<string, DependencyVertex> declaredTypes,
+            IDictionary<string, TypeInfo> declaredTypes,
             int recursionDepth)
         {
             if (recursionDepth == 1000)
@@ -172,6 +132,62 @@ namespace Celarix.Cix.Compiler.Emit
             // the == 0 check fail and allows circular dependencies with the wrong
             // sizes.
             structInfo.Size = structInfo.Members.Sum(m => m.Size);
+        }
+
+        private static IList<GlobalVariableInfo> GenerateGlobalInfos(IList<GlobalVariableDeclaration> globals,
+            IDictionary<string, TypeInfo> declaredTypes)
+        {
+            var globalInfos = globals
+                .Select(g => new GlobalVariableInfo { Name = g.Name, Type = GetTypeInfoOrThrow(g.Type, declaredTypes) })
+                .ToList();
+
+            var globalSizeSum = 0;
+
+            foreach (var global in globalInfos)
+            {
+                global.OffsetFromHeaderEnd = globalSizeSum;
+                globalSizeSum += global.Type.Size;
+            }
+
+            return globalInfos;
+        }
+
+        private static List<AssemblyBlock> GenerateCodeForFunction(Function function,
+            IDictionary<string, TypeInfo> declaredTypes,
+            IList<GlobalVariableInfo> globals)
+        {
+            // Build the stack of arguments.
+            var stack = new Stack<VirtualStackEntity>();
+
+            return null;
+        }
+        
+        private static TypeInfo GetTypeInfoOrThrow(DataType type, IDictionary<string, TypeInfo> declaredTypes)
+        {
+            if (type is FuncptrDataType funcptrDataType)
+            {
+                var typeInfos = funcptrDataType.Types
+                    .Select(t => GetTypeInfoOrThrow(t, declaredTypes))
+                    .ToList();
+
+                return new FuncptrTypeInfo
+                {
+                    ReturnType = typeInfos.First(),
+                    ParameterTypes = typeInfos.Skip(1).ToList()
+                };
+            }
+
+            var namedType = (NamedDataType)type;
+
+            if (!declaredTypes.TryGetValue(namedType.Name, out var namedTypeInfo))
+            {
+                throw new ErrorFoundException(ErrorSource.CodeGeneration, -1,
+                    $"Type {namedType.Name} is not declared.", null, -1);
+            }
+
+            return type.PointerLevel == 0
+                ? namedTypeInfo
+                : new PointerTypeInfo { TypeInfo = namedTypeInfo, PointerLevel = type.PointerLevel };
         }
     }
 }

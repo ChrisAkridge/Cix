@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Celarix.Cix.Compiler.Emit.Models
 {
-    public abstract class DependencyVertex
+    public sealed class AssemblyBlock
     {
         public string Name { get; set; }
-        
-        public int Size { get; set; }
+        public List<AssemblyInstruction> Instructions { get; set; } = new List<AssemblyInstruction>();
     }
 }

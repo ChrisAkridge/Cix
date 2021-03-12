@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Celarix.Cix.Compiler.Emit.Models
 {
-    public sealed class PrimitiveInfo : DependencyVertex
+    public sealed class PrimitiveInfo : TypeInfo
     {
         /// <summary>Returns a string that represents the current object.</summary>
         /// <returns>A string that represents the current object.</returns>

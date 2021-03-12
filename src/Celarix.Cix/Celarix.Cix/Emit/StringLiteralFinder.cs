@@ -8,7 +8,7 @@ namespace Celarix.Cix.Compiler.Emit
 {
     internal sealed class StringLiteralFinder : ASTVisitor
     {
-        public List<string> FoundLiterals { get; set; }
+        public List<string> FoundLiterals { get; set; } = new List<string>();
         
         public override void VisitStringLiteral(StringLiteral stringLiteral)
         {
