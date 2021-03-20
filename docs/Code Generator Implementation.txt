@@ -1,0 +1,197 @@
+class FunctionEmitContext
+{
+	Function Function;
+	List<TypeInfo> DeclaredTypes;
+	List<GlobalVariableInfo> GlobalInfos;
+	SourceFileRoot SourceFile;
+	VirtualStack Stack;
+}
+
+class GlobalVariableInfo
+{
+	GlobalVariableDeclaration Declaration;
+	int OffsetFromERPPlusHeader;
+}
+
+class VirtualStackEntry
+{
+	string Name;
+	TypeInfo Type;
+	int Size;
+	int OffsetFromEBP;
+}
+
+class VirtualStack
+{
+	Stack<VirtualStackEntry> Entries;
+	VirtualStackEntry GetEntry(string name);
+}
+
+abstract class TypeInfo
+{
+	int Size;
+	int PointerLevel;
+	int Offset;
+}
+
+class NamedTypeInfo : TypeInfo
+{
+	string Name;
+}
+
+class FuncptrTypeInfo : TypeInfo
+{
+	TypeInfo ReturnType;
+	List<TypeInfo> ParameterTypes;
+}
+
+abstract class ControlFlowVertex
+{
+	FlowEdge OutboundEdge;
+}
+
+class UngeneratedVertex : ControlFlowVertex
+{
+	ASTElement ElementToGenerateFor;
+}
+
+class InstructionVertex : ControlFlowVertex
+{
+	string Mnemonic;
+	OperandSize OperandSize;
+	InstructionOperand Operand1;
+	InstructionOperand Operand2;
+	InstructionOperand Operand3;
+	void ConnectTo(InstructionVertex other, FlowEdgeType flowEdgeType);
+}
+
+class FlowEdge
+{
+	InstructionVertex Source;
+	InstructionVertex Destination;
+	FlowEdgeType FlowEdgeType;
+}
+
+class StartEndVertices
+{
+	ControlFlowVertex Start;
+	ControlFlowVertex End;
+}
+
+enum OperandSize
+{
+	Byte, Word, Dword, Qword
+}
+
+enum Register
+{
+	EAX, EBX, ECX, EDX, EEX, EFX, EGX, EHX, EBP, ESP, ERP, EIP, EFLAGS
+}
+
+enum FloatSize
+{
+	Single, Double
+}
+
+enum FlowEdgeType
+{
+	DirectFlow, UnconditionalJump, JumpIfEqual, JumpIfNotEqual, JumpIfLessThan, JumpIfGreaterThan, JumpIfLessThanOrEqualTo, JumpIfGreaterThanOrEqualTo
+}
+
+abstract class InstructionOperand
+{
+	bool IsPointer;
+	string ToString();
+}
+
+class IntegerOperand : InstructionOperand
+{
+	ulong ValueBits;
+}
+
+class FloatingPointOperand : InstructionOperand
+{
+	FloatSize FloatSize;
+	ulong ValueBits;
+}
+
+class StringLiteralOperand : InstructionOperand
+{
+	string Literal;
+}
+
+class RegisterOperand : InstructionOperand
+{
+	Register Register;
+}
+
+AST Elements that Require Jumps (hereafter, Non-Linear-Flow or (NLF) Elements):
+	- Ternary Conditional Operator
+	- Block
+	- Conditional Statement
+	- Do While Loop
+	- Switch Statement
+	- Case Statement
+	- While Statement
+Linear Flow Elements:
+	
+- All other AST elements are called Linear Flow elements.
+
+1. Generate Declared Types
+	1. Initialize primitives
+	2. For each struct,
+		1. Start a running sum of the size of the members.
+		2. For each struct member,
+			1. Check if its type is listed in the declared types and set its size accordingly.
+			2. If the type is not listed, get it from the list of structs.
+			3. If the type is not initialized, initialize it, adding 1 to a depth variable for the recursion, to a maximum of 1,000.
+			4. Use the initialized type's size as the member size.
+			5. Set the offset to the current sum.
+			6. Add the member's size to the sum.
+		3. Set the struct's size to the sum.
+		4. Add it to the list.
+2. Set Global Infos
+	1. Start a running sum of the size of the globals block.
+	2. For each global,
+		1. Get its type size from the list of declared types.
+		2. Set its offset to the running sum's current value.
+		3. Add its size to the running sum.
+		4. Add it to the list.
+3. Function Code Generation:
+	1. Initialize virtual stack with function arguments.
+	2. Given the list of statements, call the Statement Generation method below.
+4. Statement Generation (breadth-first-ish):
+	1. Create variables (start, end) pointing to the first macroinstruction and the current last macroinstruction.
+	2. For each statement,
+		1. Is the statement a Linear-Flow Element (has no jumps)? Yes:
+			1. Call a method that generates the graph for this LF element. Arguments are the element, result is the first and last macroinstructions of the LF element.
+			2. If start is null, set start to the first macroinstruction returned.
+			3. If end is not null, call end.ConnectTo(lfElementStart, DirectFlow).
+			4. Set end to the last macroinstruction returned.
+		No:
+			1. Create an UngeneratedVertex and give it the NLF element to generate later.
+			2. If end is not null, call end.ConnectTo(ungeneratedVertex, DirectFlow).
+			3. Set end to ungeneratedVertex.
+	3. Now we should have a singly-linked list of macroinstructions. Walk through the list, remembering the last macroinstruction we saw.
+		1. Is the current macroinstruction an UngeneratedVertex? If not, continue walking the list. If so,
+			1. Peek one ahead to get the "after" macroinstruction.
+			2. Call a method that generates the macroinstructions for the NLF element. Pass in last and next. The result is the first and last generated macroinstructions. These methods often recurse back into the Statement Generation method, too.
+			3. Call last.ConnectTo(nlfStart, DirectFlow). The generator method would have correctly wired the generated macroinstructions to next.
+	4. Return (start, end).
+	
+Expression Generation:
+	- Subexpression Type Computation:
+		1. Ask each operand to set its type, which recurses into Subexpression Type Computation.
+		2. Determine the common type of operands as necessary.
+		3. Given the common type and the operator used, set the result type of this subexpression.
+	- Common Type Determination
+		- If the types are the same, they are both of the common type.
+		- If either type is a struct, there is no common type.
+		- For numeric types:
+			- Two types of the same signedness, where one is as wide or wider than the other, has a common type of the widest type.
+			- An unsigned type and a signed type of strictly larger width has a common type of the signed type.
+			- Numeric types of 16 bits or less and floats have a common type of float.
+			- Numeric types of 32 bits or less and double have a common type of double.
+		- For pointer types:
+			- If one type is void*, the common type is void*.
+			- No common type exists between any other two pointer types.
