@@ -17,7 +17,6 @@ class VirtualStackEntry
 {
 	string Name;
 	TypeInfo Type;
-	int Size;
 	int OffsetFromEBP;
 }
 
@@ -48,6 +47,7 @@ class FuncptrTypeInfo : TypeInfo
 abstract class ControlFlowVertex
 {
 	FlowEdge OutboundEdge;
+	void ConnectTo(InstructionVertex other, FlowEdgeType flowEdgeType);
 }
 
 class UngeneratedVertex : ControlFlowVertex
@@ -62,7 +62,6 @@ class InstructionVertex : ControlFlowVertex
 	InstructionOperand Operand1;
 	InstructionOperand Operand2;
 	InstructionOperand Operand3;
-	void ConnectTo(InstructionVertex other, FlowEdgeType flowEdgeType);
 }
 
 class FlowEdge
