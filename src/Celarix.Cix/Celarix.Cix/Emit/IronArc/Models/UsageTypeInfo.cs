@@ -10,15 +10,13 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
     {
         public TypeInfo DeclaredType { get; set; }
         public int PointerLevel { get; set; }
-        public bool IsAssignable { get; set; }
         public int Size => (PointerLevel > 0) ? 8 : DeclaredType.Size;
 
-        public static UsageTypeInfo FromTypeInfo(TypeInfo type, int pointerLevel, bool isAssignable = false) =>
+        public static UsageTypeInfo FromTypeInfo(TypeInfo type, int pointerLevel) =>
             new UsageTypeInfo
             {
                 DeclaredType = type,
-                PointerLevel = pointerLevel,
-                IsAssignable = isAssignable
+                PointerLevel = pointerLevel
             };
     }
 }

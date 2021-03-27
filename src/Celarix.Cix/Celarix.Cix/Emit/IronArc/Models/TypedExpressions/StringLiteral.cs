@@ -7,5 +7,19 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
     internal sealed class StringLiteral : TypedExpression
     {
         public string LiteralValue { get; set; }
+
+        public override UsageTypeInfo ComputeType(TypeComputationContext context, TypedExpression parent)
+        {
+            ComputedType = new UsageTypeInfo
+            {
+                DeclaredType = new NamedTypeInfo
+                {
+                    Name = "byte", Size = 1
+                },
+                PointerLevel = 1
+            };
+
+            return ComputedType;
+        }
     }
 }

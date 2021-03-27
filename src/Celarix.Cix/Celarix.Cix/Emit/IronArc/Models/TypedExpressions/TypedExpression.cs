@@ -9,7 +9,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
     internal abstract class TypedExpression
     {
         public UsageTypeInfo ComputedType { get; set; }
+        public bool IsAssignable { get; set; }
 
-        public abstract void ComputeType(TypeComputationContext context, TypedExpression parent);
+        public abstract UsageTypeInfo ComputeType(TypeComputationContext context, TypedExpression parent);
     }
 }

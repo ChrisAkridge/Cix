@@ -8,5 +8,23 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
     {
         public TypedExpression Operand { get; set; }
         public List<TypedExpression> Arguments { get; set; }
+
+        public override UsageTypeInfo ComputeType(TypeComputationContext context, TypedExpression parent)
+        {
+            var operandType = Operand.ComputeType(context, this);
+
+            foreach (var argument in Arguments)
+            {
+                argument.ComputeType(context, this);
+            }
+
+            if (!(operandType.DeclaredType is FuncptrTypeInfo))
+            {
+                throw new InvalidOperationException("Cannot invoke non-function");
+            }
+
+            ComputedType = operandType;
+            return ComputedType;
+        }
     }
 }

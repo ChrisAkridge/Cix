@@ -9,7 +9,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
 {
     internal static class ExpressionHelpers
     {
-        public static UsageTypeInfo GetComputedType(UsageTypeInfo left, UsageTypeInfo right)
+        public static UsageTypeInfo GetCommonType(UsageTypeInfo left, UsageTypeInfo right)
         {
             var leftNamedType = left.DeclaredType as NamedTypeInfo;
             var rightNamedType = right.DeclaredType as NamedTypeInfo;
@@ -69,6 +69,25 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             throw new InvalidOperationException("Unreachable");
         }
 
+        public static bool IsNumeric(UsageTypeInfo type) =>
+            (type.DeclaredType is NamedTypeInfo namedType)
+            && (type.PointerLevel == 0)
+            && (namedType.Name == "byte"
+                || namedType.Name == "sbyte"
+                || namedType.Name == "short"
+                || namedType.Name == "ushort"
+                || namedType.Name == "int"
+                || namedType.Name == "uint"
+                || namedType.Name == "long"
+                || namedType.Name == "ulong"
+                || namedType.Name == "float"
+                || namedType.Name == "double");
+
+        public static bool IsStruct(UsageTypeInfo type, IDictionary<string, NamedTypeInfo> declaredTypes) =>
+            (type.DeclaredType is NamedTypeInfo namedType
+                && declaredTypes.TryGetValue(namedType.Name, out var declaredType)
+                && declaredType is StructInfo);
+
         public static bool ImplicitlyConvertibleToInt(UsageTypeInfo type) =>
             (type.DeclaredType is NamedTypeInfo namedType)
             && (type.PointerLevel == 0)
@@ -77,6 +96,50 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                 || namedType.Name == "short"
                 || namedType.Name == "ushort"
                 || namedType.Name == "int");
+
+        public static OperatorKind GetOperatorKind(string operatorSymbol, OperationKind operationKind)
+        {
+            return operatorSymbol switch
+            {
+                "+" when operationKind == OperationKind.PrefixUnary => OperatorKind.Sign,
+                "-" when operationKind == OperationKind.PrefixUnary => OperatorKind.Sign,
+                "+" => OperatorKind.Arithmetic,
+                "-" => OperatorKind.Arithmetic,
+                "*" when operationKind == OperationKind.Binary => OperatorKind.Arithmetic,
+                "/" => OperatorKind.Arithmetic,
+                "%" => OperatorKind.Arithmetic,
+                "&" when operationKind == OperationKind.Binary => OperatorKind.Bitwise,
+                "|" => OperatorKind.Bitwise,
+                "^" => OperatorKind.Bitwise,
+                "&&" => OperatorKind.Logical,
+                "||" => OperatorKind.Logical,
+                "<<" => OperatorKind.Shift,
+                ">>" => OperatorKind.Shift,
+                "==" => OperatorKind.Comparison,
+                "<" => OperatorKind.Comparison,
+                ">" => OperatorKind.Comparison,
+                "<=" => OperatorKind.Comparison,
+                ">=" => OperatorKind.Comparison,
+                "=" => OperatorKind.Assignment,
+                "+=" => OperatorKind.ArithmeticAssignment,
+                "-=" => OperatorKind.ArithmeticAssignment,
+                "*=" => OperatorKind.ArithmeticAssignment,
+                "/=" => OperatorKind.ArithmeticAssignment,
+                "%=" => OperatorKind.ArithmeticAssignment,
+                "&=" => OperatorKind.BitwiseAssignment,
+                "|=" => OperatorKind.BitwiseAssignment,
+                "^=" => OperatorKind.BitwiseAssignment,
+                "<<=" => OperatorKind.ShiftAssignment,
+                ">>=" => OperatorKind.ShiftAssignment,
+                "++" => OperatorKind.IncrementDecrement,
+                "--" => OperatorKind.IncrementDecrement,
+                "*" when operationKind == OperationKind.PrefixUnary => OperatorKind.PointerOperation,
+                "&" when operationKind == OperationKind.PrefixUnary => OperatorKind.PointerOperation,
+                "?" => OperatorKind.Comparison,
+                ":" => OperatorKind.Comparison,
+                _ => throw new InvalidOperationException("Unrecognized operator")
+            };
+        }
 
         private static ImplicitConversionTypeKind GetTypeKind(string typeName) =>
             typeName switch

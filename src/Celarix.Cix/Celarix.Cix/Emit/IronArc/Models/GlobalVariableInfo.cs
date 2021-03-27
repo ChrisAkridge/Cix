@@ -9,7 +9,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
     {
         public string Name { get; set; }
         public UsageTypeInfo UsageType { get; set; }
-        public int PointerLevel { get; set; }
         public int OffsetFromERPPlusHeader { get; set; }
     }
 }
