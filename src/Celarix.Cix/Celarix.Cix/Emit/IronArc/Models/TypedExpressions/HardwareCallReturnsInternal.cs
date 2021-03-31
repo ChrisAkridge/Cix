@@ -12,7 +12,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         public UsageTypeInfo ReturnType { get; set; }
         public List<UsageTypeInfo> ParameterTypes { get; set; }
 
-        public override UsageTypeInfo ComputeType(TypeComputationContext context, TypedExpression parent)
+        public override UsageTypeInfo ComputeType(ExpressionEmitContext context, TypedExpression parent)
         {
             ComputedType = ReturnType;
 

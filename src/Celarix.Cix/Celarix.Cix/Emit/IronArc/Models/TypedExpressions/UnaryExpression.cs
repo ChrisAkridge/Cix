@@ -10,9 +10,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         public string Operator { get; set; }
         public bool IsPostfix { get; set; }
 
-        public override UsageTypeInfo ComputeType(TypeComputationContext context, TypedExpression parent)
+        public override UsageTypeInfo ComputeType(ExpressionEmitContext context, TypedExpression parent)
         {
             Operand.ComputeType(context, this);
+
+            IsAssignable = Operator == "&";
 
             return ExpressionHelpers.GetOperatorKind(Operator,
                     (IsPostfix) ? OperationKind.PostfixUnary : OperationKind.PrefixUnary) switch

@@ -5,7 +5,7 @@ using Celarix.Cix.Compiler.Parse.Models.AST.v1;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 {
-    internal class TypeComputationContext
+    internal class ExpressionEmitContext
     {
         public VirtualStack CurrentStack { get; set; }
         public IDictionary<string, NamedTypeInfo> DeclaredTypes { get; set; }
@@ -27,5 +27,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 _ => throw new InvalidOperationException("Internal compiler error: Unrecognized type")
             };
         }
+
+        public UsageTypeInfo LookupDataTypeWithPointerLevel(DataType dataType) =>
+            new UsageTypeInfo
+            {
+                DeclaredType = LookupDataType(dataType), PointerLevel = dataType.PointerLevel
+            };
     }
 }

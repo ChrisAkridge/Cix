@@ -8,7 +8,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
     {
         public string LiteralValue { get; set; }
 
-        public override UsageTypeInfo ComputeType(TypeComputationContext context, TypedExpression parent)
+        public override UsageTypeInfo ComputeType(ExpressionEmitContext context, TypedExpression parent)
         {
             ComputedType = new UsageTypeInfo
             {

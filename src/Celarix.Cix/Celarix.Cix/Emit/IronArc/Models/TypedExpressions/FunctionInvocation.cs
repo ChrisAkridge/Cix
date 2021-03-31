@@ -9,7 +9,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         public TypedExpression Operand { get; set; }
         public List<TypedExpression> Arguments { get; set; }
 
-        public override UsageTypeInfo ComputeType(TypeComputationContext context, TypedExpression parent)
+        public override UsageTypeInfo ComputeType(ExpressionEmitContext context, TypedExpression parent)
         {
             var operandType = Operand.ComputeType(context, this);
 

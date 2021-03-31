@@ -9,7 +9,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         public ulong ValueBits { get; set; }
         public NumericLiteralType NumericLiteralType { get; set; }
 
-        public override UsageTypeInfo ComputeType(TypeComputationContext context, TypedExpression parent)
+        public override UsageTypeInfo ComputeType(ExpressionEmitContext context, TypedExpression parent)
         {
             ComputedType = (NumericLiteralType == NumericLiteralType.Single)
                 ? new UsageTypeInfo
@@ -27,6 +27,16 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                     }
                 };
             return ComputedType;
+        }
+
+        public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent)
+        {
+            return EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
+            {
+                new InstructionVertex("push",
+                    (NumericLiteralType == NumericLiteralType.Single) ? OperandSize.Dword : OperandSize.Qword,
+                    new IntegerOperand(ValueBits))
+            });
         }
     }
 }

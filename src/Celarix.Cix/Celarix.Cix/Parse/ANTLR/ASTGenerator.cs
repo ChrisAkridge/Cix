@@ -664,14 +664,17 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
                 literalType = NumericLiteralType.Double;
             }
 
-            return new FloatingPointLiteral
+            unchecked
             {
-                ValueBits = (literalType == NumericLiteralType.Double
-                    || literalText.EndsWith("f", StringComparison.InvariantCultureIgnoreCase))
-                    ? double.Parse(literalText[0..^1], NumberStyles.Float)
-                    : double.Parse(literalText, NumberStyles.Float),
-                NumericLiteralType = literalType
-            };
+                return new FloatingPointLiteral
+                {
+                    ValueBits = (literalType == NumericLiteralType.Double
+                        || literalText.EndsWith("f", StringComparison.InvariantCultureIgnoreCase))
+                        ? (ulong)BitConverter.SingleToInt32Bits(float.Parse(literalText[0..^1], NumberStyles.Float))
+                        : (ulong)BitConverter.DoubleToInt64Bits(double.Parse(literalText, NumberStyles.Float)),
+                    NumericLiteralType = literalType
+                };
+            }
         }
     }
 }

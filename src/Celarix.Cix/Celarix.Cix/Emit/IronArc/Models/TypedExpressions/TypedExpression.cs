@@ -11,6 +11,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         public UsageTypeInfo ComputedType { get; set; }
         public bool IsAssignable { get; set; }
 
-        public abstract UsageTypeInfo ComputeType(TypeComputationContext context, TypedExpression parent);
+        public abstract UsageTypeInfo ComputeType(ExpressionEmitContext context, TypedExpression parent);
+        public abstract StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent);
     }
 }

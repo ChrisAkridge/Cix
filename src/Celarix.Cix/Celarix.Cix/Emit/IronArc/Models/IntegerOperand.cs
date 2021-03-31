@@ -8,9 +8,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
     {
         public ulong ValueBits { get; set; }
 
-        public IntegerOperand(ulong valueBits)
-        {
-            ValueBits = valueBits;
-        }
+        public IntegerOperand(int valueBits) : this((ulong)valueBits) { }
+        
+        public IntegerOperand(ulong valueBits) => ValueBits = valueBits;
     }
 }

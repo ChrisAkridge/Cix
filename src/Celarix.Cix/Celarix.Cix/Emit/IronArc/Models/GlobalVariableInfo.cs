@@ -7,6 +7,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
 {
     internal sealed class GlobalVariableInfo
     {
+        internal const int IronArcHeaderSize = 28;
         public string Name { get; set; }
         public UsageTypeInfo UsageType { get; set; }
         public int OffsetFromERPPlusHeader { get; set; }

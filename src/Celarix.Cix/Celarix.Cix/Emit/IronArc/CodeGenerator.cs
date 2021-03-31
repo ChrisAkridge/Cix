@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Celarix.Cix.Compiler.Emit.IronArc.Models;
+using Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions;
 using Celarix.Cix.Compiler.Exceptions;
 using Celarix.Cix.Compiler.Parse.Models.AST.v1;
+using static Celarix.Cix.Compiler.Emit.IronArc.EmitHelpers;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc
 {
@@ -17,6 +19,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
         private readonly IDictionary<string, NamedTypeInfo> declaredTypes;
         private IDictionary<string, GlobalVariableInfo> declaredGlobals;
         private FunctionEmitContext currentFunctionContext;
+        private readonly ExpressionEmitContext expressionEmitContext;
         
         public CodeGenerator(SourceFileRoot sourceFile)
         {
@@ -25,6 +28,13 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             declaredGlobals =
                 GlobalVariableInfoComputer.ComputeGlobalVariableInfos(sourceFile.GlobalVariableDeclarations,
                     declaredTypes);
+            expressionEmitContext = new ExpressionEmitContext
+            {
+                CurrentStack = currentFunctionContext.Stack,
+                DeclaredGlobals = declaredGlobals,
+                DeclaredTypes = declaredTypes,
+                Functions = sourceFile.Functions.ToDictionary(f => f.Name, f => f)
+            };
         }
 
         private object GenerateFunction(Function function)
@@ -55,9 +65,15 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
         {
             if (!IsLinearFlowElement(statement))
             {
-                var ungeneratedVertex = new UngeneratedVertex { NodeToGenerateFor = statement };
+                var ungeneratedVertex = new UngeneratedVertex
+                {
+                    NodeToGenerateFor = statement
+                };
 
-                return new StartEndVertices { Start = ungeneratedVertex, End = ungeneratedVertex };
+                return new StartEndVertices
+                {
+                    Start = ungeneratedVertex, End = ungeneratedVertex
+                };
             }
             else
             {
@@ -100,17 +116,21 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                 Source = jump, Destination = target, FlowEdgeType = FlowEdgeType.UnconditionalJump
             };
 
-            return new StartEndVertices { Start = jump, End = jump };
+            return new StartEndVertices
+            {
+                Start = jump, End = jump
+            };
         }
 
         private static StartEndVertices GenerateExpressionStatement(ExpressionStatement expressionStatement)
         {
             // code to compute expression
-            var removeResult = new InstructionVertex("subl", OperandSize.Qword,
-                Register(Models.Register.ESP), /* size of expression */ new IntegerOperand(0),
-                Register(Models.Register.ESP));
+            var removeResult = new InstructionVertex("subl", OperandSize.Qword, Register(Models.Register.ESP), /* size of expression */ new IntegerOperand(0), Register(Models.Register.ESP));
 
-            return new StartEndVertices { Start = /* expression start */ null, End = removeResult };
+            return new StartEndVertices
+            {
+                Start = /* expression start */ null, End = removeResult
+            };
         }
 
         private StartEndVertices GenerateReturnStatement(ReturnStatement returnStatement) =>
@@ -122,7 +142,10 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
         {
             var returnInstruction = new InstructionVertex("ret");
 
-            return new StartEndVertices { Start = returnInstruction, End = returnInstruction };
+            return new StartEndVertices
+            {
+                Start = returnInstruction, End = returnInstruction
+            };
         }
 
         private StartEndVertices GenerateNonVoidReturnStatement(Expression returnValue)
@@ -138,10 +161,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                 var postProcessing = ConnectWithDirectFlow(new[]
                 {
                     new InstructionVertex("movln",
-                        OperandSize.NotUsed,
-                        Register(Models.Register.EBP,
-                            isPointer: true),
-                        Register(Models.Register.EBP,
+                        OperandSize.NotUsed, Register(Models.Register.EBP,
+                            isPointer: true), Register(Models.Register.EBP,
                             isPointer: true,
                             offset: structStackEntry.OffsetFromEBP),
                         new IntegerOperand((ulong)returnTypeInfo.Size)),
@@ -156,8 +177,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                 var postProcessing = ConnectWithDirectFlow(new[]
                 {
                     ZeroEAX(),
-                    new InstructionVertex("pop", ToOperandSize(returnTypeInfo.Size), Register(Models.Register.EAX)),
-                    ResetStack(),
+                    new InstructionVertex("pop", ToOperandSize(returnTypeInfo.Size), Register(Models.Register.EAX)), ResetStack(),
                     new InstructionVertex("push", ToOperandSize(returnTypeInfo.Size), Register(Models.Register.EAX)),
                     new InstructionVertex("ret")
                 });
@@ -168,33 +188,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             }
         }
 
-        private static InstructionVertex ResetStack() =>
-            new InstructionVertex("mov", OperandSize.Qword, Register(Models.Register.EBP),
-                Register(Models.Register.ESP));
-
-        private static InstructionVertex ZeroEAX() =>
-            new InstructionVertex("mov", OperandSize.Qword, new IntegerOperand(0), Register(Models.Register.EAX));
-
-        private static RegisterOperand Register(Register register, bool isPointer = false, int offset = 0) =>
-            new RegisterOperand { Register = register, IsPointer = isPointer, Offset = offset };
-
-        private static StartEndVertices ConnectWithDirectFlow(IEnumerable<ControlFlowVertex> vertices)
+        private StartEndVertices GenerateExpression(Expression expression)
         {
-            ControlFlowVertex start = null;
-            ControlFlowVertex last = null;
-            ControlFlowVertex end = null;
-
-            foreach (var current in vertices)
-            {
-                start ??= current;
-                end = current;
-
-                last?.ConnectTo(current, FlowEdgeType.DirectFlow);
-
-                last = current;
-            }
-
-            return new StartEndVertices { Start = start, End = end };
+            var expressionBuilder = new TypedExpressionBuilder(expressionEmitContext);
+            var typedExpression = expressionBuilder.Build(expression);
+            typedExpression.ComputeType(expressionEmitContext, null);
         }
 
         private static bool IsLinearFlowElement(Statement statement) =>
@@ -204,20 +202,5 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                 || (statement is SwitchStatement)
                 || (statement is CaseStatement)
                 || (statement is WhileStatement));
-
-        private static OperandSize ToOperandSize(int size)
-        {
-            return size switch
-            {
-                1 => OperandSize.Byte,
-                2 => OperandSize.Word,
-                4 => OperandSize.Dword,
-                8 => OperandSize.Qword,
-                _ => throw new ErrorFoundException(ErrorSource.InternalCompilerError, -1, $"Size {size} isn't an IronArc operand size", null, -1)
-            };
-        }
-        
-        // Expressions
-        
     }
 }

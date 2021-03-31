@@ -9,7 +9,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         public UsageTypeInfo ToType { get; set; }
         public TypedExpression Expression { get; set; }
 
-        public override UsageTypeInfo ComputeType(TypeComputationContext context, TypedExpression parent)
+        public override UsageTypeInfo ComputeType(ExpressionEmitContext context, TypedExpression parent)
         {
             var expressionType = Expression.ComputeType(context, this);
 
@@ -26,5 +26,14 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             ComputedType = ToType;
             return ToType;
         }
+
+        public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent) =>
+            Expression.ComputedType.Size != ToType.Size
+                ? EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
+                {
+                    EmitHelpers.ChangeWidthOfTopOfStack(EmitHelpers.ToOperandSize(Expression.ComputedType.Size),
+                        EmitHelpers.ToOperandSize(ToType.Size))
+                })
+                : null;
     }
 }

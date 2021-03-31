@@ -60,7 +60,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
     internal enum IdentifierReferentKind
     {
         LocalVariable,
-        FunctionArgument,
         GlobalVariable,
         Function,
         StructMember

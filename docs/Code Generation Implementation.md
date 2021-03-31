@@ -88,9 +88,9 @@ Each expression recursively asks its subexpressions to generate macroinstruction
 Compute `(TTarget)x`. Each graph below assumes that `x` is on top of the stack. The conversion is either widening or narrowing.
 
 ```
-      mov QWORD 0 EAX
-=DF=> pop sizeof(x) EAX
-=DF=> push sizeof(TTarget) EAX
+      mov QWORD 0 ECX
+=DF=> pop sizeof(x) ECX
+=DF=> push sizeof(TTarget) ECX
 ```
 
 #### Array Access

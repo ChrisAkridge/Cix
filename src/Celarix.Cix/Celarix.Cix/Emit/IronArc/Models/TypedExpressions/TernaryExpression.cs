@@ -12,7 +12,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         public string Operator2 { get; set; }
         public TypedExpression Operand3 { get; set; }
 
-        public override UsageTypeInfo ComputeType(TypeComputationContext context, TypedExpression parent)
+        public override UsageTypeInfo ComputeType(ExpressionEmitContext context, TypedExpression parent)
         {
             var operand1Type = Operand1.ComputeType(context, this);
             var operand2Type = Operand2.ComputeType(context, this);
