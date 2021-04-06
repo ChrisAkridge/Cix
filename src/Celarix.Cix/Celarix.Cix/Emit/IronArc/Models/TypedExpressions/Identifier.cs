@@ -77,17 +77,23 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
         public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent)
         {
-            bool parentPerformsAssignment = EmitHelpers.ExpressionPerformsAssignment(parent);
+            bool parentRequiresPointer = EmitHelpers.ExpressionRequiresPointer(parent);
+            string stackEntryName;
+            StartEndVertices computationFlow;
 
             switch (ReferentKind)
             {
                 case IdentifierReferentKind.Function:
-                    return EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
+                    stackEntryName = "<functionReference>";
+                    computationFlow = EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
                     {
                         new InstructionVertex("push", OperandSize.Qword, new LabelOperand(ReferentFunction.Name)),
                     });
+
+                    break;
                 case IdentifierReferentKind.GlobalVariable:
                 {
+                    stackEntryName = "<globalReference>";
                     var computePointerFlow = new IConnectable[]
                     {
                         new InstructionVertex("push", OperandSize.Qword, EmitHelpers.Register(Register.ERP)),
@@ -98,10 +104,12 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                         new InstructionVertex("add", OperandSize.Qword),
                     };
 
-                    return GetValueOrPointerFlow(parentPerformsAssignment, ReferentGlobal.UsageType, computePointerFlow);
+                    computationFlow = GetValueOrPointerFlow(parentRequiresPointer, ReferentGlobal.UsageType, computePointerFlow);
+                    break;
                 }
                 case IdentifierReferentKind.LocalVariable:
                 {
+                    stackEntryName = "<localReference>";
                     var computePointerFlow = new IConnectable[]
                     {
                         new InstructionVertex("push", OperandSize.Qword, EmitHelpers.Register(Register.ESP)),
@@ -109,27 +117,34 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                         new InstructionVertex("add", OperandSize.Qword), 
                     };
 
-                    return GetValueOrPointerFlow(parentPerformsAssignment, ReferentVariable.UsageType, computePointerFlow);
+                    computationFlow = GetValueOrPointerFlow(parentRequiresPointer, ReferentVariable.UsageType, computePointerFlow);
+                    break;
                 }
                 case IdentifierReferentKind.StructMember:
                 {
+                    stackEntryName = "<structMemberOffset>";
                     var leftType = (parent as BinaryExpression).Left.ComputedType;
                     var leftStructType = leftType.DeclaredType as StructInfo;
                     var memberOffset = leftStructType.MemberInfos.Single(mi => mi.Name == Name).Offset;
 
-                    return EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
+                    computationFlow = EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
                     {
                         new InstructionVertex("push", OperandSize.Qword, new IntegerOperand(memberOffset)),
                     });
+                    break;
                 }
                 default:
                     throw new InvalidOperationException("Internal compiler error: invalid referent kind");
             }
+
+            context.CurrentStack.Push(new VirtualStackEntry(stackEntryName,
+                (parentRequiresPointer) ? ComputedType.WithPointerLevel(ComputedType.PointerLevel + 1) : ComputedType));
+            return computationFlow;
         }
 
-        private static StartEndVertices GetValueOrPointerFlow(bool parentPerformsAssignment, UsageTypeInfo usageType, IConnectable[] computePointerFlow)
+        private static StartEndVertices GetValueOrPointerFlow(bool parentRequiresPointer, UsageTypeInfo usageType, IConnectable[] computePointerFlow)
         {
-            if (!parentPerformsAssignment)
+            if (!parentRequiresPointer)
             {
                 var writeValueFlow = (usageType.DeclaredType is StructInfo && usageType.PointerLevel == 0)
                     ? new IConnectable[]

@@ -226,6 +226,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             var rightSize = Right.ComputedType.Size;
             var rightOperandSize = EmitHelpers.ToOperandSize(rightSize);
 
+            // <generate left>  [left]
             var operandFlows = new List<IConnectable>
             {
                 Left.Generate(context, this)
@@ -237,6 +238,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                     computedTypeOperandSize));
             }
             
+            // <generate right> [left right]
             operandFlows.Add(Right.Generate(context, this));
 
             if (!Right.ComputedType.Equals(ComputedType) && !ConvertRightHandSideToResultType())
@@ -246,6 +248,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             }
 
             IConnectable[] computationFlow;
+            VirtualStackEntry resultEntry;
             switch (Operator)
             {
                 case "+":
@@ -253,131 +256,431 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 {
                     if (Left.ComputedType.PointerLevel > 0)
                     {
-                        computationFlow = new IConnectable[]
-                        {
-                            EmitHelpers.ChangeWidthOfTopOfStack(rightOperandSize, OperandSize.Dword),
-                            new InstructionVertex("push", OperandSize.Dword, new IntegerOperand(rightSize)),
-                            new InstructionVertex("mult", OperandSize.Dword),
-                            EmitHelpers.ChangeWidthOfTopOfStack(OperandSize.Dword, OperandSize.Qword),
-                            new InstructionVertex((Operator == "+") ? "add" : "sub", OperandSize.Qword)
-                        };
+                        computationFlow = GeneratePointerArithmetic(rightOperandSize, rightSize);
+                        resultEntry = GetPointerStackEntry();
                     }
                     else
                     {
-                        var mnemonic = (computedTypeIsFloatingPoint)
-                            ? (Operator == "+")
-                                ? "add"
-                                : "sub"
-                            : (Operator == "+")
-                                ? "fadd"
-                                : "fsub";
-
-                        computationFlow = new IConnectable[]
-                        {
-                            new InstructionVertex(mnemonic, computedTypeOperandSize)
-                        };
+                        computationFlow = GenerateAddSubtract(computedTypeIsFloatingPoint, computedTypeOperandSize);
+                        resultEntry = GetValueStackEntry();
                     }
 
                     break;
                 }
                 case "*":
-                    computationFlow = new IConnectable[]
-                    {
-                        new InstructionVertex((computedTypeIsFloatingPoint) ? "fmult" : "mult", computedTypeOperandSize)
-                    };
-
+                    computationFlow = GenerateMultiply(computedTypeIsFloatingPoint, computedTypeOperandSize);
+                    resultEntry = GetValueStackEntry();
                     break;
                 case "/":
-                    computationFlow = new IConnectable[]
-                    {
-                        new InstructionVertex((computedTypeIsFloatingPoint) ? "div" : "fdiv", computedTypeOperandSize)
-                    };
-
+                    computationFlow = GenerateDivide(computedTypeIsFloatingPoint, computedTypeOperandSize);
+                    resultEntry = GetValueStackEntry();
                     break;
                 case "%":
-                    computationFlow = new IConnectable[]
-                    {
-                        new InstructionVertex((computedTypeIsFloatingPoint) ? "mod" : "fmod", computedTypeOperandSize)
-                    };
-
+                    computationFlow = GenerateModulusDivide(computedTypeIsFloatingPoint, computedTypeOperandSize);
+                    resultEntry = GetValueStackEntry();
                     break;
                 case "&":
-                    computationFlow = new IConnectable[]
-                    {
-                        new InstructionVertex("bwand", computedTypeOperandSize)
-                    };
-
+                    computationFlow = GenerateBitwiseAND(computedTypeOperandSize);
+                    resultEntry = GetValueStackEntry();
                     break;
                 case "|":
-                    computationFlow = new IConnectable[]
-                    {
-                        new InstructionVertex("bwor", computedTypeOperandSize)
-                    };
-
+                    computationFlow = GenerateBitwiseOR(computedTypeOperandSize);
+                    resultEntry = GetValueStackEntry();
                     break;
                 case "^":
-                    computationFlow = new IConnectable[]
-                    {
-                        new InstructionVertex("bwxor", computedTypeOperandSize)
-                    };
-
+                    computationFlow = GenerateBitwiseXOR(computedTypeOperandSize);
+                    resultEntry = GetValueStackEntry();
                     break;
                 case "<<":
                 case ">>":
-                    computationFlow = new IConnectable[]
-                    {
-                        EmitHelpers.ChangeWidthOfTopOfStack(rightOperandSize, OperandSize.Dword),
-                        new InstructionVertex((Operator == "<<") ? "lshift" : "rshift", computedTypeOperandSize)
-                    };
-
+                    computationFlow = GenerateShift(rightOperandSize, computedTypeOperandSize);
+                    resultEntry = GetValueStackEntry();
                     break;
                 case ".":
                 case "->":
-                    computationFlow = !EmitHelpers.ExpressionPerformsAssignment(parent):
-                        ? new IConnectable[]
-                        {
-                            new InstructionVertex("add", OperandSize.Qword), EmitHelpers.ZeroEAX(),
-                            new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)),
-                            new InstructionVertex("push", EmitHelpers.ToOperandSize(ComputedType.Size),
-                                EmitHelpers.Register(Register.EBP, isPointer: true)),
-                        }
-                        : new IConnectable[]
-                        {
-                            new InstructionVertex("add", OperandSize.Qword)
-                        };
+                    if (!EmitHelpers.ExpressionRequiresPointer(parent))
+                    {
+                        computationFlow = GenerateGetMemberValue();
+                        resultEntry = GetPointerStackEntry();
+                    }
+                    else
+                    {
+                        computationFlow = GenerateGetMemberPointer();
+                        resultEntry = GetValueStackEntry();
+                    }
 
+                    break;
+                case "=":
+                    computationFlow = GenerateAssignment(context);
+                    resultEntry = GetValueStackEntry();
+
+                    break;
+                case "+=":
+                case "-=":
+                case "*=":
+                case "/=":
+                case "%=":
+                case "&=":
+                case "|=":
+                case "^=":
+                case "<<=":
+                case ">>=":
+                    computationFlow = GenerateOperationAssignment(context);
+                    resultEntry = GetValueStackEntry();
+                    
                     break;
                 default:
                 {
                     computationFlow = comparisonOperands.TryGetValue(Operator, out var operands)
-                        ? new IConnectable[]
-                        {
-                            new InstructionVertex("cmp", computedTypeOperandSize),
-                            new InstructionVertex("push", OperandSize.Qword, EmitHelpers.Register(Register.EFLAGS)),
-                            new InstructionVertex("push", OperandSize.Qword, new IntegerOperand(operands.flagMask)),
-                            new InstructionVertex("bwand", OperandSize.Qword),
-                            new InstructionVertex("push", OperandSize.Qword, new IntegerOperand(operands.shiftAmount)),
-                            new InstructionVertex("rshift", OperandSize.Qword),
-                            EmitHelpers.ChangeWidthOfTopOfStack(OperandSize.Qword, OperandSize.Dword)
-                        }
+                        ? GenerateComparison(computedTypeOperandSize, operands)
                         : Operator switch
                         {
-                            "&&" => new IConnectable[]
-                            {
-                                new InstructionVertex("land", computedTypeOperandSize),
-                            },
-                            "||" => new IConnectable[]
-                            {
-                                new InstructionVertex("lor", computedTypeOperandSize),
-                            },
+                            "&&" => GenerateLogicalAND(computedTypeOperandSize),
+                            "||" => GenerateLogicalOR(computedTypeOperandSize),
                             _ => throw new InvalidOperationException("Internal compiler error: unrecognized operator")
                         };
 
+                    resultEntry = new VirtualStackEntry("<comparisonResult>", intType);
                     break;
                 }
             }
 
+            context.CurrentStack.Pop();
+            context.CurrentStack.Pop();
+            context.CurrentStack.Push(resultEntry);
             return EmitHelpers.ConnectWithDirectFlow(operandFlows.Concat(computationFlow));
+        }
+
+        private IConnectable[] GenerateAssignment(ExpressionEmitContext context)
+        {
+            var resultStackEntry = context.CurrentStack.Peek();
+            var destinationPointerOffsetFromEBP = resultStackEntry.OffsetFromEBP - 8;
+            
+            if (ExpressionHelpers.IsStruct(ComputedType, context.DeclaredTypes))
+            {
+                // mov QWORD <destinationPointer> EAX                               [destinationPointer result]
+                // movln <result> *EAX <sizeof(result)>                             [destinationPointer result]
+                // movln <result> <destinationPointer> <sizeof(result)>             [result garbage]
+                // subl QWORD ESP 8 ESP                                             [result]
+                return new IConnectable[]
+                {
+                    new InstructionVertex("mov", OperandSize.Qword, EmitHelpers.Register(Register.EBP, isPointer: true, destinationPointerOffsetFromEBP),
+                        EmitHelpers.Register(Register.EAX)),
+                    new InstructionVertex("movln", OperandSize.NotUsed, EmitHelpers.Register(Register.EBP, isPointer: true, resultStackEntry.OffsetFromEBP),
+                        EmitHelpers.Register(Register.EAX, isPointer: true), new IntegerOperand(ComputedType.Size)),
+                    new InstructionVertex("movln", OperandSize.NotUsed, EmitHelpers.Register(Register.EBP, isPointer: true, resultStackEntry.OffsetFromEBP),
+                        EmitHelpers.Register(Register.EBP, isPointer: true, destinationPointerOffsetFromEBP), new IntegerOperand(ComputedType.Size)),
+                    new InstructionVertex("subl", OperandSize.Qword, EmitHelpers.Register(Register.ESP), new IntegerOperand(8),
+                        EmitHelpers.Register(Register.ESP))
+                };
+            }
+            else
+            {
+                // mov QWORD <destinationPointer> EAX                               [destinationPointer result]
+                // mov <sizeof(result)> <result> *EAX                               [destinationPointer result]
+                // mov <sizeof(result)> <result> <destinationPointer>               [result garbage]
+                // subl QWORD ESP 8 ESP                                             [result]
+                var computedTypeOperandSize = EmitHelpers.ToOperandSize(ComputedType.Size);
+                
+                return new IConnectable[]
+                {
+                    new InstructionVertex("mov", OperandSize.Qword,
+                        EmitHelpers.Register(Register.EBP, isPointer: true, destinationPointerOffsetFromEBP),
+                        EmitHelpers.Register(Register.EAX)),
+                    new InstructionVertex("mov", computedTypeOperandSize,
+                        EmitHelpers.Register(Register.EBP, isPointer: true, resultStackEntry.OffsetFromEBP),
+                        EmitHelpers.Register(Register.EAX, isPointer: true), new IntegerOperand(ComputedType.Size)),
+                    new InstructionVertex("mov", computedTypeOperandSize,
+                        EmitHelpers.Register(Register.EBP, isPointer: true, resultStackEntry.OffsetFromEBP),
+                        EmitHelpers.Register(Register.EBP, isPointer: true, destinationPointerOffsetFromEBP)), 
+                    new InstructionVertex("subl", OperandSize.Qword, EmitHelpers.Register(Register.ESP),
+                        new IntegerOperand(8),
+                        EmitHelpers.Register(Register.ESP)),
+                };
+            }
+        }
+
+        private IConnectable[] GenerateOperationAssignment(ExpressionEmitContext context)
+        {
+            // mov QWORD <destinationPointer> EAX                               [destinationPointer right]
+            // mov QWORD 0 EDX                                                  [destinationPointer right]
+            // pop <sizeof(right)> EDX                                          [destinationPointer]
+            // push <sizeof(destinationOldValue)> *EAX                          [destinationPointer destinationOldValue]
+            // push <sizeof(right)> EDX                                         [destinationPointer destinationOldValue right]
+            // <operation>                                                      [destinationPointer result]
+            // mov <sizeof(result)> *EAX                                        [destinationPointer result]
+            // mov <sizeof(result)> <result> <destinationPointer>               [result garbage]
+            // subl QWORD ESP 8 ESP                                             [result]
+
+            // Operations
+            // +=: add/fadd <sizeof(result)>
+            // -=: sub/fsub <sizeof(result)>
+            // *=: mult/fmult <sizeof(result)>
+            // /=: div/fdiv <sizeof(result)>
+            // %=: mod/fmod <sizeof(result)>
+            // &=: bwand <sizeof(result)>
+            // |=: bwor <sizeof(result)>
+            // ^=: bwxor <sizeof(result)>
+            // <<=: lshift <sizeof(result)>
+            // >>=: rshift <sizeof(result)>
+
+            var rightStackEntry = context.CurrentStack.Peek();
+            var leftOperandSize = EmitHelpers.ToOperandSize(Left.ComputedType.DeclaredType.Size);
+            var rightOperandSize = EmitHelpers.ToOperandSize(rightStackEntry.UsageType.Size);
+            var computedTypeOperandSize = EmitHelpers.ToOperandSize(ComputedType.Size);
+            var computedTypeIsFloatingPoint = ComputedType.DeclaredType is NamedTypeInfo namedType
+                && (namedType.Name == "float" || namedType.Name == "double");
+
+            var setupValues = new IConnectable[]
+            {
+                new InstructionVertex("mov", OperandSize.Qword, EmitHelpers.Register(Register.EBP, isPointer: true, rightStackEntry.OffsetFromEBP - 8)),
+                new InstructionVertex("mov", OperandSize.Qword, new IntegerOperand(0), EmitHelpers.Register(Register.EDX)),
+                new InstructionVertex("pop", rightOperandSize, EmitHelpers.Register(Register.EDX)),
+                new InstructionVertex("push", leftOperandSize, EmitHelpers.Register(Register.EAX, isPointer: true)),
+                new InstructionVertex("push", rightOperandSize, EmitHelpers.Register(Register.EDX))
+            };
+
+            if (Left.ComputedType.PointerLevel > 0 && (Operator == "+=" || Operator == "-="))
+            {
+                // multl EDX <sizeof(left)> EDX [destinationPointer destinationOldValue right]
+                setupValues = setupValues.Concat(new IConnectable[]
+                    {
+                        new InstructionVertex("multl", OperandSize.Qword, EmitHelpers.Register(Register.EDX),
+                            new IntegerOperand(Left.ComputedType.Size), EmitHelpers.Register(Register.EDX)),
+                    })
+                    .ToArray();
+            }
+
+            var operationMnenonic = !computedTypeIsFloatingPoint
+                ? Operator switch
+                {
+                    "+=" => "add",
+                    "-=" => "sub",
+                    "*=" => "mult",
+                    "/=" => "div",
+                    "%=" => "mod",
+                    "&=" => "bwand",
+                    "|=" => "bwor",
+                    "^=" => "bwxor",
+                    "<<=" => "lshift",
+                    ">>=" => "rshift",
+                    _ => throw new InvalidOperationException(
+                        "Internal compiler error: unrecognized assignment operator")
+                }
+                : Operator switch
+                {
+                    "+=" => "fadd",
+                    "-=" => "fsub",
+                    "*=" => "fmult",
+                    "/=" => "fdiv",
+                    "%=" => "fmod",
+                    _ => throw new InvalidOperationException(
+                        "Operator cannot be used on floating point values")
+                };
+
+            return setupValues.Concat(new IConnectable[]
+                {
+                    new InstructionVertex(operationMnenonic, computedTypeOperandSize),
+                    new InstructionVertex("mov", computedTypeOperandSize, EmitHelpers.Register(Register.EAX, isPointer: true)),
+                    new InstructionVertex("mov", computedTypeOperandSize,
+                        EmitHelpers.Register(Register.EBP, isPointer: true, rightStackEntry.OffsetFromEBP),
+                        EmitHelpers.Register(Register.EBP, isPointer: true, rightStackEntry.OffsetFromEBP - 8)),
+                    new InstructionVertex("subl", OperandSize.Qword, EmitHelpers.Register(Register.ESP),
+                        new IntegerOperand(8),
+                        EmitHelpers.Register(Register.ESP)),
+                })
+                .ToArray();
+        }
+
+        private static IConnectable[] GenerateComparison(OperandSize computedTypeOperandSize, (ulong flagMask, ulong shiftAmount) operands)
+        {
+            /*
+             * cmp sizeof(result)       []
+             * push QWORD EFLAGS        [EFLAGS]
+             * push QWORD <flagMask>    [EFLAGS flagMask]
+             * bwand QWORD              [maskedEFLAGS]
+             * push QWORD <shiftAmount> [maskedEFLAGS shiftAmount]
+             * rshift QWORD             [comparisonResultWasNonZero]
+             */
+
+            var (flagMask, shiftAmount) = operands;
+
+            return new IConnectable[]
+            {
+                new InstructionVertex("cmp", computedTypeOperandSize),
+                new InstructionVertex("push", OperandSize.Qword, EmitHelpers.Register(Register.EFLAGS)),
+                new InstructionVertex("push", OperandSize.Qword, new IntegerOperand(flagMask)),
+                new InstructionVertex("bwand", OperandSize.Qword),
+                new InstructionVertex("push", OperandSize.Qword, new IntegerOperand(shiftAmount)),
+                new InstructionVertex("rshift", OperandSize.Qword),
+                EmitHelpers.ChangeWidthOfTopOfStack(OperandSize.Qword, OperandSize.Dword)
+            };
+        }
+
+        private static IConnectable[] GenerateLogicalOR(OperandSize computedTypeOperandSize)
+        {
+            return new IConnectable[]
+            {
+                new InstructionVertex("lor", computedTypeOperandSize),
+            };
+        }
+
+        private static IConnectable[] GenerateLogicalAND(OperandSize computedTypeOperandSize)
+        {
+            return new IConnectable[]
+            {
+                new InstructionVertex("land", computedTypeOperandSize),
+            };
+        }
+
+        private static IConnectable[] GenerateGetMemberPointer()
+        {
+            IConnectable[] computationFlow;
+
+            computationFlow = new IConnectable[]
+            {
+                new InstructionVertex("add", OperandSize.Qword)
+            };
+
+            return computationFlow;
+        }
+
+        private IConnectable[] GenerateGetMemberValue()
+        {
+            IConnectable[] computationFlow;
+
+            computationFlow = new IConnectable[]
+            {
+                new InstructionVertex("add", OperandSize.Qword), EmitHelpers.ZeroEAX(),
+                new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)), new InstructionVertex(
+                    "push", EmitHelpers.ToOperandSize(ComputedType.Size),
+                    EmitHelpers.Register(Register.EBP, isPointer: true)),
+            };
+
+            return computationFlow;
+        }
+
+        private IConnectable[] GenerateShift(OperandSize rightOperandSize, OperandSize computedTypeOperandSize)
+        {
+            IConnectable[] computationFlow;
+
+            computationFlow = new IConnectable[]
+            {
+                EmitHelpers.ChangeWidthOfTopOfStack(rightOperandSize, OperandSize.Dword),
+                new InstructionVertex((Operator == "<<") ? "lshift" : "rshift", computedTypeOperandSize)
+            };
+
+            return computationFlow;
+        }
+
+        private static IConnectable[] GenerateBitwiseXOR(OperandSize computedTypeOperandSize)
+        {
+            IConnectable[] computationFlow;
+
+            computationFlow = new IConnectable[]
+            {
+                new InstructionVertex("bwxor", computedTypeOperandSize)
+            };
+
+            return computationFlow;
+        }
+
+        private static IConnectable[] GenerateBitwiseOR(OperandSize computedTypeOperandSize)
+        {
+            IConnectable[] computationFlow;
+
+            computationFlow = new IConnectable[]
+            {
+                new InstructionVertex("bwor", computedTypeOperandSize)
+            };
+
+            return computationFlow;
+        }
+
+        private static IConnectable[] GenerateBitwiseAND(OperandSize computedTypeOperandSize)
+        {
+            IConnectable[] computationFlow;
+
+            computationFlow = new IConnectable[]
+            {
+                new InstructionVertex("bwand", computedTypeOperandSize)
+            };
+
+            return computationFlow;
+        }
+
+        private static IConnectable[] GenerateModulusDivide(bool computedTypeIsFloatingPoint,
+            OperandSize computedTypeOperandSize)
+        {
+            IConnectable[] computationFlow;
+
+            computationFlow = new IConnectable[]
+            {
+                new InstructionVertex((computedTypeIsFloatingPoint) ? "mod" : "fmod", computedTypeOperandSize)
+            };
+
+            return computationFlow;
+        }
+
+        private static IConnectable[] GenerateDivide(bool computedTypeIsFloatingPoint, OperandSize computedTypeOperandSize)
+        {
+            IConnectable[] computationFlow;
+
+            computationFlow = new IConnectable[]
+            {
+                new InstructionVertex((computedTypeIsFloatingPoint) ? "div" : "fdiv", computedTypeOperandSize)
+            };
+
+            return computationFlow;
+        }
+
+        private IConnectable[] GenerateMultiply(bool computedTypeIsFloatingPoint, OperandSize computedTypeOperandSize)
+        {
+            IConnectable[] computationFlow;
+
+            computationFlow = new IConnectable[]
+            {
+                new InstructionVertex((computedTypeIsFloatingPoint) ? "fmult" : "mult", computedTypeOperandSize)
+            };
+
+            return computationFlow;
+        }
+
+        private IConnectable[] GenerateAddSubtract(bool computedTypeIsFloatingPoint, OperandSize computedTypeOperandSize)
+        {
+            var mnemonic = (computedTypeIsFloatingPoint)
+                ? (Operator == "+")
+                    ? "add"
+                    : "sub"
+                : (Operator == "+")
+                    ? "fadd"
+                    : "fsub";
+
+            var computationFlow = new IConnectable[]
+            {
+                new InstructionVertex(mnemonic, computedTypeOperandSize)
+            };
+
+            return computationFlow;
+        }
+
+        private IConnectable[] GeneratePointerArithmetic(OperandSize rightOperandSize, int rightSize)
+        {
+            /*
+             * <convert right to DWORD>         [left (int)right]
+             * push DWORD sizeof(right)         [left (int)right sizeof(right)]
+             * mult DWORD                       [left offsetInBytes]
+             * <convert offsetInBytes to QWORD> [left (long)offsetInBytes]
+             * {add/sub} QWORD                  [left{+/-}offsetInBytes]
+             */
+            return new IConnectable[]
+            {
+                EmitHelpers.ChangeWidthOfTopOfStack(rightOperandSize, OperandSize.Dword),
+                new InstructionVertex("push", OperandSize.Dword, new IntegerOperand(rightSize)),
+                new InstructionVertex("mult", OperandSize.Dword),
+                EmitHelpers.ChangeWidthOfTopOfStack(OperandSize.Dword, OperandSize.Qword),
+                new InstructionVertex((Operator == "+") ? "add" : "sub", OperandSize.Qword)
+            };
         }
 
         private bool ConvertRightHandSideToResultType()
@@ -390,6 +693,9 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
             return !rightHandSideConvertedToOtherType;
         }
+        
+        private VirtualStackEntry GetPointerStackEntry() => new VirtualStackEntry("<binaryResult>", ComputedType.WithPointerLevel(ComputedType.PointerLevel + 1));
+        private VirtualStackEntry GetValueStackEntry() => new VirtualStackEntry("<binaryResult>", ComputedType);
         #endregion
     }
 }

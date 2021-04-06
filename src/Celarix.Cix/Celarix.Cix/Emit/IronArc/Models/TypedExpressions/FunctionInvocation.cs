@@ -26,5 +26,12 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             ComputedType = operandType;
             return ComputedType;
         }
+
+        public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent)
+        {
+            var operandFlow = Operand.Generate(context, this);
+            var argumentFlows = Arguments.Select(a => a.Generate(context, this)).ToList();
+            
+        }
     }
 }

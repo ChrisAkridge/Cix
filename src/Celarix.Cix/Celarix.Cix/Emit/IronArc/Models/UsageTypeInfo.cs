@@ -19,6 +19,13 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
                 PointerLevel = pointerLevel
             };
 
+        public UsageTypeInfo WithPointerLevel(int pointerLevel) =>
+            new UsageTypeInfo
+            {
+                DeclaredType = this.DeclaredType,
+                PointerLevel = pointerLevel
+            };
+
         /// <summary>Indicates whether the current object is equal to another object of the same type.</summary>
         /// <param name="other">An object to compare with this object.</param>
         /// <returns>

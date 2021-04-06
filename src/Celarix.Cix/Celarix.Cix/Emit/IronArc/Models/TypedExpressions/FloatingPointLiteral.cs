@@ -31,6 +31,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
         public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent)
         {
+            context.CurrentStack.Push(new VirtualStackEntry("<floatingPointLiteral>", ComputedType));
+            
             return EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
             {
                 new InstructionVertex("push",

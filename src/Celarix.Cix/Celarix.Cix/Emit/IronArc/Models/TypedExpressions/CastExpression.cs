@@ -27,13 +27,20 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             return ToType;
         }
 
-        public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent) =>
-            Expression.ComputedType.Size != ToType.Size
-                ? EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
+        public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent)
+        {
+            if (Expression.ComputedType.Size != ToType.Size)
+            {
+                var oldEntry = context.CurrentStack.Pop();
+                context.CurrentStack.Push(new VirtualStackEntry($"<castResult>{oldEntry.Name}", ComputedType));
+
+                return EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
                 {
                     EmitHelpers.ChangeWidthOfTopOfStack(EmitHelpers.ToOperandSize(Expression.ComputedType.Size),
                         EmitHelpers.ToOperandSize(ToType.Size))
-                })
-                : null;
+                });
+            }
+            else { return null; }
+        }
     }
 }

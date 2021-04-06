@@ -47,6 +47,18 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
         public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent)
         {
+            /*
+             * TArray* a;
+             * int b;
+             * TArray c = a[b];
+             *
+             * <compute a, b>                   [a b]                       Get operands
+             * push DWORD sizeof(TArray)        [a b sizeof(TArray)]        Push size for offset calculation
+             * mult DWORD                       [a b*sizeof(TArray)]        Get offset of b
+             * <convert top of stack to QWORD>  [a (long)b*sizeof(TArray)]  Change b to be the right width
+             * add QWORD                        [&(a[b])]                   Get pointer to array element
+             */
+            
             var getElementPointer = new List<IConnectable>
             {
                 Operand.Generate(context, this),
@@ -58,16 +70,22 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 new InstructionVertex("add", OperandSize.Qword)
             };
 
-            if (parent is BinaryExpression binaryExpression)
-            {
-                var operatorKind = ExpressionHelpers.GetOperatorKind(binaryExpression.Operator, OperationKind.Binary);
+            context.CurrentStack.Pop(); // [a]
+            context.CurrentStack.Pop(); // []
 
-                if (operatorKind == OperatorKind.Assignment || operatorKind == OperatorKind.MemberAccess)
-                {
-                    return EmitHelpers.ConnectWithDirectFlow(getElementPointer);
-                }
+            if (EmitHelpers.ExpressionRequiresPointer(parent))
+            {
+                context.CurrentStack.Push(new VirtualStackEntry("<arrayPointer>",
+                    ComputedType.WithPointerLevel(ComputedType.PointerLevel + 1))); // [&(a[b])]
+                
+                return EmitHelpers.ConnectWithDirectFlow(getElementPointer);
             }
 
+            /*
+             * pop QWORD EAX            []      Pop &(a[b]) into EAX
+             * push sizeof(a[b]) *EAX   [a[b]]  Get value of a[b]
+             */
+            
             var getElementValue = new List<IConnectable>
             {
                 EmitHelpers.ZeroEAX(),
@@ -75,6 +93,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 new InstructionVertex("push", EmitHelpers.ToOperandSize(Operand.ComputedType.DeclaredType.Size),
                     EmitHelpers.Register(Register.EAX, isPointer: true))
             };
+            
+            context.CurrentStack.Push(new VirtualStackEntry("<arrayValue>", ComputedType)); // [a[b]]
 
             return EmitHelpers.ConnectWithDirectFlow(getElementPointer.Concat(getElementPointer));
         }
