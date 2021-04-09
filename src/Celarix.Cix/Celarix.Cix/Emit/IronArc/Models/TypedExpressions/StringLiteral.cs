@@ -21,5 +21,20 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
             return ComputedType;
         }
+
+        public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent)
+        {
+            var pushInstruction = new InstructionVertex("push", OperandSize.NotUsed, new StringLiteralOperand
+            {
+                Literal = LiteralValue
+            });
+            
+            context.CurrentStack.Push(new VirtualStackEntry("<stringLiteral>", ComputedType));
+
+            return new StartEndVertices
+            {
+                Start = pushInstruction, End = pushInstruction
+            };
+        }
     }
 }

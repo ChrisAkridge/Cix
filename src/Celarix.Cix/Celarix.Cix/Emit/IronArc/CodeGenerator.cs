@@ -111,7 +111,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
 
             var jump = new InstructionVertex("jmp", OperandSize.NotUsed, new JumpTargetOperand { Target = target });
 
-            jump.OutboundEdge = new FlowEdge
+            jump.OutboundEdges = new FlowEdge
             {
                 Source = jump, Destination = target, FlowEdgeType = FlowEdgeType.UnconditionalJump
             };

@@ -6,19 +6,19 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
 {
     internal abstract class ControlFlowVertex : IConnectable
     {
-        public FlowEdge OutboundEdge { get; set; }
+        public List<FlowEdge> OutboundEdges { get; set; } = new List<FlowEdge>();
         public bool IsJumpTarget { get; set; }
 
         public ControlFlowVertex ConnectionTarget => this;
 
         public void ConnectTo(IConnectable other, FlowEdgeType flowEdgeType)
         {
-            OutboundEdge = new FlowEdge
+            OutboundEdges.Add(new FlowEdge
             {
                 Source = this,
                 Destination = other.ConnectionTarget,
                 FlowEdgeType = flowEdgeType
-            };
+            });
         }
     }
 }

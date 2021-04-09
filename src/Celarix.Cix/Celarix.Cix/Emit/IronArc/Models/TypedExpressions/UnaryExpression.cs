@@ -10,6 +10,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         public string Operator { get; set; }
         public bool IsPostfix { get; set; }
 
+        #region Type Computation
+
         public override UsageTypeInfo ComputeType(ExpressionEmitContext context, TypedExpression parent)
         {
             Operand.ComputeType(context, this);
@@ -25,7 +27,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                     _ => throw new InvalidOperationException("Internal compiler error: unexpected unary operator")
                 };
         }
-
+        
         private UsageTypeInfo ComputeTypeForSign() =>
             !ExpressionHelpers.IsNumeric(Operand.ComputedType)
                 ? throw new InvalidOperationException("Cannot apply operator to non-numeric value")
@@ -66,5 +68,83 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
             return ComputedType;
         }
+
+        #endregion
+
+        #region Code Generation
+
+        public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent)
+        {
+            var operandSize = EmitHelpers.ToOperandSize(Operand.ComputedType.Size);
+            
+            if (!IsPostfix)
+            {
+                switch (Operator)
+                {
+                    case "+":
+                    case "&":
+                        return Operand.Generate(context, this);
+                    case "-":
+                        return EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
+                        {
+                            Operand.Generate(context, this),
+                            EmitHelpers.ZeroEAX(),
+                            new InstructionVertex("pop", operandSize, EmitHelpers.Register(Register.EAX)),
+                            new InstructionVertex("push", operandSize, new IntegerOperand(0)),
+                            new InstructionVertex("push", operandSize, EmitHelpers.Register(Register.EAX)),
+                            new InstructionVertex("sub", operandSize),
+                        });
+                    case "~":
+                        return EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
+                        {
+                            Operand.Generate(context, this),
+                            new InstructionVertex("bwnot", operandSize),
+                        });
+                    case "!":
+                        return EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
+                        {
+                            Operand.Generate(context, this),
+                            new InstructionVertex("lnot", operandSize),
+                        });
+                    case "*":
+                    {
+                        context.CurrentStack.Pop();
+                        context.CurrentStack.Push(new VirtualStackEntry("<pointerDereference>", new UsageTypeInfo
+                        {
+                            DeclaredType = Operand.ComputedType.DeclaredType,
+                            PointerLevel = Operand.ComputedType.PointerLevel - 1
+                        }));
+                    
+                        if (Operand.ComputedType.PointerLevel >= 2 || EmitHelpers.IsIronArcOperandSize(Operand.ComputedType.DeclaredType.Size))
+                        {
+                            var declaredTypeOperandSize = EmitHelpers.ToOperandSize(Operand.ComputedType.DeclaredType.Size);
+                        
+                            return EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
+                            {
+                                EmitHelpers.ZeroEAX(),
+                                new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)),
+                                new InstructionVertex("push", declaredTypeOperandSize, EmitHelpers.Register(Register.EAX, isPointer: true)),
+                            });
+                        }
+                        else
+                        {
+                            return EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
+                            {
+                                EmitHelpers.ZeroEAX(),
+                                new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)),
+                                new InstructionVertex("movln", OperandSize.NotUsed,
+                                    EmitHelpers.Register(Register.EAX, isPointer: true),
+                                    EmitHelpers.Register(Register.ESP, isPointer: true),
+                                    new IntegerOperand(Operand.ComputedType.Size)),
+                                new InstructionVertex("addl", OperandSize.Qword, EmitHelpers.Register(Register.ESP),
+                                    new IntegerOperand(Operand.ComputedType.Size),
+                                    EmitHelpers.Register(Register.ESP))
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        #endregion
     }
 }

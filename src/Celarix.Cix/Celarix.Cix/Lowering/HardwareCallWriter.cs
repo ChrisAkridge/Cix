@@ -31,7 +31,10 @@ namespace Celarix.Cix.Compiler.Lowering
                     .Select(p => new FunctionParameter
                     {
                         Name = p.ParameterName,
-                        Type = new NamedDataType { Name = p.Type.TypeName, PointerLevel = p.Type.PointerLevel }
+                        Type = new NamedDataType
+                        {
+                            Name = p.Type.TypeName, PointerLevel = p.Type.PointerLevel
+                        }
                     })
                     .ToList()
             };
