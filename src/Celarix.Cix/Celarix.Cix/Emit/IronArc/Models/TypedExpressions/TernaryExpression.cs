@@ -29,7 +29,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
         public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent)
         {
-            var ungeneratedVertex = new UngeneratedVertex();
+            var ungeneratedVertex = new UngeneratedVertex
+            {
+                NodeToGenerateFor = this
+            };
+            
             return new StartEndVertices
             {
                 Start = ungeneratedVertex, End = ungeneratedVertex

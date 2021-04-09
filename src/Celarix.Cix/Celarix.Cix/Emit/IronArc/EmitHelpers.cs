@@ -65,6 +65,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
 
         public static bool IsIronArcOperandSize(int size) => size == 1 || (size == 2) | (size == 4) || size == 8;
 
+        public static bool IsFloatingPointType(TypeInfo typeInfo) =>
+            (typeInfo is NamedTypeInfo namedType)
+            && ((namedType.Name == "float")
+                || (namedType.Name == "double"));
+
         public static bool ExpressionRequiresPointer(TypedExpression expression)
         {
             switch (expression)

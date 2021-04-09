@@ -121,7 +121,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                         
                             return EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
                             {
-                                EmitHelpers.ZeroEAX(),
                                 new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)),
                                 new InstructionVertex("push", declaredTypeOperandSize, EmitHelpers.Register(Register.EAX, isPointer: true)),
                             });
@@ -130,7 +129,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                         {
                             return EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
                             {
-                                EmitHelpers.ZeroEAX(),
                                 new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)),
                                 new InstructionVertex("movln", OperandSize.NotUsed,
                                     EmitHelpers.Register(Register.EAX, isPointer: true),
@@ -142,8 +140,75 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                             });
                         }
                     }
+                    case "++":
+                    case "--":
+                    {
+                        var pointerStackEntry = context.CurrentStack.Pop();
+                        context.CurrentStack.Push(new VirtualStackEntry("<preIncrementDecrementResult>", ComputedType));
+                        var floatSize = (ComputedType.Size == 4) ? FloatSize.Single : FloatSize.Double;
+
+                        return !EmitHelpers.IsFloatingPointType(ComputedType.DeclaredType)
+                            ? EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
+                            {
+                                new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)),
+                                new InstructionVertex((Operator == "++") ? "incl" : "decl", operandSize,
+                                    EmitHelpers.Register(Register.EAX, isPointer: true)),
+                                new InstructionVertex("push", operandSize,
+                                    EmitHelpers.Register(Register.EAX, isPointer: true))
+                            })
+                            : EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
+                            {
+                                new InstructionVertex("push", operandSize,
+                                    EmitHelpers.Register(Register.EBP, isPointer: true,
+                                        pointerStackEntry.OffsetFromEBP)),
+                                new InstructionVertex("push", operandSize,
+                                    (floatSize == FloatSize.Single)
+                                        ? FloatingPointOperand.FromSingle(1f)
+                                        : FloatingPointOperand.FromDouble(1d)),
+                                new InstructionVertex((Operator == "++") ? "fadd" : "fsub", operandSize),
+                                new InstructionVertex("pop", operandSize,
+                                    EmitHelpers.Register(Register.EBP, isPointer: true,
+                                        pointerStackEntry.OffsetFromEBP)),
+                                new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)),
+                                new InstructionVertex("push", operandSize,
+                                    EmitHelpers.Register(Register.EAX, isPointer: true))
+                            });
+                    }
                 }
             }
+            else
+            {
+                context.CurrentStack.Pop();
+                context.CurrentStack.Push(new VirtualStackEntry("<postIncrementDecrementResult>", ComputedType));
+                var floatSize = (ComputedType.Size == 4) ? FloatSize.Single : FloatSize.Double;
+
+                return !EmitHelpers.IsFloatingPointType(ComputedType.DeclaredType)
+                    ? EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
+                    {
+                        new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)),
+                        new InstructionVertex("push", operandSize,
+                            EmitHelpers.Register(Register.EAX, isPointer: true)),
+                        new InstructionVertex((Operator == "++") ? "incl" : "decl", operandSize,
+                            EmitHelpers.Register(Register.EAX, isPointer: true)),
+                    })
+                    : EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
+                    {
+                        new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)),
+                        new InstructionVertex("push", operandSize,
+                            EmitHelpers.Register(Register.EAX, isPointer: true)),
+                        new InstructionVertex("push", operandSize,
+                            EmitHelpers.Register(Register.EAX, isPointer: true)),
+                        new InstructionVertex("push", operandSize,
+                            (floatSize == FloatSize.Single)
+                                ? FloatingPointOperand.FromSingle(1f)
+                                : FloatingPointOperand.FromDouble(1d)),
+                        new InstructionVertex((Operator == "++") ? "fadd" : "fsub", operandSize),
+                        new InstructionVertex("pop", operandSize,
+                            EmitHelpers.Register(Register.EAX, isPointer: true))
+                    });
+            }
+            
+            throw new InvalidOperationException("Internal compiler error: unreachable code");
         }
         #endregion
     }
