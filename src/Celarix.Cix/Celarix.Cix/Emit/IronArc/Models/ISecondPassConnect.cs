@@ -9,6 +9,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
 {
     internal interface ISecondPassConnect
     {
-        void ConnectToGeneratedTree(ControlFlowVertex after, ExpressionEmitContext context = null);
+        void ConnectToGeneratedTree(ControlFlowVertex after, EmitContext context = null);
     }
 }

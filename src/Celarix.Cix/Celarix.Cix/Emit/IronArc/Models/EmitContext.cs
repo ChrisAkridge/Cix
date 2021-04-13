@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using Celarix.Cix.Compiler.Parse.Models.AST.v1;
 
-namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
+namespace Celarix.Cix.Compiler.Emit.IronArc.Models
 {
-    internal class ExpressionEmitContext
+    internal class EmitContext
     {
         public VirtualStack CurrentStack { get; set; }
+        public Function CurrentFunction { get; set; }
         public IDictionary<string, NamedTypeInfo> DeclaredTypes { get; set; }
         public IDictionary<string, GlobalVariableInfo> DeclaredGlobals { get; set; }
         public IDictionary<string, Function> Functions { get; set; }
+        public Stack<ControlFlowVertex> BreakTargets { get; set; } = new Stack<ControlFlowVertex>();
+        public Stack<ControlFlowVertex> ContinueTargets { get; set; } = new Stack<ControlFlowVertex>();
 
         public TypeInfo LookupDataType(DataType dataType)
         {

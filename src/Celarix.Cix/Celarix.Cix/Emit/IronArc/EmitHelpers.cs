@@ -94,5 +94,18 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                     return false;
             }
         }
+
+        public static StartEndVertices GetUngeneratedVertex(ISecondPassConnect vertex)
+        {
+            var ungeneratedVertex = new UngeneratedVertex
+            {
+                NodeToGenerateFor = vertex
+            };
+
+            return new StartEndVertices
+            {
+                Start = ungeneratedVertex, End = ungeneratedVertex
+            };
+        }
     }
 }

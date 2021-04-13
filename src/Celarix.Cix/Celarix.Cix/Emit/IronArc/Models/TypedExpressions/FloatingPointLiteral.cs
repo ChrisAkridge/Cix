@@ -4,12 +4,12 @@ using System.Linq;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 {
-    internal sealed class FloatingPointLiteral : TypedExpression
+    internal sealed class FloatingPointLiteral : Literal
     {
         public ulong ValueBits { get; set; }
         public NumericLiteralType NumericLiteralType { get; set; }
 
-        public override UsageTypeInfo ComputeType(ExpressionEmitContext context, TypedExpression parent)
+        public override UsageTypeInfo ComputeType(EmitContext context, TypedExpression parent)
         {
             ComputedType = (NumericLiteralType == NumericLiteralType.Single)
                 ? new UsageTypeInfo
@@ -29,7 +29,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             return ComputedType;
         }
 
-        public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent)
+        public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
             context.CurrentStack.Push(new VirtualStackEntry("<floatingPointLiteral>", ComputedType));
             

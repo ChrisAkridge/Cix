@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Celarix.Cix.Compiler.Emit.IronArc.Models;
 using Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions;
 using Celarix.Cix.Compiler.Parse.Models.AST.v1;
 // ♥
@@ -11,53 +12,65 @@ using BinaryExpression = Celarix.Cix.Compiler.Parse.Models.AST.v1.BinaryExpressi
 using CastExpression = Celarix.Cix.Compiler.Parse.Models.AST.v1.CastExpression;
 using FloatingPointLiteral = Celarix.Cix.Compiler.Parse.Models.AST.v1.FloatingPointLiteral;
 using FunctionInvocation = Celarix.Cix.Compiler.Parse.Models.AST.v1.FunctionInvocation;
-using HardwareCallReturnsInternal = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.HardwareCallReturnsInternal;
+using HardwareCallReturnsInternal = Celarix.Cix.Compiler.Parse.Models.AST.v1.HardwareCallReturnsInternal;
 using HardwareCallVoidInternal = Celarix.Cix.Compiler.Parse.Models.AST.v1.HardwareCallVoidInternal;
 using Identifier = Celarix.Cix.Compiler.Parse.Models.AST.v1.Identifier;
 using SizeOfExpression = Celarix.Cix.Compiler.Parse.Models.AST.v1.SizeOfExpression;
 using StringLiteral = Celarix.Cix.Compiler.Parse.Models.AST.v1.StringLiteral;
 using TernaryExpression = Celarix.Cix.Compiler.Parse.Models.AST.v1.TernaryExpression;
 using UnaryExpression = Celarix.Cix.Compiler.Parse.Models.AST.v1.UnaryExpression;
+using TypedArrayAccess = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.ArrayAccess;
+using TypedBinaryExpression = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.BinaryExpression;
+using TypedCastExpression = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.CastExpression;
+using TypedFloatingPointLiteral = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.FloatingPointLiteral;
+using TypedFunctionInvocation = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.FunctionInvocation;
+using TypedHardwareCallReturnsInternal = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.HardwareCallReturnsInternal;
+using TypedHardwareCallVoidInternal = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.HardwareCallVoidInternal;
+using TypedIdentifier = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.Identifier;
+using TypedSizeOfExpression = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.SizeOfExpression;
+using TypedStringLiteral = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.StringLiteral;
+using TypedTernaryExpression = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.TernaryExpression;
+using TypedUnaryExpression = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.UnaryExpression;
 
-namespace Celarix.Cix.Compiler.Emit.IronArc.Models
+namespace Celarix.Cix.Compiler.Emit.IronArc
 {
     internal sealed class TypedExpressionBuilder
     {
-        private readonly ExpressionEmitContext context;
+        private readonly EmitContext context;
 
-        public TypedExpressionBuilder(ExpressionEmitContext context) => this.context = context;
+        public TypedExpressionBuilder(EmitContext context) => this.context = context;
 
         public TypedExpression Build(Expression expression)
         {
             return expression switch
             {
-                ArrayAccess arrayAccess => new TypedExpressions.ArrayAccess
+                ArrayAccess arrayAccess => new TypedArrayAccess
                 {
                     Operand = Build(arrayAccess.Operand), Index = Build(arrayAccess.Index)
                 },
-                BinaryExpression binaryExpression => new TypedExpressions.BinaryExpression
+                BinaryExpression binaryExpression => new TypedBinaryExpression
                 {
                     Left = Build(binaryExpression.Left),
                     Right = Build(binaryExpression.Right),
                     Operator = binaryExpression.Operator
                 },
-                CastExpression castExpression => new TypedExpressions.CastExpression
+                CastExpression castExpression => new TypedCastExpression
                 {
                     Expression = Build(castExpression.Operand),
                     ToType = context.LookupDataTypeWithPointerLevel(castExpression.ToType)
                 },
-                FloatingPointLiteral floatingPointLiteral => new TypedExpressions.FloatingPointLiteral
+                FloatingPointLiteral floatingPointLiteral => new TypedFloatingPointLiteral
                 {
                     ValueBits = floatingPointLiteral.ValueBits,
                     NumericLiteralType = floatingPointLiteral.NumericLiteralType
                 },
-                FunctionInvocation functionInvocation => new TypedExpressions.FunctionInvocation
+                FunctionInvocation functionInvocation => new TypedFunctionInvocation
                 {
                     Operand = Build(functionInvocation.Operand),
                     Arguments = functionInvocation.Arguments.Select(Build).ToList()
                 },
-                Celarix.Cix.Compiler.Parse.Models.AST.v1.HardwareCallReturnsInternal hardwareCallReturnsInternal => new
-                    HardwareCallReturnsInternal
+                HardwareCallReturnsInternal hardwareCallReturnsInternal => new
+                    TypedHardwareCallReturnsInternal
                     {
                         ASTNode = hardwareCallReturnsInternal,
                         CallName = hardwareCallReturnsInternal.CallName,
@@ -66,7 +79,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
                             .Select(context.LookupDataTypeWithPointerLevel)
                             .ToList(),
                     },
-                HardwareCallVoidInternal hardwareCallVoidInternal => new TypedExpressions.HardwareCallVoidInternal
+                HardwareCallVoidInternal hardwareCallVoidInternal => new TypedHardwareCallVoidInternal
                 {
                     ASTNode = hardwareCallVoidInternal,
                     CallName = hardwareCallVoidInternal.CallName,
@@ -74,19 +87,19 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
                         .Select(context.LookupDataTypeWithPointerLevel)
                         .ToList()
                 },
-                Identifier identifier => new TypedExpressions.Identifier
+                Identifier identifier => new TypedIdentifier
                 {
                     Name = identifier.IdentifierText
                 },
-                SizeOfExpression sizeOfExpression => new TypedExpressions.SizeOfExpression
+                SizeOfExpression sizeOfExpression => new TypedSizeOfExpression
                 {
                     Type = context.LookupDataTypeWithPointerLevel(sizeOfExpression.Type)
                 },
-                StringLiteral stringLiteral => new TypedExpressions.StringLiteral
+                StringLiteral stringLiteral => new TypedStringLiteral
                 {
                     LiteralValue = stringLiteral.Value
                 },
-                TernaryExpression ternaryExpression => new TypedExpressions.TernaryExpression
+                TernaryExpression ternaryExpression => new TypedTernaryExpression
                 {
                     Operand1 = Build(ternaryExpression.Operand1),
                     Operand2 = Build(ternaryExpression.Operand2),
@@ -94,7 +107,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
                     Operator1 = ternaryExpression.Operator1,
                     Operator2 = ternaryExpression.Operator2
                 },
-                UnaryExpression unaryExpression => new TypedExpressions.UnaryExpression
+                UnaryExpression unaryExpression => new TypedUnaryExpression
                 {
                     Operand = Build(unaryExpression.Operand),
                     Operator = unaryExpression.Operator,

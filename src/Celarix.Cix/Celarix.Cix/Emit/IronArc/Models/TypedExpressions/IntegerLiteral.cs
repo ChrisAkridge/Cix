@@ -4,12 +4,12 @@ using System.Linq;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 {
-    internal sealed class IntegerLiteral : TypedExpression
+    internal sealed class IntegerLiteral : Literal
     {
         public ulong ValueBits { get; set; }
         public NumericLiteralType LiteralType { get; set; }
 
-        public override UsageTypeInfo ComputeType(ExpressionEmitContext context, TypedExpression parent)
+        public override UsageTypeInfo ComputeType(EmitContext context, TypedExpression parent)
         {
             ComputedType = LiteralType switch
             {
@@ -47,7 +47,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             return ComputedType;
         }
 
-        public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent)
+        public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
             var operandSize = EmitHelpers.ToOperandSize(ComputedType.Size);
             var pushInstruction = new InstructionVertex("push", operandSize, new IntegerOperand(ValueBits));

@@ -9,7 +9,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         public TypedExpression Operand { get; set; }
         public TypedExpression Index { get; set; }
 
-        public override UsageTypeInfo ComputeType(ExpressionEmitContext context, TypedExpression parent)
+        public override UsageTypeInfo ComputeType(EmitContext context, TypedExpression parent)
         {
             // TArray* x;
             // int y;
@@ -45,7 +45,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             return ComputedType;
         }
 
-        public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent)
+        public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
             /*
              * TArray* a;

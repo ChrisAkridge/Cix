@@ -12,7 +12,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
         #region Type Computation
 
-        public override UsageTypeInfo ComputeType(ExpressionEmitContext context, TypedExpression parent)
+        public override UsageTypeInfo ComputeType(EmitContext context, TypedExpression parent)
         {
             Operand.ComputeType(context, this);
 
@@ -73,7 +73,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
         #region Code Generation
 
-        public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent)
+        public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
             var operandSize = EmitHelpers.ToOperandSize(Operand.ComputedType.Size);
             

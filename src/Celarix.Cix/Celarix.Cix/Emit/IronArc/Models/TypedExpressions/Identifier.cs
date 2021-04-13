@@ -5,7 +5,7 @@ using Celarix.Cix.Compiler.Parse.Models.AST.v1;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 {
-    internal sealed class Identifier : TypedExpression
+    internal sealed class Identifier : Literal
     {
         public Function ReferentFunction { get; set; }
         public VirtualStackEntry ReferentVariable { get; set; }
@@ -16,7 +16,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         public IdentifierReferentKind ReferentKind { get; set; }
         public string Name { get; set; }
 
-        public override UsageTypeInfo ComputeType(ExpressionEmitContext context, TypedExpression parent)
+        public override UsageTypeInfo ComputeType(EmitContext context, TypedExpression parent)
         {
             var referentKind = SetReferentKind(context, parent);
             UsageTypeInfo computedType;
@@ -75,7 +75,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             return computedType;
         }
 
-        public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent)
+        public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
             bool parentRequiresPointer = EmitHelpers.ExpressionRequiresPointer(parent);
             string stackEntryName;
@@ -173,7 +173,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             else { return EmitHelpers.ConnectWithDirectFlow(computePointerFlow); }
         }
 
-        private IdentifierReferentKind SetReferentKind(ExpressionEmitContext context, TypedExpression parent)
+        private IdentifierReferentKind SetReferentKind(EmitContext context, TypedExpression parent)
         {
             if (parent is BinaryExpression binaryExpression
                 && (binaryExpression.Operator == "." || binaryExpression.Operator == "->"))

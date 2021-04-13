@@ -12,7 +12,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         public string Operator2 { get; set; }
         public TypedExpression Operand3 { get; set; }
 
-        public override UsageTypeInfo ComputeType(ExpressionEmitContext context, TypedExpression parent)
+        public override UsageTypeInfo ComputeType(EmitContext context, TypedExpression parent)
         {
             var operand1Type = Operand1.ComputeType(context, this);
             var operand2Type = Operand2.ComputeType(context, this);
@@ -27,7 +27,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             return ComputedType;
         }
 
-        public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent)
+        public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
             var ungeneratedVertex = new UngeneratedVertex
             {
@@ -40,7 +40,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             };
         }
 
-        public void ConnectToGeneratedTree(ControlFlowVertex after, ExpressionEmitContext context)
+        public void ConnectToGeneratedTree(ControlFlowVertex after, EmitContext context)
         {
             var conditionFlow = Operand1.Generate(context, this);
             var conditionOperandSize = EmitHelpers.ToOperandSize(Operand1.ComputedType.Size);

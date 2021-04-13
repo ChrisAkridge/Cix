@@ -43,7 +43,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         public string Operator { get; set; }
 
         #region Type Computation
-        public override UsageTypeInfo ComputeType(ExpressionEmitContext context, TypedExpression parent)
+        public override UsageTypeInfo ComputeType(EmitContext context, TypedExpression parent)
         {
             Left.ComputeType(context, this);
             Right.ComputeType(context, this);
@@ -218,7 +218,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         #endregion
 
         #region Instruction Emit
-        public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent)
+        public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
             var computedTypeIsFloatingPoint = ComputedType.DeclaredType is NamedTypeInfo namedType
                 && (namedType.Name == "float" || namedType.Name == "double");
@@ -351,7 +351,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             return EmitHelpers.ConnectWithDirectFlow(operandFlows.Concat(computationFlow));
         }
 
-        private IConnectable[] GenerateAssignment(ExpressionEmitContext context)
+        private IConnectable[] GenerateAssignment(EmitContext context)
         {
             var resultStackEntry = context.CurrentStack.Peek();
             var destinationPointerOffsetFromEBP = resultStackEntry.OffsetFromEBP - 8;
@@ -400,7 +400,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             }
         }
 
-        private IConnectable[] GenerateOperationAssignment(ExpressionEmitContext context)
+        private IConnectable[] GenerateOperationAssignment(EmitContext context)
         {
             // mov QWORD <destinationPointer> EAX                               [destinationPointer right]
             // mov QWORD 0 EDX                                                  [destinationPointer right]

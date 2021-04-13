@@ -9,5 +9,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
     internal sealed class JumpTargetOperand : InstructionOperand
     {
         public ControlFlowVertex Target { get; set; }
+
+        public JumpTargetOperand(ControlFlowVertex target) => Target = target;
     }
 }

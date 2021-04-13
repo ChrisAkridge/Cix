@@ -8,7 +8,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
     {
         public UsageTypeInfo Type { get; set; }
 
-        public override UsageTypeInfo ComputeType(ExpressionEmitContext context, TypedExpression parent)
+        public override UsageTypeInfo ComputeType(EmitContext context, TypedExpression parent)
         {
             ComputedType = new UsageTypeInfo
             {
@@ -21,7 +21,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             return ComputedType;
         }
 
-        public override StartEndVertices Generate(ExpressionEmitContext context, TypedExpression parent)
+        public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
             var pushInstruction = new InstructionVertex("push", OperandSize.Dword, new IntegerOperand(Type.Size));
             context.CurrentStack.Push(new VirtualStackEntry("<sizeofType>", ComputedType));
