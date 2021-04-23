@@ -90,4 +90,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
         Binary,
         Ternary
     }
+
+    internal enum JumpTargetType
+    {
+        NoConnectionRequired,
+        ToBreakOrAfterTarget,
+        ToContinueTarget
+    }
 }

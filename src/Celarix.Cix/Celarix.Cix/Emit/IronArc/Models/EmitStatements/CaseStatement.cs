@@ -5,17 +5,18 @@ using Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 {
-    internal sealed class CaseStatement : EmitStatement, ISecondPassConnect
+    internal sealed class CaseStatement : EmitStatement
     {
         public Literal CaseLiteral { get; set; }
         public EmitStatement Statement { get; set; }
 
-        public override StartEndVertices Generate(EmitContext context, EmitStatement parent) => EmitHelpers.GetUngeneratedVertex(this);
+        public override StartEndVertices Generate(EmitContext context, EmitStatement parent) =>
+            Statement.Generate(context, this);
 
-        public void ConnectToGeneratedTree(ControlFlowVertex after, EmitContext context = null)
+        public override void ConnectVerticesToTargets(ControlFlowVertex selfStartVertex, EmitContext context,
+            ControlFlowVertex breakAfterTarget, ControlFlowVertex continueTarget)
         {
-            context.BreakTargets.Push(after);
-            Statement.Generate(context, this).ConnectTo(after, FlowEdgeType.UnconditionalJump);
+            Statement.ConnectVerticesToTargets(selfStartVertex, context, breakAfterTarget, continueTarget);
         }
     }
 }

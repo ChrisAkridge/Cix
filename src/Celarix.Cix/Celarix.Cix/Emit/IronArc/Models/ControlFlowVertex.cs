@@ -8,6 +8,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
     {
         public List<FlowEdge> OutboundEdges { get; set; } = new List<FlowEdge>();
         public bool IsJumpTarget { get; set; }
+        public JumpTargetType JumpTargetType { get; set; }
 
         public ControlFlowVertex ConnectionTarget => this;
 

@@ -11,9 +11,18 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
 
         public ControlFlowVertex ConnectionTarget => Start;
 
+        public static StartEndVertices MakePair(ControlFlowVertex vertex) =>
+            new StartEndVertices
+            {
+                Start = vertex, End = vertex
+            };
+        
         public void ConnectTo(IConnectable other, FlowEdgeType flowEdgeType)
         {
             End.ConnectTo(other, flowEdgeType);
         }
+
+        public void ConnectTo(GeneratedFlow other, FlowEdgeType flowEdgeType) =>
+            End.ConnectTo(other.ControlFlow.Start, flowEdgeType);
     }
 }

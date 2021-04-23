@@ -12,9 +12,9 @@ namespace Celarix.Cix.Compiler.Common
     {
         private readonly IEnumerator<T> enumerator;
 
-        public T previous;
-        public T current;
-        public T next;
+        private T previous;
+        private T current;
+        private T next;
 
         /// <summary>Gets the element in the collection at the current position of the enumerator.</summary>
         /// <returns>The element in the collection at the current position of the enumerator.</returns>

@@ -5,21 +5,15 @@ using Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 {
-    internal sealed class ConditionalStatement : EmitStatement, ISecondPassConnect
+    internal sealed class ConditionalStatement : EmitStatement
     {
         public TypedExpression Condition { get; set; }
         public EmitStatement IfTrue { get; set; }
         public EmitStatement IfFalse { get; set; }
 
-        public override StartEndVertices Generate(EmitContext context, EmitStatement parent) => EmitHelpers.GetUngeneratedVertex(this);
-
-        public void ConnectToGeneratedTree(ControlFlowVertex after, EmitContext context = null)
+        public override GeneratedFlow Generate(EmitContext context, EmitStatement parent)
         {
-            var trueFlow = IfTrue.Generate(context, this);
-            var falseFlow = IfFalse?.Generate(context, this);
-
             var conditionSize = EmitHelpers.ToOperandSize(Condition.ComputedType.Size);
-
             var comparisonFlow = EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
             {
                 Condition.Generate(context, null),
@@ -27,20 +21,50 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                 new InstructionVertex("push", OperandSize.Dword, new IntegerOperand(0)),
                 new InstructionVertex("cmp", OperandSize.Dword),
             });
+            var trueFlow = IfTrue.Generate(context, this);
+            var falseFlow = IfFalse?.Generate(context, this);
+
+            var unconnectedJumps = new List<UnconnectedJump>
+            {
+                new UnconnectedJump
+                {
+                    JumpVertex = trueFlow.ControlFlow.End,
+                    FlowType = FlowEdgeType.UnconditionalJump,
+                    TargetType = JumpTargetType.ToBreakOrAfterTarget
+                }
+            };
             
             comparisonFlow.ConnectTo(trueFlow, FlowEdgeType.JumpIfNotEqual);
 
             if (falseFlow != null)
             {
                 comparisonFlow.ConnectTo(falseFlow, FlowEdgeType.JumpIfEqual);
+                
+                unconnectedJumps.Add(new UnconnectedJump
+                {
+                    JumpVertex = falseFlow.ControlFlow.End,
+                    FlowType = FlowEdgeType.UnconditionalJump,
+                    TargetType = JumpTargetType.ToBreakOrAfterTarget
+                });
             }
             else
             {
-                comparisonFlow.ConnectTo(after, FlowEdgeType.UnconditionalJump);
+                unconnectedJumps.Add(new UnconnectedJump
+                {
+                    JumpVertex = comparisonFlow.End,
+                    FlowType = FlowEdgeType.UnconditionalJump,
+                    TargetType = JumpTargetType.ToBreakOrAfterTarget
+                });
             }
-            
-            trueFlow.ConnectTo(after, FlowEdgeType.UnconditionalJump);
-            falseFlow?.ConnectTo(after, FlowEdgeType.UnconditionalJump);
+
+            return new GeneratedFlow
+            {
+                ControlFlow = comparisonFlow,
+                UnconnectedJumps = unconnectedJumps
+                    .Concat(trueFlow.UnconnectedJumps)
+                    .Concat(falseFlow?.UnconnectedJumps ?? Enumerable.Empty<UnconnectedJump>())
+                    .ToList()
+            };
         }
     }
 }

@@ -9,6 +9,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 {
     internal abstract class EmitStatement
     {
-        public abstract StartEndVertices Generate(EmitContext context, EmitStatement parent);
+        public abstract GeneratedFlow Generate(EmitContext context, EmitStatement parent);
     }
 }

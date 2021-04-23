@@ -96,7 +96,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             
             context.CurrentStack.Push(new VirtualStackEntry("<arrayValue>", ComputedType)); // [a[b]]
 
-            return EmitHelpers.ConnectWithDirectFlow(getElementPointer.Concat(getElementPointer));
+            return EmitHelpers.ConnectWithDirectFlow(getElementPointer.Concat(getElementValue));
         }
     }
 }

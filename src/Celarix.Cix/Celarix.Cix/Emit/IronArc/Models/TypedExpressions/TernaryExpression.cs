@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 {
-    internal sealed class TernaryExpression : TypedExpression, ISecondPassConnect
+    internal sealed class TernaryExpression : TypedExpression
     {
         public TypedExpression Operand1 { get; set; }
         public string Operator1 { get; set; }
@@ -29,30 +29,17 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
         public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
-            var ungeneratedVertex = new UngeneratedVertex
-            {
-                NodeToGenerateFor = this
-            };
-            
-            return new StartEndVertices
-            {
-                Start = ungeneratedVertex, End = ungeneratedVertex
-            };
-        }
-
-        public void ConnectToGeneratedTree(ControlFlowVertex after, EmitContext context)
-        {
             var conditionFlow = Operand1.Generate(context, this);
             var conditionOperandSize = EmitHelpers.ToOperandSize(Operand1.ComputedType.Size);
 
-            var conditionEvaluation = new IConnectable[]
+            var conditionEvaluation = EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
             {
                 EmitHelpers.ZeroEAX(),
                 new InstructionVertex("pop", conditionOperandSize, EmitHelpers.Register(Register.EAX)),
                 new InstructionVertex("push", OperandSize.Dword, EmitHelpers.Register(Register.EAX)),
                 new InstructionVertex("push", OperandSize.Dword, new IntegerOperand(0)),
                 new InstructionVertex("cmp", OperandSize.Dword),
-            };
+            });
 
             var trueBranchFlow = Operand2.Generate(context, this);
             var falseBranchFlow = Operand3.Generate(context, this);
@@ -60,14 +47,21 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             trueBranchFlow.Start.IsJumpTarget = true;
             falseBranchFlow.Start.IsJumpTarget = true;
 
-            var comparisonInstruction = (ControlFlowVertex)(conditionEvaluation.Last());
-            comparisonInstruction.ConnectTo(falseBranchFlow, FlowEdgeType.JumpIfNotEqual);
+            var comparisonInstruction = conditionEvaluation.End;
             comparisonInstruction.ConnectTo(trueBranchFlow, FlowEdgeType.JumpIfEqual);
-            
-            trueBranchFlow.ConnectTo(after, FlowEdgeType.UnconditionalJump);
-            falseBranchFlow.ConnectTo(after, FlowEdgeType.UnconditionalJump);
+            comparisonInstruction.ConnectTo(falseBranchFlow, FlowEdgeType.JumpIfNotEqual);
 
-            conditionFlow.ConnectTo(conditionEvaluation.First(), FlowEdgeType.DirectFlow);
+            var afterNop = new InstructionVertex("nop");
+            trueBranchFlow.ConnectTo(afterNop, FlowEdgeType.UnconditionalJump);
+            falseBranchFlow.ConnectTo(afterNop, FlowEdgeType.DirectFlow);
+
+            conditionFlow.ConnectTo(conditionEvaluation, FlowEdgeType.DirectFlow);
+
+            return new StartEndVertices
+            {
+                Start = conditionFlow.Start,
+                End = afterNop
+            };
         }
     }
 }

@@ -535,9 +535,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
         private static IConnectable[] GenerateGetMemberPointer()
         {
-            IConnectable[] computationFlow;
-
-            computationFlow = new IConnectable[]
+            var computationFlow = new IConnectable[]
             {
                 new InstructionVertex("add", OperandSize.Qword)
             };
@@ -547,9 +545,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
         private IConnectable[] GenerateGetMemberValue()
         {
-            IConnectable[] computationFlow;
-
-            computationFlow = new IConnectable[]
+            var computationFlow = new IConnectable[]
             {
                 new InstructionVertex("add", OperandSize.Qword), EmitHelpers.ZeroEAX(),
                 new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)), new InstructionVertex(

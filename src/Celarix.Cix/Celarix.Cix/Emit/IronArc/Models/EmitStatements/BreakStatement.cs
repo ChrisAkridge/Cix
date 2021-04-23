@@ -6,19 +6,22 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 {
     internal sealed class BreakStatement : EmitStatement
     {
-        public override StartEndVertices Generate(EmitContext context, EmitStatement parent)
+        public override GeneratedFlow Generate(EmitContext context, EmitStatement parent)
         {
-            if (!context.BreakTargets.TryPop(out var breakTarget))
-            {
-                throw new InvalidOperationException("No break target");
-            }
+            var jumpPlaceholder = new JumpPlaceholderInstruction();
 
-            breakTarget.IsJumpTarget = true;
-            var jumpToTarget = new InstructionVertex("jmp", OperandSize.NotUsed, new JumpTargetOperand(breakTarget));
-
-            return new StartEndVertices
+            return new GeneratedFlow
             {
-                Start = jumpToTarget, End = jumpToTarget
+                ControlFlow = StartEndVertices.MakePair(jumpPlaceholder),
+                UnconnectedJumps = new List<UnconnectedJump>
+                {
+                    new UnconnectedJump
+                    {
+                        JumpVertex = jumpPlaceholder,
+                        FlowType = FlowEdgeType.UnconditionalJump,
+                        TargetType = JumpTargetType.ToBreakOrAfterTarget
+                    }
+                }
             };
         }
     }
