@@ -14,6 +14,7 @@ using ConditionalStatement = Celarix.Cix.Compiler.Parse.Models.AST.v1.Conditiona
 using ContinueStatement = Celarix.Cix.Compiler.Parse.Models.AST.v1.ContinueStatement;
 using DoWhileStatement = Celarix.Cix.Compiler.Parse.Models.AST.v1.DoWhileStatement;
 using ExpressionStatement = Celarix.Cix.Compiler.Parse.Models.AST.v1.ExpressionStatement;
+using Function = Celarix.Cix.Compiler.Parse.Models.AST.v1.Function;
 using ReturnStatement = Celarix.Cix.Compiler.Parse.Models.AST.v1.ReturnStatement;
 using SwitchStatement = Celarix.Cix.Compiler.Parse.Models.AST.v1.SwitchStatement;
 using VariableDeclaration = Celarix.Cix.Compiler.Parse.Models.AST.v1.VariableDeclaration;
@@ -35,99 +36,63 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
 
         public EmitStatement Build(Statement statement)
         {
-            if (statement is Block block)
+            return statement switch
             {
-                return new Models.EmitStatements.Block
+                Block block => new Models.EmitStatements.Block
                 {
                     Statements = block.Statements.Select(Build).ToList()
-                };
-            }
-            else if (statement is BreakStatement)
-            {
-                return new Models.EmitStatements.BreakStatement();
-            }
-            else if (statement is CaseStatement caseStatement)
-            {
-                return new Models.EmitStatements.CaseStatement
+                },
+                BreakStatement _ => new Models.EmitStatements.BreakStatement(),
+                CaseStatement caseStatement => new Models.EmitStatements.CaseStatement
                 {
                     CaseLiteral = (Models.TypedExpressions.Literal)expressionBuilder.Build(caseStatement.CaseLiteral),
                     Statement = Build(caseStatement.Statement)
-                };
-            }
-            else if (statement is ConditionalStatement conditionalStatement)
-            {
-                return new Models.EmitStatements.ConditionalStatement
+                },
+                ConditionalStatement conditionalStatement => new Models.EmitStatements.ConditionalStatement
                 {
                     Condition = expressionBuilder.Build(conditionalStatement.Condition),
                     IfTrue = Build(conditionalStatement.IfTrue),
                     IfFalse = (conditionalStatement.IfFalse != null) ? Build(conditionalStatement.IfFalse) : null
-                };
-            }
-            else if (statement is ContinueStatement)
-            {
-                return new Models.EmitStatements.ContinueStatement();
-            }
-            else if (statement is DoWhileStatement doWhileStatement)
-            {
-                return new Models.EmitStatements.DoWhileStatement
+                },
+                ContinueStatement _ => new Models.EmitStatements.ContinueStatement(),
+                DoWhileStatement doWhileStatement => new Models.EmitStatements.DoWhileStatement
                 {
                     Condition = expressionBuilder.Build(doWhileStatement.Condition),
                     LoopStatement = Build(doWhileStatement.LoopStatement)
-                };
-            }
-            else if (statement is ExpressionStatement expressionStatement)
-            {
-                return new Models.EmitStatements.ExpressionStatement
+                },
+                ExpressionStatement expressionStatement => new Models.EmitStatements.ExpressionStatement
                 {
                     Expression = expressionBuilder.Build(expressionStatement.Expression)
-                };
-            }
-            else if (statement is ReturnStatement returnStatement)
-            {
-                return new Models.EmitStatements.ReturnStatement
+                },
+                ReturnStatement returnStatement => new Models.EmitStatements.ReturnStatement
                 {
                     ReturnValue = (returnStatement.ReturnValue != null)
                         ? expressionBuilder.Build(returnStatement.ReturnValue)
                         : null
-                };
-            }
-            else if (statement is SwitchStatement switchStatement)
-            {
-                return new Models.EmitStatements.SwitchStatement
+                },
+                SwitchStatement switchStatement => new Models.EmitStatements.SwitchStatement
                 {
                     Expression = expressionBuilder.Build(switchStatement.Expression),
                     Cases = switchStatement.Cases.Select(Build).Cast<Models.EmitStatements.CaseStatement>().ToList()
-                };
-            }
-            else if (statement is VariableDeclarationWithInitialization variableDeclarationWithInitialization)
-            {
-                return new Models.EmitStatements.VariableDeclarationWithInitialization
+                },
+                VariableDeclarationWithInitialization variableDeclarationWithInitialization => new
+                    Models.EmitStatements.VariableDeclarationWithInitialization
+                    {
+                        Type = emitContext.LookupDataType(variableDeclarationWithInitialization.Type),
+                        Name = variableDeclarationWithInitialization.Name,
+                        Initializer = expressionBuilder.Build(variableDeclarationWithInitialization.Initializer)
+                    },
+                VariableDeclaration variableDeclaration => new Models.EmitStatements.VariableDeclaration
                 {
-                    Type = emitContext.LookupDataType(variableDeclarationWithInitialization.Type),
-                    Name = variableDeclarationWithInitialization.Name,
-                    Initializer = expressionBuilder.Build(variableDeclarationWithInitialization.Initializer)
-                };
-            }
-            else if (statement is VariableDeclaration variableDeclaration)
-            {
-                return new Models.EmitStatements.VariableDeclaration
-                {
-                    Type = emitContext.LookupDataType(variableDeclaration.Type),
-                    Name = variableDeclaration.Name
-                };
-            }
-            else if (statement is WhileStatement whileStatement)
-            {
-                return new Models.EmitStatements.WhileStatement
+                    Type = emitContext.LookupDataType(variableDeclaration.Type), Name = variableDeclaration.Name
+                },
+                WhileStatement whileStatement => new Models.EmitStatements.WhileStatement
                 {
                     Condition = expressionBuilder.Build(whileStatement.Condition),
                     LoopStatement = Build(whileStatement.LoopStatement)
-                };
-            }
-            else
-            {
-                throw new InvalidOperationException("Internal compiler error: unknown statement type found");
-            }
+                },
+                _ => throw new InvalidOperationException("Internal compiler error: unknown statement type found")
+            };
         }
     }
 }

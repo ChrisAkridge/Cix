@@ -10,7 +10,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
         public TypedExpression Expression { get; set; }
         public List<CaseStatement> Cases { get; set; }
 
-        public override StartEndVertices Generate(EmitContext context, EmitStatement parent)
+        public override GeneratedFlow Generate(EmitContext context, EmitStatement parent)
         {
             var expressionFlow = Expression.Generate(context, null);
             var operandSize = EmitHelpers.ToOperandSize(Expression.ComputedType.Size);
@@ -19,24 +19,28 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                 new InstructionVertex("pop", operandSize,
                     EmitHelpers.Register(Register.EBX)), FlowEdgeType.DirectFlow);
 
-            var switchBlockCodeAndJumps = Cases.Select(c =>
-            {
-                var blockFlow = c.Statement.Generate(context, this);
-                blockFlow.Start.IsJumpTarget = true;
-                blockFlow.End.JumpTargetType = JumpTargetType.ToBreakOrAfterTarget;
-
-                var literalFlow = new IConnectable[]
+            var switchBlockCodeAndJumps = Cases
+                .Select(c =>
                 {
-                    new InstructionVertex("push", operandSize, EmitHelpers.Register(Register.EBX)),
-                    c.CaseLiteral.Generate(context, null), new InstructionVertex("cmp", operandSize),
-                    new InstructionVertex("je", OperandSize.NotUsed, new JumpTargetOperand(blockFlow.Start))
-                };
+                    var blockFlow = c.Statement.Generate(context, this);
+                    blockFlow.ControlFlow.Start.IsJumpTarget = true;
 
-                return new
-                {
-                    BlockFlow = blockFlow, LiteralFlow = EmitHelpers.ConnectWithDirectFlow(literalFlow)
-                };
-            });
+                    var comparisonInstruction = new InstructionVertex("cmp", operandSize);
+                    comparisonInstruction.ConnectTo(blockFlow.ControlFlow, FlowEdgeType.JumpIfEqual);
+
+                    var literalFlow = new IConnectable[]
+                    {
+                        new InstructionVertex("push", operandSize, EmitHelpers.Register(Register.EBX)),
+                        c.CaseLiteral.Generate(context, null),
+                        comparisonInstruction
+                    };
+
+                    return new
+                    {
+                        BlockFlow = blockFlow, LiteralFlow = EmitHelpers.ConnectWithDirectFlow(literalFlow)
+                    };
+                })
+                .ToList();
 
             var literalFlows = EmitHelpers.ConnectWithDirectFlow(switchBlockCodeAndJumps
                 .Select(block => block.LiteralFlow)
@@ -45,10 +49,13 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             literalFlows.End.JumpTargetType = JumpTargetType.ToBreakOrAfterTarget;
             expressionFlow.ConnectTo(literalFlows, FlowEdgeType.DirectFlow);
 
-            return new StartEndVertices
+            return new GeneratedFlow
             {
-                Start = expressionFlow.Start,
-                End = literalFlows.End
+                ControlFlow = new StartEndVertices
+                {
+                    Start = expressionFlow.Start, End = literalFlows.End
+                },
+                UnconnectedJumps = switchBlockCodeAndJumps.SelectMany(bcj => bcj.BlockFlow.UnconnectedJumps).ToList()
             };
         }
     }

@@ -16,20 +16,18 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
 {
     internal sealed class CodeGenerator
     {
-        private const string InternalReturnResult = "<returnResult>";
-
         private readonly SourceFileRoot sourceFile;
-        private readonly IDictionary<string, NamedTypeInfo> declaredTypes;
-        private IDictionary<string, GlobalVariableInfo> declaredGlobals;
         private readonly EmitContext emitContext;
+        
+        public Dictionary<string, StartEndVertices> ControlFlow { get; private set; }
+        public string IronArcAssembly { get; private set; }
         
         public CodeGenerator(SourceFileRoot sourceFile)
         {
             this.sourceFile = sourceFile;
-            declaredTypes = TypeInfoComputer.GenerateTypeInfos(sourceFile.Structs);
-            declaredGlobals =
-                GlobalVariableInfoComputer.ComputeGlobalVariableInfos(sourceFile.GlobalVariableDeclarations,
-                    declaredTypes);
+            var declaredTypes = TypeInfoComputer.GenerateTypeInfos(sourceFile.Structs);
+            var declaredGlobals = GlobalVariableInfoComputer.ComputeGlobalVariableInfos(sourceFile.GlobalVariableDeclarations,
+                declaredTypes);
             emitContext = new EmitContext
             {
                 CurrentStack = new VirtualStack(),
@@ -39,18 +37,23 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             };
         }
 
-        private StartEndVertices GenerateFunction(Function function)
+        public void GenerateCode()
         {
-            foreach (var parameter in function.Parameters)
+            GenerateFunctions();
+        }
+
+        private void GenerateFunctions()
+        {
+            ControlFlow = new Dictionary<string, StartEndVertices>();
+            foreach (var function in sourceFile.Functions)
             {
-                emitContext.CurrentStack.Push(new VirtualStackEntry(parameter.Name, emitContext.LookupDataTypeWithPointerLevel(parameter.Type)));
+                emitContext.CurrentFunction = function;
+                var emitFunction = new Models.EmitStatements.Function
+                {
+                    ASTFunction = function
+                };
+                ControlFlow[function.Name] = emitFunction.Generate(emitContext, null).ControlFlow;
             }
-            
-            var emitStatementBuilder = new EmitStatementBuilder(emitContext);
-            var emitStatements = function.Statements.Select(emitStatementBuilder.Build);
-
-
-            return null;
         }
     }
 }

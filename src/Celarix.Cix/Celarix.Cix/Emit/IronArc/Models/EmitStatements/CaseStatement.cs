@@ -10,13 +10,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
         public Literal CaseLiteral { get; set; }
         public EmitStatement Statement { get; set; }
 
-        public override StartEndVertices Generate(EmitContext context, EmitStatement parent) =>
-            Statement.Generate(context, this);
-
-        public override void ConnectVerticesToTargets(ControlFlowVertex selfStartVertex, EmitContext context,
-            ControlFlowVertex breakAfterTarget, ControlFlowVertex continueTarget)
-        {
-            Statement.ConnectVerticesToTargets(selfStartVertex, context, breakAfterTarget, continueTarget);
-        }
+        public override GeneratedFlow Generate(EmitContext context, EmitStatement parent) => Statement.Generate(context, this);
     }
 }
