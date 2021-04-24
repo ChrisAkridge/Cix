@@ -8,6 +8,7 @@ using Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements;
 using Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions;
 using Celarix.Cix.Compiler.Exceptions;
 using Celarix.Cix.Compiler.Parse.Models.AST.v1;
+using NLog;
 using static Celarix.Cix.Compiler.Emit.IronArc.EmitHelpers;
 using Block = Celarix.Cix.Compiler.Parse.Models.AST.v1.Block;
 using ConditionalStatement = Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements.ConditionalStatement;
@@ -16,6 +17,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
 {
     internal sealed class CodeGenerator
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        
         private readonly SourceFileRoot sourceFile;
         private readonly EmitContext emitContext;
         
@@ -39,7 +42,37 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
 
         public void GenerateCode()
         {
+            logger.Debug("Generating IronArc assembly...");
+            try
+            {
+                logger.Trace("Adding call to __globals_init() for main()");
+                var mainFunction = sourceFile.Functions
+                    .Single(f =>
+                        f.Name == "main"
+                        && f.ReturnType is NamedDataType namedType
+                        && namedType.Name == "void"
+                        && namedType.PointerLevel == 0);
+
+                mainFunction.Statements.Insert(0, new Parse.Models.AST.v1.ExpressionStatement
+                {
+                    Expression = new Parse.Models.AST.v1.FunctionInvocation
+                    {
+                        Operand = new Parse.Models.AST.v1.Identifier
+                        {
+                            IdentifierText = "__globals_init"
+                        },
+                        Arguments = new List<Expression>()
+                    }
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new InvalidOperationException("Source file must declare void main()", ex);
+            }
+            
             GenerateFunctions();
+            
+            logger.Debug("IronArc assembly generated");
         }
 
         private void GenerateFunctions()
@@ -47,6 +80,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             ControlFlow = new Dictionary<string, StartEndVertices>();
             foreach (var function in sourceFile.Functions)
             {
+                logger.Trace($"Generating code for function {function.Name}");
                 emitContext.CurrentFunction = function;
                 var emitFunction = new Models.EmitStatements.Function
                 {

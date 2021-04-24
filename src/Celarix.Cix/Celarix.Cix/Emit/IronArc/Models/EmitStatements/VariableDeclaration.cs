@@ -6,11 +6,13 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 {
     internal class VariableDeclaration : EmitStatement
     {
-        public TypeInfo Type { get; set; }
+        public UsageTypeInfo Type { get; set; }
         public string Name { get; set; }
 
         public override GeneratedFlow Generate(EmitContext context, EmitStatement parent)
         {
+            context.CurrentStack.Push(new VirtualStackEntry(Name, Type));
+            
             if (EmitHelpers.IsIronArcOperandSize(Type.Size))
             {
                 return new GeneratedFlow

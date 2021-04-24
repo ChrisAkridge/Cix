@@ -14,7 +14,7 @@ namespace Celarix.Cix.Compiler.Lowering
 
         public static void PerformLowerings(SourceFileRoot sourceFile)
         {
-            logger.Trace("Performing lowerings...");
+            logger.Debug("Performing lowerings...");
 
             var definedTypes = GetDefinedTypes(sourceFile.Structs);
 
@@ -30,6 +30,8 @@ namespace Celarix.Cix.Compiler.Lowering
                     function.Statements[i] = RewriteForLoopsInStatement(function.Statements[i]);
                 }
             }
+            
+            logger.Debug("Lowerings performed");
         }
 
         private static Function GenerateGlobalAssignments(IEnumerable<GlobalVariableDeclarationWithInitialization> globals)
@@ -58,6 +60,7 @@ namespace Celarix.Cix.Compiler.Lowering
                 });
             }
 
+            logger.Trace("Generated function to assign global variables...");
             return function;
         }
         
@@ -104,7 +107,10 @@ namespace Celarix.Cix.Compiler.Lowering
                         logger.Trace($"Found expression that was actually a variable declaration: {expressionStatement.PrettyPrint(0)}");
                         return new VariableDeclaration
                         {
-                            Type = new NamedDataType { Name = left.IdentifierText, PointerLevel = 1 },
+                            Type = new NamedDataType
+                            {
+                                Name = left.IdentifierText, PointerLevel = 1
+                            },
                             Name = right.IdentifierText
                         };
                     }
@@ -126,9 +132,15 @@ namespace Celarix.Cix.Compiler.Lowering
                         {
                             Expression = new BinaryExpression
                             {
-                                Left = new Identifier { IdentifierText = namedDataType.Name },
+                                Left = new Identifier
+                                {
+                                    IdentifierText = namedDataType.Name
+                                },
                                 Operator = "*",
-                                Right = new Identifier { IdentifierText = variableDeclaration.Name }
+                                Right = new Identifier
+                                {
+                                    IdentifierText = variableDeclaration.Name
+                                }
                             }
                         };
                     }
@@ -187,6 +199,8 @@ namespace Celarix.Cix.Compiler.Lowering
                     // for (i = 0; i < 10; i++) statement();
                     // becomes
                     // { i = 0; while (i < 10) { statement(); i++; } }
+                    logger.Trace(
+                        $"Rewrote for loop into while loop: for ({forStatement.Initializer.PrettyPrint()}; {forStatement.Condition.PrettyPrint()}; {forStatement.Iterator.PrettyPrint()})");
                     return new Block
                     {
                         Statements = new List<Statement>
@@ -228,7 +242,7 @@ namespace Celarix.Cix.Compiler.Lowering
             return statement;
         }
 
-        private static IList<string> GetDefinedTypes(IList<Struct> structs)
+        private static IList<string> GetDefinedTypes(IEnumerable<Struct> structs)
         {
             return new List<string>
                 {

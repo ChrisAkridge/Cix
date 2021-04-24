@@ -9,11 +9,14 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
     {
         public TypedExpression Expression { get; set; }
 
-        public override GeneratedFlow Generate(EmitContext context, EmitStatement parent) =>
-            new GeneratedFlow()
+        public override GeneratedFlow Generate(EmitContext context, EmitStatement parent)
+        {
+            Expression.ComputeType(context, null);
+            
+            return new GeneratedFlow()
             {
-                ControlFlow = Expression.Generate(context, null),
-                UnconnectedJumps = new List<UnconnectedJump>()
+                ControlFlow = Expression.Generate(context, null), UnconnectedJumps = new List<UnconnectedJump>()
             };
+        }
     }
 }

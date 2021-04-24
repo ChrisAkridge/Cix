@@ -10,6 +10,7 @@ namespace Celarix.Cix.Compiler.Common
 {
     internal sealed class WindowedEnumerator<T> : IEnumerator<EnumeratorTriplet<T>>, IDisposable
     {
+        // WYLO: Bug here. We start the enumeration on index 0, not -1, as other IEnumerators do
         private readonly IEnumerator<T> enumerator;
 
         private T previous;

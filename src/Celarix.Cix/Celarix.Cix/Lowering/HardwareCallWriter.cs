@@ -5,25 +5,34 @@ using System.Text;
 using System.Threading.Tasks;
 using Celarix.Cix.Compiler.Lowering.Models;
 using Celarix.Cix.Compiler.Parse.Models.AST.v1;
+using NLog;
 
 namespace Celarix.Cix.Compiler.Lowering
 {
     internal static class HardwareCallWriter
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         public static IList<Function> WriteHardwareCallFunctions(HardwareDefinition hardware)
         {
+            logger.Debug("Generating functions for hardware calls...");
+            
             var functions = new List<Function>();
             foreach (var hardwareDevice in hardware.HardwareDevices)
             {
                 functions.AddRange(hardwareDevice.HardwareCalls.Select(c =>
                     WriteHardwareCallFunction(c, hardwareDevice.DeviceName)));
             }
+            
+            logger.Debug("Functions for hardware calls generated");
 
             return functions;
         }
 
         private static Function WriteHardwareCallFunction(HardwareCall call, string deviceName)
         {
+            logger.Trace($"Generating function for hardware call {deviceName}::{call.CallName}");
+            
             var function = new Function
             {
                 Name = $"HW_{deviceName}_{call.CallName}",

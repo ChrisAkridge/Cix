@@ -17,5 +17,9 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
             other is FuncptrTypeInfo funcptrOther
             && (ReturnType == funcptrOther.ReturnType
                 && ParameterTypes.Zip(funcptrOther.ParameterTypes).All(types => types.First == types.Second));
+
+        /// <summary>Returns a string that represents the current object.</summary>
+        /// <returns>A string that represents the current object.</returns>
+        public override string ToString() => $"@funcptr<{ReturnType}, {string.Join(",", ParameterTypes.Select(pt => pt.ToString()))}>";
     }
 }

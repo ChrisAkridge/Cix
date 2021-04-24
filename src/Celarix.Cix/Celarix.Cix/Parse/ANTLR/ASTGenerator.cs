@@ -21,7 +21,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
         
         public static SourceFileRoot GenerateSourceFile(CixParser.SourceFileContext sourceFile)
         {
-            logger.Trace("Converting ANTLR4 parse tree into Cix AST...");
+            logger.Debug("Converting ANTLR4 parse tree into Cix AST...");
             
             var structs = sourceFile.@struct().Select(GenerateStruct).ToList();
 
@@ -30,6 +30,8 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
 
             var functions = sourceFile.function().Select(GenerateFunction).ToList();
 
+            logger.Debug("ANTLR4 parse tree converted to Cix AST");
+            
             return new SourceFileRoot
             {
                 ASTVersion = CurrentASTVersion,
@@ -83,9 +85,9 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             {
                 return new FuncptrDataType
                 {
-                    Types = GenerateTypeNameList(typeName.funcptrTypeName().typeNameList()),
-                    PointerLevel = pointerLevel
+                    Types = GenerateTypeNameList(typeName.funcptrTypeName().typeNameList()), PointerLevel = pointerLevel
                 };
+                ;
             }
             else
             {
@@ -93,7 +95,10 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
                     ? typeName.primitiveType().GetText()
                     : typeName.Identifier().GetText();
 
-                return new NamedDataType() { Name = typeIdentifierName, PointerLevel = pointerLevel };
+                return new NamedDataType()
+                {
+                    Name = typeIdentifierName, PointerLevel = pointerLevel
+                };
             }
         }
 
@@ -110,13 +115,16 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
                 typeListCDR = GenerateTypeNameListCdr(typeNameList.typeNameList());
             }
 
-            return new CarCdr<DataType>() { Car = typeListCAR, Cdr = typeListCDR };
+            return new CarCdr<DataType>()
+            {
+                Car = typeListCAR, Cdr = typeListCDR
+            };
         }
 
         private static int GenerateStructArraySize(CixParser.StructArraySizeContext structArraySize) =>
             (int)GenerateIntegerLiteral(structArraySize.Integer()).ValueBits;
 
-        private static IntegerLiteral GenerateIntegerLiteral(ITerminalNode integer)
+        private static IntegerLiteral GenerateIntegerLiteral(IParseTree integer)
         {
             var integerText = integer.GetText();
             
@@ -133,7 +141,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
 
             string integerPart = integerText.Substring(0, integerText.Length - suffixLength);
             string suffix = integerText.Substring(integerText.Length - suffixLength).ToLowerInvariant();
-
+            
             return new IntegerLiteral
             {
                 ValueBits = integerPart.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase)
@@ -168,8 +176,8 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             {
                 var declaration = GenerateVariableDeclarationWithInitializationStatement(globalVariableDeclaration
                     .variableDeclarationWithInitializationStatement());
-
-                logger.Trace($"Found global variable {declaration.Name}");
+                
+                logger.Trace($"Found initialized global variable {declaration.Name}");
 
                 return new GlobalVariableDeclarationWithInitialization
                 {
@@ -211,7 +219,10 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             var car = GenerateFunctionParameter(functionParameterList.functionParameter());
             var cdr = GenerateFunctionParameterListCDR(functionParameterList.functionParameterList());
 
-            return new CarCdr<FunctionParameter> { Car = car, Cdr = cdr };
+            return new CarCdr<FunctionParameter>
+            {
+                Car = car, Cdr = cdr
+            };
         }
 
         private static FunctionParameter GenerateFunctionParameter(CixParser.FunctionParameterContext functionParameter) =>
@@ -224,9 +235,9 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
         private static Statement GenerateStatement(CixParser.StatementContext statement)
         {
             if (statement.block() != null) { return GenerateBlock(statement.block()); }
-            else if (statement.breakStatement() != null) { return new BreakStatement(); /* BreakStatement */ }
+            else if (statement.breakStatement() != null) { return new BreakStatement();  }
             else if (statement.conditionalStatement() != null) { return GenerateConditionalStatement(statement.conditionalStatement()); }
-            else if (statement.continueStatement() != null) { return new ContinueStatement(); /* ContinueStatement */ }
+            else if (statement.continueStatement() != null) { return new ContinueStatement(); }
             else if (statement.doWhileStatement() != null) { return GenerateDoWhileStatement(statement.doWhileStatement()); }
             else if (statement.expressionStatement() != null) { return GenerateExpressionStatement(statement.expressionStatement()); }
             else if (statement.forStatement() != null) { return GenerateForStatement(statement.forStatement()); }
@@ -238,7 +249,11 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             else { throw new ArgumentOutOfRangeException(); }
         }
 
-        private static Block GenerateBlock(CixParser.BlockContext block) => new Block { Statements = block.statement().Select(GenerateStatement).ToList() };
+        private static Block GenerateBlock(CixParser.BlockContext block) =>
+            new Block
+            {
+                Statements = block.statement().Select(GenerateStatement).ToList()
+            };
 
         private static ConditionalStatement GenerateConditionalStatement(CixParser.ConditionalStatementContext conditionalStatement)
         {
@@ -262,11 +277,17 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             var statement = GenerateStatement(doWhileStatement.statement());
             var whileExpression = GenerateExpression(doWhileStatement.expression());
 
-            return new DoWhileStatement { LoopStatement = statement, Condition = whileExpression };
+            return new DoWhileStatement
+            {
+                LoopStatement = statement, Condition = whileExpression
+            };
         }
 
         private static ExpressionStatement GenerateExpressionStatement(CixParser.ExpressionStatementContext expressionStatement) =>
-            new ExpressionStatement { Expression = GenerateExpression(expressionStatement.expression()) };
+            new ExpressionStatement
+            {
+                Expression = GenerateExpression(expressionStatement.expression())
+            };
 
         private static ForStatement GenerateForStatement(CixParser.ForStatementContext forStatement) =>
             new ForStatement

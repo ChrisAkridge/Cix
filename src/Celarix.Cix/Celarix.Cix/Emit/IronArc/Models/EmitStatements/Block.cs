@@ -2,15 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using Celarix.Cix.Compiler.Common;
+using NLog;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 {
     internal sealed class Block : EmitStatement
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        
         public List<EmitStatement> Statements { get; set; }
 
         public override GeneratedFlow Generate(EmitContext context, EmitStatement parent)
         {
+            logger.Trace($"Generating code for block ({Statements.Count} statement(s))");
+            
             var stackSizeBeforeNewScope = context.CurrentStack.Size;
             var statementFlows = Statements.Select(s => s.Generate(context, this)).ToList();
             var stackSizeAfterNewScope = context.CurrentStack.Size;
@@ -31,6 +36,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 
                 foreach (var jump in currentJumps.Where(j => j.TargetType == JumpTargetType.ToBreakOrAfterTarget))
                 {
+                    logger.Trace($"Connected break statement inside block");
                     breakAfterTarget.IsJumpTarget = true;
                     jump.JumpVertex.ConnectTo(breakAfterTarget, jump.FlowType);
                 }

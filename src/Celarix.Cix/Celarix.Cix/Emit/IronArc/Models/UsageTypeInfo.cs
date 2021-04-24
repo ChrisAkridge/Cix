@@ -51,5 +51,9 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
         /// <summary>Serves as the default hash function.</summary>
         /// <returns>A hash code for the current object.</returns>
         public override int GetHashCode() => HashCode.Combine(DeclaredType, PointerLevel);
+
+        /// <summary>Returns a string that represents the current object.</summary>
+        /// <returns>A string that represents the current object.</returns>
+        public override string ToString() => DeclaredType.ToString() + new string('*', PointerLevel);
     }
 }

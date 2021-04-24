@@ -7,7 +7,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
 {
     internal class EmitContext
     {
-        public VirtualStack CurrentStack { get; set; }
+        public VirtualStack CurrentStack { get; set; } = new VirtualStack();
         public Function CurrentFunction { get; set; }
         public IDictionary<string, NamedTypeInfo> DeclaredTypes { get; set; }
         public IDictionary<string, GlobalVariableInfo> DeclaredGlobals { get; set; }

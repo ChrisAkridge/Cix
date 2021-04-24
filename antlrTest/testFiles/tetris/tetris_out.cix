@@ -42,7 +42,7 @@ global @funcptr<Tetrimino*>* tetriminoFunctions;
 global @funcptr<int, byte*, short, long**, ulong, float***, double, void****> lotsOPointers;
 global byte* stringLiteral = "Hello, world!";
 
-void func()
+int func()
 {
     int a;
     return a = a = a = a;
@@ -57,6 +57,11 @@ int randomInt(int min, int max)
     return min;
 }
 
+void main()
+{
+    Main(0, 0);
+}
+
 int Main(int argc, byte** argv)
 {
     vgaBase = (void*)(hwcall("System::GetMemoryMappedHWStartAddress", "VGAMonitor"));
@@ -68,7 +73,7 @@ int Main(int argc, byte** argv)
     tetriminoFunctions[4] = &(CreateS);
     tetriminoFunctions[5] = &(CreateZ);
     tetriminoFunctions[6] = &(CreateT);
-    hwcall("Timer::CallOnLoop", 0.033, &(Update));
+    hwcall("Timer::CallOnLoop", 1023879938, &(Update));
     game = malloc(sizeof(Game));
     game.Board = malloc(sizeof(Board));
     game.Board.Width = 10;
@@ -340,7 +345,7 @@ void HW_Debugger_Break()
     /* hardware call: Break */;
 }
 
-void <>globals_init()
+void __globals_init()
 {
     stringLiteral = "Hello, world!";
 }

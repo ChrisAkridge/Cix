@@ -14,14 +14,14 @@ namespace Celarix.Cix.Compiler.Preparse
 
         public static void MarkStringLiterals(IList<Line> lines)
         {
-            logger.Trace($"Marking string literal locations...");
+            logger.Debug($"Marking string literal locations...");
 
             foreach (var line in lines)
             {
                 line.StringLiteralLocations = GetStringLiteralLocationsOnLine(line.Text).ToList();
             }
             
-            logger.Trace("Marked string literal locations");
+            logger.Debug("Marked string literal locations");
         }
 
         private static IEnumerable<Range> GetStringLiteralLocationsOnLine(string text)

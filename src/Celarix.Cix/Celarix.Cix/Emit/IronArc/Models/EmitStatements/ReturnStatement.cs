@@ -37,6 +37,9 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             }
             else
             {
+                ReturnValue.ComputeType(context, null);
+                var returnValueFlow = ReturnValue.Generate(context, null);
+                
                 if (functionReturnsVoid)
                 {
                     throw new InvalidOperationException("Function must return value");
@@ -72,6 +75,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                         new InstructionVertex("ret", OperandSize.NotUsed)
                     };
                 }
+
+                returnValueFlow.ConnectTo(returnFlow[0], FlowEdgeType.DirectFlow);
 
                 return new GeneratedFlow
                 {

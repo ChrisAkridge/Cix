@@ -56,7 +56,7 @@ namespace Celarix.Cix.Compiler.Preparse
 		/// </returns>
 		public IList<Line> Preprocess()
 		{
-            logger.Trace($"Starting preprocessing on \"{file.First().SourceFileName}\"...");
+            logger.Debug($"Starting preprocessing on \"{file.First().SourceFileName}\"...");
             
 			var preprocessedFile = new List<Line>();
 			var conditionalValue = ConditionalInclustionState.NotInConditional; // we evaluate the condition as soon as we find it; this field holds the result
@@ -131,7 +131,7 @@ namespace Celarix.Cix.Compiler.Preparse
                                                 $"Symbol {words[1]} is already defined.", line, 0);
                                         }
 
-                                        logger.Trace($"Declared substitution \"{words[1]}\" for \"{words[2]}\"");
+                                        logger.Trace($"Declared substitution: \"{words[1]}\" for \"{words[2]}\"");
                                         definedSubstitutions.Add(words[1], words[2]);
                                     }
                                     else

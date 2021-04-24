@@ -26,5 +26,9 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
             Operand2 = operand2;
             Operand3 = operand3;
         }
+
+        /// <summary>Returns a string that represents the current object.</summary>
+        /// <returns>A string that represents the current object.</returns>
+        public override string ToString() => $"{Mnemonic} ...";
     }
 }

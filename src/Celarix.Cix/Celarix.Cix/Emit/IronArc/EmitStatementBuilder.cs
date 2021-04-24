@@ -78,13 +78,15 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                 VariableDeclarationWithInitialization variableDeclarationWithInitialization => new
                     Models.EmitStatements.VariableDeclarationWithInitialization
                     {
-                        Type = emitContext.LookupDataType(variableDeclarationWithInitialization.Type),
+                        Type = UsageTypeInfo.FromTypeInfo(
+                            emitContext.LookupDataType(variableDeclarationWithInitialization.Type), variableDeclarationWithInitialization.Type.PointerLevel),
                         Name = variableDeclarationWithInitialization.Name,
                         Initializer = expressionBuilder.Build(variableDeclarationWithInitialization.Initializer)
                     },
                 VariableDeclaration variableDeclaration => new Models.EmitStatements.VariableDeclaration
                 {
-                    Type = emitContext.LookupDataType(variableDeclaration.Type), Name = variableDeclaration.Name
+                    Type = UsageTypeInfo.FromTypeInfo(emitContext.LookupDataType(variableDeclaration.Type), variableDeclaration.Type.PointerLevel),
+                    Name = variableDeclaration.Name
                 },
                 WhileStatement whileStatement => new Models.EmitStatements.WhileStatement
                 {

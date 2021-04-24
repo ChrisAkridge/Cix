@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Celarix.Cix.Compiler.Emit;
+using Celarix.Cix.Compiler.Emit.IronArc;
 using Celarix.Cix.Compiler.IO.Models;
 using Celarix.Cix.Compiler.Lowering;
 using Celarix.Cix.Compiler.Lowering.Models;
@@ -37,7 +38,7 @@ namespace Celarix.Cix.Compiler
 
         public void Preparse()
         {
-            logger.Trace("Starting preparse phase...");
+            logger.Info("Starting preparse phase...");
             
             var lines = IO.IO.SplitFileIntoLines(CompilationOptions.InputFilePath);
             preprocessedFile = new Preprocessor(lines, CompilationOptions.DeclaredSymbols).Preprocess().ToList();
@@ -49,22 +50,22 @@ namespace Celarix.Cix.Compiler
 
             preparseFile = new SourceFile(preprocessedFile);
             
-            logger.Trace("End preparse phase...");
+            logger.Info("End preparse phase...");
         }
 
         public void Parse()
         {
-            logger.Trace("Starting parse phase...");
+            logger.Info("Starting parse phase...");
             
             var sourceFileContext = ParserInvoker.Invoke(preparseFile);
             AbstractSyntaxTreeRoot = ASTGenerator.GenerateSourceFile(sourceFileContext);
             
-            logger.Trace("Ending parse phase...");
+            logger.Info("Ending parse phase...");
         }
 
         public void Lower()
         {
-            logger.Trace("Start lowering phase...");
+            logger.Info("Start lowering phase...");
 
             var hardwareDefinitionJson = File.ReadAllText(CompilationOptions.HardwareDefinitionPath);
             var hardwareDefinition = JsonConvert.DeserializeObject<HardwareDefinition>(hardwareDefinitionJson);
@@ -76,16 +77,17 @@ namespace Celarix.Cix.Compiler
             var tempFileText = AbstractSyntaxTreeRoot.PrettyPrint(0);
             File.WriteAllText(CompilationOptions.OutputFilePath, tempFileText);
             
-            logger.Trace("End lowering phase...");
+            logger.Info("End lowering phase...");
         }
 
         public void Emit()
         {
-            logger.Trace("Start emit phase...");
+            logger.Info("Start emit phase...");
 
-            CodeGenerator.GenerateCode(AbstractSyntaxTreeRoot);
+            var codeGenerator = new CodeGenerator(AbstractSyntaxTreeRoot);
+            codeGenerator.GenerateCode();
             
-            logger.Trace("End emit phase...");
+            logger.Info("End emit phase...");
         }
     }
 }

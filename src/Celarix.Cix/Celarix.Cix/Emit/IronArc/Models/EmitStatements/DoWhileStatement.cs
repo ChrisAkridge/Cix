@@ -12,6 +12,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 
         public override GeneratedFlow Generate(EmitContext context, EmitStatement parent)
         {
+            Condition.ComputeType(context, null);
+            
             var conditionSize = EmitHelpers.ToOperandSize(Condition.ComputedType.Size);
             var comparisonFlow = EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
             {

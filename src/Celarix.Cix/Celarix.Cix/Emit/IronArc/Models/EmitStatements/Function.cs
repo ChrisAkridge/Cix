@@ -4,11 +4,14 @@ using System.Linq;
 using Celarix.Cix.Compiler.Common;
 using Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions;
 using Celarix.Cix.Compiler.Parse.Models.AST.v1;
+using NLog;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 {
     internal sealed class Function : EmitStatement
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        
         public Parse.Models.AST.v1.Function ASTFunction { get; set; }
 
         public override GeneratedFlow Generate(EmitContext context, EmitStatement parent)
@@ -41,6 +44,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             foreach (var argument in ASTFunction.Parameters)
             {
                 context.CurrentStack.Entries.Push(new VirtualStackEntry(argument.Name, context.LookupDataTypeWithPointerLevel(argument.Type)));
+                logger.Trace($"Pushed argument {argument.Name} at EBP+{context.CurrentStack.Peek().OffsetFromEBP}");
             }
             
             var statementBuilder = new EmitStatementBuilder(context);
@@ -71,47 +75,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 
             return new GeneratedFlow
             {
+                // WYLO: EmitHelpers is connecting like [push push add] => [pop pop ret]
+                // rather than connecting push => push => add => pop => pop => ret
+                // so we may need to add an ending "connection target"
                 ControlFlow = EmitHelpers.ConnectWithDirectFlow(statementFlows.Select(sf => sf.ControlFlow))
             };
-
-            // WYLO: Okay, we're on the right track.
-            //
-            // A statement generates its code, noting which of its vertices jump
-            // to break/after/continue targets, marking them accordingly. It then
-            // passes it back up to its caller, who wires up the targets if it
-            // knows the target, or passes it up again if it doesn't.
-            //
-            // Check BreakStatement for an example of a generation of an unconnected
-            // jump and this method for an example of the connection of the jumps.
-            //
-            // For each statement type:
-            // Blocks: block =DF=> after
-            // Conditionals (no else):
-            //       Compute condition
-            // =DF=> Compare with 0 =EQ=> after
-            // =NE=> True branch =DF=> after
-            // Conditionals (with else):
-            //       Compute condition
-            // =DF=> Compare with 0 =EQ=> False branch => after
-            // =NE=> True branch =DF=> after
-            // Do-while statements:
-            //       Loop body   <======+
-            // =DF=> Compute condition  |
-            // =DF=> Compare with 0 =NE=+
-            //       after <=========EQ=+
-            // Switch statement:
-            //       Compute expression
-            // =DF=> Compare to case 0 =EQ=> Case 0 +
-            // =NE=> Compare to case 1 =EQ=> Case 1 +
-            // =NE=> Compare to case 2 =EQ=> Case 2 +
-            // =NE=> Default   <=DF=================+
-            //       after
-            // While statement:
-            //       Compute condition <=========+
-            // =DF=> Compare with 0 =EQ=> after  |
-            // =NE=> Loop body =DF===============+
-            //
-            // Expressions never branch to anywhere in the method, which is quite convenient.
         }
     }
 }

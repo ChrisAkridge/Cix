@@ -64,6 +64,11 @@ struct Game
 global Game* game;
 // global int[5] globalArray;
 
+void main()
+{
+	Main(0, 0);
+}
+
 int Main(int argc, byte** argv)
 {
 	// Find the VGA monitor's address

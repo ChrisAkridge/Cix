@@ -6,11 +6,14 @@ using System.Threading.Tasks;
 using Celarix.Cix.Compiler.Emit.IronArc.Models;
 using Celarix.Cix.Compiler.Exceptions;
 using Celarix.Cix.Compiler.Parse.Models.AST.v1;
+using NLog;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc
 {
     internal static class TypeInfoComputer
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         private static readonly List<NamedTypeInfo> primitiveTypes = new List<NamedTypeInfo>
         {
             new NamedTypeInfo { Name = "byte", Size = 1 },
@@ -95,9 +98,12 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
 
                 member.Offset = memberOffsetCounter;
                 memberOffsetCounter += member.Size * member.ArraySize;
+                
+                logger.Trace($"Struct member {structInfo.Name}.{member.Name} has size {member.Size * member.ArraySize} at offset {member.Offset}");
             }
 
             structInfo.Size = structInfo.MemberInfos.Sum(m => m.Size);
+            logger.Trace($"Struct {structInfo.Name} has size {structInfo.Size}");
         }
     }
 }

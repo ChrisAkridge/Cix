@@ -14,5 +14,9 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
         /// <see langword="true" /> if the current object is equal to the <paramref name="other" /> parameter; otherwise, <see langword="false" />.</returns>
         public override bool Equals(TypeInfo other) =>
             (other is NamedTypeInfo namedOther) && Name == namedOther.Name;
+
+        /// <summary>Returns a string that represents the current object.</summary>
+        /// <returns>A string that represents the current object.</returns>
+        public override string ToString() => $"{Name}";
     }
 }

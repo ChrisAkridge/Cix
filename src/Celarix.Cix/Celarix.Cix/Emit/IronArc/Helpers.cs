@@ -10,16 +10,19 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
     {
         public static void TypesDeclaredOrThrow(DataType type, IDictionary<string, NamedTypeInfo> declaredTypes)
         {
-            if (type is NamedDataType namedType && !declaredTypes.ContainsKey(namedType.Name))
+            switch (type)
             {
-                throw new ErrorFoundException(ErrorSource.CodeGeneration, -1, $"Type {namedType.Name} not declared", null, -1);
-            }
+                case NamedDataType namedType when !declaredTypes.ContainsKey(namedType.Name):
+                    throw new ErrorFoundException(ErrorSource.CodeGeneration, -1, $"Type {namedType.Name} not declared", null, -1);
+                case FuncptrDataType funcptrType:
+                {
+                    foreach (var funcptrChildType in funcptrType.Types)
+                    {
+                        TypesDeclaredOrThrow(funcptrChildType, declaredTypes);
+                    }
 
-            var funcptrType = (FuncptrDataType)type;
-
-            foreach (var funcptrChildType in funcptrType.Types)
-            {
-                TypesDeclaredOrThrow(funcptrChildType, declaredTypes);
+                    break;
+                }
             }
         }
 

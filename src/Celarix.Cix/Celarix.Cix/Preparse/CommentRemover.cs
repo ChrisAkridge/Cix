@@ -18,7 +18,7 @@ namespace Celarix.Cix.Compiler.Preparse
         {
             bool inMultilineComment = false;
 
-            logger.Trace("Removing comments...");
+            logger.Debug("Removing comments...");
             
             foreach (var line in lines)
             {
@@ -78,7 +78,7 @@ namespace Celarix.Cix.Compiler.Preparse
                 line.Text = lineBuilder.ToString();
             }
             
-            logger.Trace("Removed comments");
+            logger.Debug("Removed comments");
         }
     }
 }

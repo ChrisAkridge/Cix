@@ -18,7 +18,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
 
         public static CixParser.SourceFileContext Invoke(SourceFile file)
         {
-            logger.Trace($"Invoking ANTLR4 parser...");
+            logger.Debug($"Invoking ANTLR4 parser...");
             
             var sourceFileText = file.JoinLines();
             var charStream = CharStreams.fromString(sourceFileText);
@@ -51,6 +51,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
                 throw new ErrorFoundException(ErrorSource.ANTLR4Parser, 0, errorBuilder.ToString(), null, 0);
             }
 
+            logger.Debug("ANTLR4 parsing complete");
             return parser.sourceFile();
         }
     }

@@ -15,7 +15,8 @@ namespace Celarix.Cix.Compiler.IO
         
         public static IList<Line> SplitFileIntoLines(string filePath)
         {
-            logger.Trace($"Splitting {filePath} into lines...");
+            string fileName = Path.GetFileName(filePath);
+            logger.Trace($"Splitting {fileName} into lines...");
             string fileText = File.ReadAllText(filePath);
             
             // https://stackoverflow.com/questions/1547476/easiest-way-to-split-a-string-on-newlines-in-net

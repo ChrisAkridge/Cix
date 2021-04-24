@@ -6,7 +6,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
 {
     internal sealed class VirtualStack
     {
-        public Stack<VirtualStackEntry> Entries { get; set; }
+        public Stack<VirtualStackEntry> Entries { get; set; } = new Stack<VirtualStackEntry>();
         public int Size { get; private set; }
 
         public VirtualStackEntry GetEntry(string name) => Entries.Single(e => e.Name == name);
