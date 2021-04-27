@@ -22,5 +22,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
                 FloatSize = FloatSize.Double,
                 ValueBits = (ulong)BitConverter.DoubleToInt64Bits(value)
             };
+
+        public override string GenerateOperandText() => $"{ValueBits}";
     }
 }

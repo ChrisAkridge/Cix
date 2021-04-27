@@ -58,5 +58,33 @@ namespace Celarix.Cix.Compiler.Extensions
                 }
             }
         }
+
+        public static T SingleOrNone<T>(this IEnumerable<T> source)
+        {
+            switch (source)
+            {
+                case null:
+                    throw new ArgumentNullException(nameof(source));
+                case IList<T> list:
+                    return list.Count switch
+                    {
+                        0 => default,
+                        1 => list[0],
+                        _ => throw new ArgumentException("Sequence contains multiple elements", nameof(source))
+                    };
+                default:
+                {
+                    using var e = source.GetEnumerator();
+
+                    if (!e.MoveNext()) { return default; }
+                    var result = e.Current;
+                    if (!e.MoveNext()) { return result; }
+
+                    break;
+                }
+            }
+
+            throw new ArgumentException("Sequence contains multiple elements", nameof(source));
+        }
     }
 }

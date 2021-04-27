@@ -11,5 +11,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
         public string Label { get; set; }
 
         public LabelOperand(string label) => Label = label;
+        public override string GenerateOperandText() => $"{((IsPointer) ? "*" : "")}{Label}";
     }
 }

@@ -11,5 +11,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
         public IntegerOperand(int valueBits) : this((ulong)valueBits) { }
         
         public IntegerOperand(ulong valueBits) => ValueBits = valueBits;
+        public override string GenerateOperandText() => $"{((IsPointer) ? "*" : "")}{ValueBits}";
     }
 }

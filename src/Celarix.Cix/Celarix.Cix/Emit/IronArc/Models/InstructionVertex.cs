@@ -27,6 +27,24 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
             Operand3 = operand3;
         }
 
+        public override string GenerateInstructionText()
+        {
+            var operandSizeText = OperandSize switch
+            {
+                OperandSize.Byte => "BYTE",
+                OperandSize.Word => "WORD",
+                OperandSize.Dword => "DWORD",
+                OperandSize.Qword => "QWORD",
+                _ => ""
+            };
+
+            var operand1Text = Operand1?.GenerateOperandText() ?? "";
+            var operand2Text = Operand2?.GenerateOperandText() ?? "";
+            var operand3Text = Operand3?.GenerateOperandText() ?? "";
+
+            return $"{Mnemonic} {operandSizeText} {operand1Text} {operand2Text} {operand3Text}".TrimEnd();
+        }
+
         /// <summary>Returns a string that represents the current object.</summary>
         /// <returns>A string that represents the current object.</returns>
         public override string ToString() => $"{Mnemonic} ...";

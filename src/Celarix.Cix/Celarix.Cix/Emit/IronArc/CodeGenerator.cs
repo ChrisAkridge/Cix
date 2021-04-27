@@ -71,8 +71,20 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             }
             
             GenerateFunctions();
-            
+            GenerateFinalAssembly();
+
             logger.Debug("IronArc assembly generated");
+        }
+
+        private void GenerateFinalAssembly()
+        {
+            var finalEmitters = ControlFlow.Select(kvp => new FinalEmitter(kvp.Value));
+            var functionAssemblyCodeBlocks = finalEmitters.Select(e => e.GenerateInstructionsForControlFlow());
+            var builder = new StringBuilder();
+
+            foreach (var codeBlock in functionAssemblyCodeBlocks) { builder.AppendLine(codeBlock); }
+
+            IronArcAssembly = builder.ToString();
         }
 
         private void GenerateFunctions()

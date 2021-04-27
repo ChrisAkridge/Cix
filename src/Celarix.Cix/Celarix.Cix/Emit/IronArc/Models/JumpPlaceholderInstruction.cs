@@ -14,5 +14,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
     /// </summary>
     internal sealed class JumpPlaceholderInstruction : ControlFlowVertex
     {
+        public override string GenerateInstructionText() => "";
     }
 }

@@ -11,5 +11,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
         public ControlFlowVertex Target { get; set; }
 
         public JumpTargetOperand(ControlFlowVertex target) => Target = target;
+        public override string GenerateOperandText() => $"{Target.JumpLabel}";
     }
 }
