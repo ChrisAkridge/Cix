@@ -23,7 +23,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             // x[y] = z;
 
             var operandType = Operand.ComputeType(context, this);
-            var indexType = Operand.ComputeType(context, this);
+            var indexType = Index.ComputeType(context, this);
 
             if (operandType.PointerLevel < 1)
             {

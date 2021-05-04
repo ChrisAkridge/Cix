@@ -12,6 +12,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 
         public override GeneratedFlow Generate(EmitContext context, EmitStatement parent)
         {
+            Expression.ComputeType(context, null);
             var expressionFlow = Expression.Generate(context, null);
             var operandSize = EmitHelpers.ToOperandSize(Expression.ComputedType.Size);
 
@@ -25,20 +26,35 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                     var blockFlow = c.Statement.Generate(context, this);
                     blockFlow.ControlFlow.Start.IsJumpTarget = true;
 
-                    var comparisonInstruction = new InstructionVertex("cmp", operandSize);
-                    comparisonInstruction.ConnectTo(blockFlow.ControlFlow, FlowEdgeType.JumpIfEqual);
-
-                    var literalFlow = new IConnectable[]
+                    if (c.CaseLiteral != null)
                     {
-                        new InstructionVertex("push", operandSize, EmitHelpers.Register(Register.EBX)),
-                        c.CaseLiteral.Generate(context, null),
-                        comparisonInstruction
-                    };
+                        c.CaseLiteral.ComputeType(context, null);
+                        
+                        var comparisonInstruction = new InstructionVertex("cmp", operandSize);
+                        comparisonInstruction.ConnectTo(blockFlow.ControlFlow, FlowEdgeType.JumpIfEqual);
 
-                    return new
+                        var literalFlow = new IConnectable[]
+                        {
+                            new InstructionVertex("push", operandSize, EmitHelpers.Register(Register.EBX)),
+                            c.CaseLiteral.Generate(context, null),
+                            comparisonInstruction
+                        };
+
+                        return new
+                        {
+                            BlockFlow = blockFlow, LiteralFlow = EmitHelpers.ConnectWithDirectFlow(literalFlow)
+                        };
+                    }
+                    else
                     {
-                        BlockFlow = blockFlow, LiteralFlow = EmitHelpers.ConnectWithDirectFlow(literalFlow)
-                    };
+                        var jumpToDefault = new JumpPlaceholderInstruction();
+                        jumpToDefault.ConnectTo(blockFlow.ControlFlow, FlowEdgeType.UnconditionalJump);
+
+                        return new
+                        {
+                            BlockFlow = blockFlow, LiteralFlow = StartEndVertices.MakePair(jumpToDefault)
+                        };
+                    }
                 })
                 .ToList();
 

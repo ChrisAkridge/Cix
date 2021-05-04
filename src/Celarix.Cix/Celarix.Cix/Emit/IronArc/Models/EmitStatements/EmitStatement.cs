@@ -9,6 +9,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 {
     internal abstract class EmitStatement
     {
+        public string OriginalCode { get; set; }
         public abstract GeneratedFlow Generate(EmitContext context, EmitStatement parent);
     }
 }

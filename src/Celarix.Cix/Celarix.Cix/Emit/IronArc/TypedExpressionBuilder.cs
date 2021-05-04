@@ -15,6 +15,7 @@ using FunctionInvocation = Celarix.Cix.Compiler.Parse.Models.AST.v1.FunctionInvo
 using HardwareCallReturnsInternal = Celarix.Cix.Compiler.Parse.Models.AST.v1.HardwareCallReturnsInternal;
 using HardwareCallVoidInternal = Celarix.Cix.Compiler.Parse.Models.AST.v1.HardwareCallVoidInternal;
 using Identifier = Celarix.Cix.Compiler.Parse.Models.AST.v1.Identifier;
+using IntegerLiteral = Celarix.Cix.Compiler.Parse.Models.AST.v1.IntegerLiteral;
 using SizeOfExpression = Celarix.Cix.Compiler.Parse.Models.AST.v1.SizeOfExpression;
 using StringLiteral = Celarix.Cix.Compiler.Parse.Models.AST.v1.StringLiteral;
 using TernaryExpression = Celarix.Cix.Compiler.Parse.Models.AST.v1.TernaryExpression;
@@ -24,6 +25,7 @@ using TypedBinaryExpression = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpr
 using TypedCastExpression = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.CastExpression;
 using TypedFloatingPointLiteral = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.FloatingPointLiteral;
 using TypedFunctionInvocation = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.FunctionInvocation;
+using TypedIntegerLiteral = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.IntegerLiteral;
 using TypedHardwareCallReturnsInternal = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.HardwareCallReturnsInternal;
 using TypedHardwareCallVoidInternal = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.HardwareCallVoidInternal;
 using TypedIdentifier = Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions.Identifier;
@@ -90,6 +92,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                 Identifier identifier => new TypedIdentifier
                 {
                     Name = identifier.IdentifierText
+                },
+                IntegerLiteral integerLiteral => new TypedIntegerLiteral
+                {
+                    ValueBits = integerLiteral.ValueBits,
+                    LiteralType = integerLiteral.LiteralType
                 },
                 SizeOfExpression sizeOfExpression => new TypedSizeOfExpression
                 {

@@ -14,7 +14,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             var leftNamedType = left.DeclaredType as NamedTypeInfo;
             var rightNamedType = right.DeclaredType as NamedTypeInfo;
 
-            if (left.PointerLevel > 0 && right.PointerLevel > 0)
+            if (left.Equals(right)) { return left; }
+            else if (left.PointerLevel > 0 && right.PointerLevel > 0)
             {
                 return leftNamedType?.Name == "void"
                     ? right
@@ -131,12 +132,15 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                 "^=" => OperatorKind.BitwiseAssignment,
                 "<<=" => OperatorKind.ShiftAssignment,
                 ">>=" => OperatorKind.ShiftAssignment,
+                "." => OperatorKind.MemberAccess,
+                "->" => OperatorKind.MemberAccess,
                 "++" => OperatorKind.IncrementDecrement,
                 "--" => OperatorKind.IncrementDecrement,
                 "*" when operationKind == OperationKind.PrefixUnary => OperatorKind.PointerOperation,
                 "&" when operationKind == OperationKind.PrefixUnary => OperatorKind.PointerOperation,
                 "?" => OperatorKind.Comparison,
                 ":" => OperatorKind.Comparison,
+                "sizeof" => OperatorKind.SizeOf,
                 _ => throw new InvalidOperationException("Unrecognized operator")
             };
         }

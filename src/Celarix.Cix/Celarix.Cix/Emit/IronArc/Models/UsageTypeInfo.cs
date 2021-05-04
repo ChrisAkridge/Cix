@@ -10,7 +10,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
     {
         public TypeInfo DeclaredType { get; set; }
         public int PointerLevel { get; set; }
-        public int Size => (PointerLevel > 0) ? 8 : DeclaredType.Size;
+        public int Size => (PointerLevel > 0 || DeclaredType is FuncptrTypeInfo) ? 8 : DeclaredType.Size;
 
         public static UsageTypeInfo FromTypeInfo(TypeInfo type, int pointerLevel) =>
             new UsageTypeInfo
@@ -38,7 +38,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
             }
 
             return ReferenceEquals(this, other)
-                || (Equals(DeclaredType, other.DeclaredType)
+                || (DeclaredType.Equals(other.DeclaredType)
                     && PointerLevel == other.PointerLevel);
         }
 

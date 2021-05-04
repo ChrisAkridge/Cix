@@ -43,9 +43,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
         public void GenerateCode()
         {
             logger.Debug("Generating IronArc assembly...");
+
             try
             {
                 logger.Trace("Adding call to __globals_init() for main()");
+
                 var mainFunction = sourceFile.Functions
                     .Single(f =>
                         f.Name == "main"
@@ -69,22 +71,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             {
                 throw new InvalidOperationException("Source file must declare void main()", ex);
             }
-            
+
             GenerateFunctions();
             GenerateFinalAssembly();
 
             logger.Debug("IronArc assembly generated");
-        }
-
-        private void GenerateFinalAssembly()
-        {
-            var finalEmitters = ControlFlow.Select(kvp => new FinalEmitter(kvp.Value));
-            var functionAssemblyCodeBlocks = finalEmitters.Select(e => e.GenerateInstructionsForControlFlow());
-            var builder = new StringBuilder();
-
-            foreach (var codeBlock in functionAssemblyCodeBlocks) { builder.AppendLine(codeBlock); }
-
-            IronArcAssembly = builder.ToString();
         }
 
         private void GenerateFunctions()
@@ -100,6 +91,17 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                 };
                 ControlFlow[function.Name] = emitFunction.Generate(emitContext, null).ControlFlow;
             }
+        }
+
+        private void GenerateFinalAssembly()
+        {
+            var finalEmitters = ControlFlow.Select(kvp => new FinalEmitter(kvp.Key, kvp.Value));
+            var functionAssemblyCodeBlocks = finalEmitters.Select(e => e.GenerateInstructionsForControlFlow());
+            var builder = new StringBuilder();
+
+            foreach (var codeBlock in functionAssemblyCodeBlocks) { builder.AppendLine(codeBlock); }
+
+            IronArcAssembly = builder.ToString();
         }
     }
 }

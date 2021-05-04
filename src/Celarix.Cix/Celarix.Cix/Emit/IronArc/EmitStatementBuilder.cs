@@ -40,40 +40,54 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             {
                 Block block => new Models.EmitStatements.Block
                 {
-                    Statements = block.Statements.Select(Build).ToList()
+                    Statements = block.Statements.Select(Build).ToList(),
                 },
-                BreakStatement _ => new Models.EmitStatements.BreakStatement(),
+                BreakStatement _ => new Models.EmitStatements.BreakStatement
+                {
+                    OriginalCode = "break;"
+                },
                 CaseStatement caseStatement => new Models.EmitStatements.CaseStatement
                 {
-                    CaseLiteral = (Models.TypedExpressions.Literal)expressionBuilder.Build(caseStatement.CaseLiteral),
-                    Statement = Build(caseStatement.Statement)
+                    CaseLiteral = caseStatement.CaseLiteral != null
+                        ? (Models.TypedExpressions.Literal)expressionBuilder.Build(caseStatement.CaseLiteral)
+                        : null,
+                    Statement = Build(caseStatement.Statement),
+                    OriginalCode = $"case {caseStatement.CaseLiteral.PrettyPrint()}"
                 },
                 ConditionalStatement conditionalStatement => new Models.EmitStatements.ConditionalStatement
                 {
                     Condition = expressionBuilder.Build(conditionalStatement.Condition),
                     IfTrue = Build(conditionalStatement.IfTrue),
-                    IfFalse = (conditionalStatement.IfFalse != null) ? Build(conditionalStatement.IfFalse) : null
+                    IfFalse = (conditionalStatement.IfFalse != null) ? Build(conditionalStatement.IfFalse) : null,
+                    OriginalCode = $"if ({conditionalStatement.Condition.PrettyPrint()})"
                 },
-                ContinueStatement _ => new Models.EmitStatements.ContinueStatement(),
+                ContinueStatement _ => new Models.EmitStatements.ContinueStatement
+                {
+                    OriginalCode = "continue;"
+                },
                 DoWhileStatement doWhileStatement => new Models.EmitStatements.DoWhileStatement
                 {
                     Condition = expressionBuilder.Build(doWhileStatement.Condition),
-                    LoopStatement = Build(doWhileStatement.LoopStatement)
+                    LoopStatement = Build(doWhileStatement.LoopStatement),
+                    OriginalCode = $"}} while ({doWhileStatement.Condition.PrettyPrint()});"
                 },
                 ExpressionStatement expressionStatement => new Models.EmitStatements.ExpressionStatement
                 {
-                    Expression = expressionBuilder.Build(expressionStatement.Expression)
+                    Expression = expressionBuilder.Build(expressionStatement.Expression),
+                    OriginalCode = $"{expressionStatement.PrettyPrint(0)}"
                 },
                 ReturnStatement returnStatement => new Models.EmitStatements.ReturnStatement
                 {
                     ReturnValue = (returnStatement.ReturnValue != null)
                         ? expressionBuilder.Build(returnStatement.ReturnValue)
-                        : null
+                        : null,
+                    OriginalCode = returnStatement.PrettyPrint(0)
                 },
                 SwitchStatement switchStatement => new Models.EmitStatements.SwitchStatement
                 {
                     Expression = expressionBuilder.Build(switchStatement.Expression),
-                    Cases = switchStatement.Cases.Select(Build).Cast<Models.EmitStatements.CaseStatement>().ToList()
+                    Cases = switchStatement.Cases.Select(Build).Cast<Models.EmitStatements.CaseStatement>().ToList(),
+                    OriginalCode = $"switch ({switchStatement.Expression.PrettyPrint()})"
                 },
                 VariableDeclarationWithInitialization variableDeclarationWithInitialization => new
                     Models.EmitStatements.VariableDeclarationWithInitialization
@@ -81,17 +95,20 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                         Type = UsageTypeInfo.FromTypeInfo(
                             emitContext.LookupDataType(variableDeclarationWithInitialization.Type), variableDeclarationWithInitialization.Type.PointerLevel),
                         Name = variableDeclarationWithInitialization.Name,
-                        Initializer = expressionBuilder.Build(variableDeclarationWithInitialization.Initializer)
+                        Initializer = expressionBuilder.Build(variableDeclarationWithInitialization.Initializer),
+                        OriginalCode = variableDeclarationWithInitialization.PrettyPrint(0)
                     },
                 VariableDeclaration variableDeclaration => new Models.EmitStatements.VariableDeclaration
                 {
                     Type = UsageTypeInfo.FromTypeInfo(emitContext.LookupDataType(variableDeclaration.Type), variableDeclaration.Type.PointerLevel),
-                    Name = variableDeclaration.Name
+                    Name = variableDeclaration.Name,
+                    OriginalCode = variableDeclaration.PrettyPrint(0)
                 },
                 WhileStatement whileStatement => new Models.EmitStatements.WhileStatement
                 {
                     Condition = expressionBuilder.Build(whileStatement.Condition),
-                    LoopStatement = Build(whileStatement.LoopStatement)
+                    LoopStatement = Build(whileStatement.LoopStatement),
+                    OriginalCode = $"while ({whileStatement.Condition.PrettyPrint()})"
                 },
                 _ => throw new InvalidOperationException("Internal compiler error: unknown statement type found")
             };

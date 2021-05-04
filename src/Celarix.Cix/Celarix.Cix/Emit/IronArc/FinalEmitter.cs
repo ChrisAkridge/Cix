@@ -5,23 +5,31 @@ using System.Text;
 using System.Threading.Tasks;
 using Celarix.Cix.Compiler.Emit.IronArc.Models;
 using Celarix.Cix.Compiler.Extensions;
+using NLog;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc
 {
     internal sealed class FinalEmitter
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        
         private readonly int unvisitedIndicator;
         private readonly StartEndVertices startEndVertices;
+        private readonly string functionName;
 
-        public FinalEmitter(StartEndVertices startEndVertices)
+        public FinalEmitter(string functionName, StartEndVertices startEndVertices)
         {
             this.startEndVertices = startEndVertices;
+            this.functionName = functionName;
             unvisitedIndicator = startEndVertices.Start.VisitCount;
         }
 
         public string GenerateInstructionsForControlFlow()
         {
+            logger.Trace($"Generating final assembly for function {functionName}...");
+            
             var builder = new StringBuilder();
+            builder.AppendLine($"{functionName}:");
             var instructionList = GenerateInstructionList(startEndVertices.Start);
 
             foreach (var instruction in instructionList.Where(i => !string.IsNullOrWhiteSpace(i)))

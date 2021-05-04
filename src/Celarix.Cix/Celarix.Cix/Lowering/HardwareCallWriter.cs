@@ -48,9 +48,13 @@ namespace Celarix.Cix.Compiler.Lowering
                     .ToList()
             };
 
-            if (call.ReturnType == null)
+            if (call.ReturnType == null || (call.ReturnType.TypeName == "void" && call.ReturnType.PointerLevel == 0))
             {
-                function.ReturnType = new NamedDataType { Name = "void", PointerLevel = 0 };
+                function.ReturnType = new NamedDataType
+                {
+                    Name = "void",
+                    PointerLevel = 0
+                };
 
                 function.Statements = new List<Statement>
                 {

@@ -1,3 +1,0 @@
-Generating a new parser from a modified Cix grammar:
-
-1. 

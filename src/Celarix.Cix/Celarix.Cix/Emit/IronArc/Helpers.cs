@@ -35,7 +35,13 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                 case FuncptrDataType funcptrDataType:
                 {
                     var funcptrUnderlyingTypes =
-                        funcptrDataType.Types.Select(t => GetDeclaredType(t, declaredTypes)).ToList();
+                        funcptrDataType.Types
+                            .Select(t => new UsageTypeInfo
+                            {
+                                DeclaredType = GetDeclaredType(t, declaredTypes),
+                                PointerLevel = t.PointerLevel
+                            })
+                            .ToList();
 
                     return new FuncptrTypeInfo
                     {

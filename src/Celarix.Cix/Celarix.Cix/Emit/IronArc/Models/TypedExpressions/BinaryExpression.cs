@@ -191,6 +191,14 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             rightIdentifier.ReferentStructMember = matchingMember;
             rightIdentifier.ReferentKind = IdentifierReferentKind.StructMember;
 
+            Right.ComputedType = new UsageTypeInfo
+            {
+                DeclaredType = matchingMember.UnderlyingType,
+                PointerLevel = (matchingMember.ArraySize == 1)
+                    ? matchingMember.PointerLevel
+                    : matchingMember.PointerLevel + 1
+            };
+
             return ComputedType;
         }
 

@@ -23,7 +23,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 throw new InvalidOperationException("Cannot invoke non-function");
             }
 
-            ComputedType = operandType;
+            var functionReturnType = (operandType.DeclaredType as FuncptrTypeInfo).ReturnType;
+            ComputedType = functionReturnType;
             return ComputedType;
         }
 

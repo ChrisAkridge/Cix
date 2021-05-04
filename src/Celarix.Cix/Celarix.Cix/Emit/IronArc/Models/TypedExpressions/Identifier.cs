@@ -25,7 +25,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             {
                 case IdentifierReferentKind.LocalVariable:
                     var stackEntry = context.CurrentStack.GetEntry(Name);
-                    ReferentVariable = stackEntry;
+                    ReferentVariable = stackEntry ?? throw new InvalidOperationException("Internal compiler error: could not find variable");
                     computedType = stackEntry.UsageType;
                     IsAssignable = true;
                     break;
@@ -51,21 +51,30 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                     {
                         DeclaredType = new FuncptrTypeInfo
                         {
-                            ReturnType = context.LookupDataType(ReferentFunction.ReturnType),
-                            ParameterTypes = ReferentFunction.Parameters.Select(pt => context.LookupDataType(pt.Type))
+                            ReturnType = new UsageTypeInfo
+                            {
+                                DeclaredType = context.LookupDataType(ReferentFunction.ReturnType),
+                                PointerLevel = ReferentFunction.ReturnType.PointerLevel
+                            },
+                            ParameterTypes = ReferentFunction.Parameters.Select(pt => new UsageTypeInfo
+                                {
+                                    DeclaredType = context.LookupDataType(pt.Type),
+                                    PointerLevel = pt.Type.PointerLevel
+                                })
                                 .ToList()
                         }
                     };
                     break;
                 case IdentifierReferentKind.StructMember:
+                    // Type computed in BinaryExpresssion.
+                    computedType = null;
+                    IsAssignable = true;
+                    break;
+                case IdentifierReferentKind.Struct:
                     computedType = new UsageTypeInfo
                     {
-                        DeclaredType = ReferentStructMember.UnderlyingType,
-                        PointerLevel = (ReferentStructMember.ArraySize == 1)
-                            ? ReferentStructMember.PointerLevel
-                            : ReferentStructMember.PointerLevel + 1
+                        DeclaredType = context.DeclaredTypes[Name]
                     };
-                    IsAssignable = true;
                     break;
                 default:
                     throw new InvalidOperationException("Internal compiler error: Unrecognized referent kind");
@@ -133,6 +142,10 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                     });
                     break;
                 }
+                case IdentifierReferentKind.Struct:
+                {
+                    throw new InvalidOperationException("what");
+                }
                 default:
                     throw new InvalidOperationException("Internal compiler error: invalid referent kind");
             }
@@ -176,7 +189,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         private IdentifierReferentKind SetReferentKind(EmitContext context, TypedExpression parent)
         {
             if (parent is BinaryExpression binaryExpression
-                && (binaryExpression.Operator == "." || binaryExpression.Operator == "->"))
+                && (binaryExpression.Operator == "." || binaryExpression.Operator == "->")
+                && this == binaryExpression.Right)
             {
                 if (!(binaryExpression.Left.ComputedType.DeclaredType is StructInfo structInfo))
                 {
@@ -189,6 +203,12 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 return ReferentStructMember != null
                     ? ReferentKind
                     : throw new InvalidOperationException("No struct member has this name");
+            }
+
+            if (parent is UnaryExpression unaryExpression && unaryExpression.Operator == "sizeof" && context.DeclaredTypes.ContainsKey(Name))
+            {
+                ReferentKind = IdentifierReferentKind.Struct;
+                return ReferentKind;
             }
 
             if (context.CurrentStack.Entries.Any(e => e.Name == Name))

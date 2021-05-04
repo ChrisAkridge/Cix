@@ -27,5 +27,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
         }
 
         public VirtualStackEntry Peek() => Entries.Peek();
+
+        public void Clear()
+        {
+            Entries.Clear();
+            Size = 0;
+        }
     }
 }

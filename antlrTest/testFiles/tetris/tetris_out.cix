@@ -48,6 +48,11 @@ int func()
     return a = a = a = a;
 }
 
+void* malloc()
+{
+    return 0;
+}
+
 void InitRNG()
 {
 }
@@ -59,33 +64,36 @@ int randomInt(int min, int max)
 
 void main()
 {
+    int size = sizeof(@funcptr<int>);
+    int size2 = sizeof(Game*);
     Main(0, 0);
 }
 
 int Main(int argc, byte** argv)
 {
-    vgaBase = (void*)(hwcall("System::GetMemoryMappedHWStartAddress", "VGAMonitor"));
-    RNGInit();
-    tetriminoFunctions[0] = &(CreateI);
-    tetriminoFunctions[1] = &(CreateO);
-    tetriminoFunctions[2] = &(CreateJ);
-    tetriminoFunctions[3] = &(CreateL);
-    tetriminoFunctions[4] = &(CreateS);
-    tetriminoFunctions[5] = &(CreateZ);
-    tetriminoFunctions[6] = &(CreateT);
-    hwcall("Timer::CallOnLoop", 1023879938, &(Update));
+    "System::GetMemoryMappedHWStartAddress";
+    "VGAMonitor";
+    InitRNG();
+    tetriminoFunctions[0] = CreateI;
+    tetriminoFunctions[1] = CreateO;
+    tetriminoFunctions[2] = CreateJ;
+    tetriminoFunctions[3] = CreateL;
+    tetriminoFunctions[4] = CreateS;
+    tetriminoFunctions[5] = CreateZ;
+    tetriminoFunctions[6] = CreateT;
+    "Timer::CallOnLoop";
     game = malloc(sizeof(Game));
     game.Board = malloc(sizeof(Board));
-    game.Board.Width = 10;
-    game.Board.Height = 20;
-    game.Board.Cells = malloc(10 * 20);
+    game.Board->Width = 10;
+    game.Board->Height = 20;
+    game.Board->Cells = malloc(10 * 20);
     int i;
     {
         i = 0;
         while (i < 200)
             {
                 {
-                    game.Board.Cells[i] = 0;
+                    game.Board->Cells[i] = 0;
                 }
 
                 (i)++;
@@ -247,22 +255,22 @@ byte HW_System_RegisterInterruptHandler(uint deviceId, byte* interruptName, void
 
 void HW_System_UnregisterInterruptHandler(uint deviceId, byte* interruptName, byte handlerIndex)
 {
-    return 0 /* hardware call: UnregisterInterruptHandler */;
+    /* hardware call: UnregisterInterruptHandler */;
 }
 
 void HW_System_RaiseError(uint errorCode)
 {
-    return 0 /* hardware call: RaiseError */;
+    /* hardware call: RaiseError */;
 }
 
 void HW_System_RegisterErrorHandler(uint errorCode, void* handlerAddress)
 {
-    return 0 /* hardware call: RegisterErrorHandler */;
+    /* hardware call: RegisterErrorHandler */;
 }
 
 void HW_System_UnregisterErrorHandler(uint errorCode)
 {
-    return 0 /* hardware call: UnregisterErrorHandler */;
+    /* hardware call: UnregisterErrorHandler */;
 }
 
 ulong HW_System_GetLastErrorDescriptionSize()
@@ -272,7 +280,7 @@ ulong HW_System_GetLastErrorDescriptionSize()
 
 void HW_System_GetLastErrorDescription(void* destination)
 {
-    return 0 /* hardware call: GetLastErrorDescription */;
+    /* hardware call: GetLastErrorDescription */;
 }
 
 int HW_System_GetHardwareDeviceCount()
@@ -287,7 +295,7 @@ ulong HW_System_GetHardwareDeviceDescriptionSize(uint deviceId)
 
 void HW_System_GetHardwareDeviceDescription(uint deviceId, void* destination)
 {
-    return 0 /* hardware call: GetHardwareDeviceDescription */;
+    /* hardware call: GetHardwareDeviceDescription */;
 }
 
 ulong HW_System_GetAllHardwareDeviceDescriptionsSize()
@@ -297,7 +305,7 @@ ulong HW_System_GetAllHardwareDeviceDescriptionsSize()
 
 void HW_System_GetAllHardwareDeviceDescriptions(void* destination)
 {
-    return 0 /* hardware call: GetAllHardwareDeviceDescriptions */;
+    /* hardware call: GetAllHardwareDeviceDescriptions */;
 }
 
 uint HW_System_CreatePageTable()
@@ -307,17 +315,17 @@ uint HW_System_CreatePageTable()
 
 void HW_System_DestroyPageTable(uint pageTableId)
 {
-    return 0 /* hardware call: DestroyPageTable */;
+    /* hardware call: DestroyPageTable */;
 }
 
 void HW_System_ChangeCurrentPageTable(uint pageTableId)
 {
-    return 0 /* hardware call: ChangeCurrentPageTable */;
+    /* hardware call: ChangeCurrentPageTable */;
 }
 
 void HW_System_CopyMemory(byte direction, uint pageTableId, void* srcAddress, void* destAddress, ulong length)
 {
-    return 0 /* hardware call: CopyMemory */;
+    /* hardware call: CopyMemory */;
 }
 
 void HW_TerminalDevice_Write(byte* text)

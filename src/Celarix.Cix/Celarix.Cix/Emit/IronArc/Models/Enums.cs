@@ -62,6 +62,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
         LocalVariable,
         GlobalVariable,
         Function,
+        Struct,
         StructMember
     }
 
@@ -80,7 +81,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
         Sign,                   // + -
         IncrementDecrement,     // ++ --
         PointerOperation,       // * &
-        Conditional             // ?:
+        Conditional,            // ?:
+        SizeOf                  // sizeof
     }
 
     internal enum OperationKind

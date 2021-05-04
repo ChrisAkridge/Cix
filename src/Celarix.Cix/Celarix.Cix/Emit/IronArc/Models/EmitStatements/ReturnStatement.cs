@@ -20,7 +20,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             {
                 if (!functionReturnsVoid)
                 {
-                    throw new InvalidOperationException("Function must not return value");
+                    throw new InvalidOperationException("Function must return value");
                 }
 
                 var returnFlow = new IConnectable[]
@@ -42,7 +42,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                 
                 if (functionReturnsVoid)
                 {
-                    throw new InvalidOperationException("Function must return value");
+                    throw new InvalidOperationException("Function must not return value");
                 }
 
                 var returnValueSize = ReturnValue.ComputedType.Size;
@@ -66,6 +66,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                     
                     returnFlow = new IConnectable[]
                     {
+                        returnValueFlow,
                         new InstructionVertex("movln", OperandSize.NotUsed,
                             EmitHelpers.Register(Register.EBP, isPointer: true, returnValueOffsetFromEBP),
                             EmitHelpers.Register(Register.EBP, isPointer: true), new IntegerOperand(returnValueSize)),
@@ -75,8 +76,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                         new InstructionVertex("ret", OperandSize.NotUsed)
                     };
                 }
-
-                returnValueFlow.ConnectTo(returnFlow[0], FlowEdgeType.DirectFlow);
 
                 return new GeneratedFlow
                 {

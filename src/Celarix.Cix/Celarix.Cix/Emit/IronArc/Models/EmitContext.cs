@@ -24,8 +24,19 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
                     : namedTypeInfo,
                 FuncptrDataType funcptrType => new FuncptrTypeInfo
                 {
-                    ReturnType = LookupDataType(funcptrType.Types.First()),
-                    ParameterTypes = funcptrType.Types.Skip(1).Select(LookupDataType).ToList()
+                    ReturnType = new UsageTypeInfo
+                    {
+                        DeclaredType = LookupDataType(funcptrType.Types.First()),
+                        PointerLevel = funcptrType.Types.First().PointerLevel
+                    },
+                    ParameterTypes = funcptrType.Types
+                        .Skip(1)
+                        .Select(t => new UsageTypeInfo
+                        {
+                            DeclaredType = LookupDataType(t),
+                            PointerLevel = t.PointerLevel
+                        })
+                        .ToList()
                 },
                 _ => throw new InvalidOperationException("Internal compiler error: Unrecognized type")
             };

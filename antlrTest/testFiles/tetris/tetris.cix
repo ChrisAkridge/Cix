@@ -66,41 +66,43 @@ global Game* game;
 
 void main()
 {
+	int size = sizeof(@funcptr<int>);
+	int size2 = sizeof(Game*);
 	Main(0, 0);
 }
 
 int Main(int argc, byte** argv)
 {
 	// Find the VGA monitor's address
-	vgaBase = (void*)hwcall("System::GetMemoryMappedHWStartAddress", "VGAMonitor");
+	// vgaBase = (void*)hwcall("System::GetMemoryMappedHWStartAddress", "VGAMonitor");
 
 	// Initialize the RNG
-	RNGInit();
+	InitRNG();
 	
 	// Fill the tetrimino creation functions
-	tetriminoFunctions[0] = &CreateI;
-	tetriminoFunctions[1] = &CreateO;
-	tetriminoFunctions[2] = &CreateJ;
-	tetriminoFunctions[3] = &CreateL;
-	tetriminoFunctions[4] = &CreateS;
-	tetriminoFunctions[5] = &CreateZ;
-	tetriminoFunctions[6] = &CreateT;
+	tetriminoFunctions[0] = CreateI;
+	tetriminoFunctions[1] = CreateO;
+	tetriminoFunctions[2] = CreateJ;
+	tetriminoFunctions[3] = CreateL;
+	tetriminoFunctions[4] = CreateS;
+	tetriminoFunctions[5] = CreateZ;
+	tetriminoFunctions[6] = CreateT;
 
 	// Register the game loop to be called
-	hwcall("Timer::CallOnLoop", 0.033f, &Update);
+	// hwcall("Timer::CallOnLoop", 0.033f, &Update);
 
 	// Create the game and initialize it
 	game = malloc(sizeof(Game));
 	game.Board = malloc(sizeof(Board));
 
-	game.Board.Width = 10;
-	game.Board.Height = 20;
-	game.Board.Cells = malloc(10 * 20);
+	game.Board->Width = 10;
+	game.Board->Height = 20;
+	game.Board->Cells = malloc(10 * 20);
 	
 	int i;
 	for (i = 0; i < 200; i++)
 	{
-		game.Board.Cells[i] = 0x00;
+		game.Board->Cells[i] = 0x00;
 	}
 	
 	switch (i)

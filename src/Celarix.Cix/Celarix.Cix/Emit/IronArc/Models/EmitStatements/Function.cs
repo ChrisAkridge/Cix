@@ -16,7 +16,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 
         public override GeneratedFlow Generate(EmitContext context, EmitStatement parent)
         {
-            if (ASTFunction.ReturnType is NamedDataType namedType && namedType.Name == "void")
+            if (ASTFunction.ReturnType is NamedDataType namedType && namedType.Name == "void" && ASTFunction.ReturnType.PointerLevel == 0)
             {
                 ASTFunction.Statements.Add(new Parse.Models.AST.v1.ReturnStatement());
             }
@@ -43,7 +43,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             context.CurrentFunction = ASTFunction;
             foreach (var argument in ASTFunction.Parameters)
             {
-                context.CurrentStack.Entries.Push(new VirtualStackEntry(argument.Name, context.LookupDataTypeWithPointerLevel(argument.Type)));
+                context.CurrentStack.Push(new VirtualStackEntry(argument.Name, context.LookupDataTypeWithPointerLevel(argument.Type)));
                 logger.Trace($"Pushed argument {argument.Name} at EBP+{context.CurrentStack.Peek().OffsetFromEBP}");
             }
             
@@ -72,6 +72,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 
                 currentJumps.RemoveAll(j => j.TargetType == JumpTargetType.ToBreakOrAfterTarget);
             }
+
+            context.CurrentStack.Clear();
 
             return new GeneratedFlow
             {

@@ -18,16 +18,30 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
             IsAssignable = Operator == "&";
 
-            return ExpressionHelpers.GetOperatorKind(Operator,
+            ComputedType = ExpressionHelpers.GetOperatorKind(Operator,
                     (IsPostfix) ? OperationKind.PostfixUnary : OperationKind.PrefixUnary) switch
                 {
                     OperatorKind.Sign => ComputeTypeForSign(),
                     OperatorKind.IncrementDecrement => ComputeTypeForIncrementDecrement(),
                     OperatorKind.PointerOperation => ComputeTypeForPointerOperation(),
+                    OperatorKind.SizeOf => ComputeTypeForSizeOf(),
                     _ => throw new InvalidOperationException("Internal compiler error: unexpected unary operator")
                 };
+
+            return ComputedType;
         }
-        
+
+        private UsageTypeInfo ComputeTypeForSizeOf()
+        {
+            return ComputedType = new UsageTypeInfo
+            {
+                DeclaredType = new NamedTypeInfo
+                {
+                    Name = "int", Size = 4
+                }
+            };
+        }
+
         private UsageTypeInfo ComputeTypeForSign() =>
             !ExpressionHelpers.IsNumeric(Operand.ComputedType)
                 ? throw new InvalidOperationException("Cannot apply operator to non-numeric value")
@@ -63,6 +77,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                     DeclaredType = Operand.ComputedType.DeclaredType,
                     PointerLevel = Operand.ComputedType.PointerLevel + 1
                 },
+                "&" => new UsageTypeInfo
+                {
+                    DeclaredType = Operand.ComputedType.DeclaredType,
+                    PointerLevel = Operand.ComputedType.PointerLevel + 1
+                },
                 _ => throw new InvalidOperationException("Internal compiler error: unrecognized pointer operator")
             };
 
@@ -75,10 +94,23 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
         public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
+            if (Operator == "sizeof")
+            {
+                var pushInstruction =
+                    new InstructionVertex("push", OperandSize.Dword, new IntegerOperand(Operand.ComputedType.Size));
+                context.CurrentStack.Push(new VirtualStackEntry("<sizeofType>", ComputedType));
+
+                return new StartEndVertices
+                {
+                    Start = pushInstruction, End = pushInstruction
+                };
+            }
+            
             var operandSize = EmitHelpers.ToOperandSize(Operand.ComputedType.Size);
             
             if (!IsPostfix)
             {
+                // WYLO: Forgot to work the virtual stack here.
                 switch (Operator)
                 {
                     case "+":
