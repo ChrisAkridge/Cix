@@ -12,10 +12,15 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
         public override GeneratedFlow Generate(EmitContext context, EmitStatement parent)
         {
             Expression.ComputeType(context, null);
-            
+
+            var codeComment = new CommentPrinterVertex(OriginalCode);
+            var expressionFlow = Expression.Generate(context, null);
+            codeComment.ConnectTo(expressionFlow, FlowEdgeType.DirectFlow);
+
             return new GeneratedFlow()
             {
-                ControlFlow = Expression.Generate(context, null), UnconnectedJumps = new List<UnconnectedJump>()
+                ControlFlow = new StartEndVertices(codeComment, expressionFlow.End),
+                UnconnectedJumps = new List<UnconnectedJump>()
             };
         }
     }

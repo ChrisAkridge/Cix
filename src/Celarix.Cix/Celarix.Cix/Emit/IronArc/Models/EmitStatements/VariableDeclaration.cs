@@ -13,13 +13,18 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
         {
             context.CurrentStack.Push(new VirtualStackEntry(Name, Type));
             
+            var codeComment = new CommentPrinterVertex(OriginalCode);
+            
             if (EmitHelpers.IsIronArcOperandSize(Type.Size))
             {
+                var declareVariableFlow = new InstructionVertex("push", EmitHelpers.ToOperandSize(Type.Size),
+                    new IntegerOperand(0));
+
+                codeComment.ConnectTo(declareVariableFlow, FlowEdgeType.DirectFlow);
+                
                 return new GeneratedFlow
                 {
-                    ControlFlow =
-                        StartEndVertices.MakePair(new InstructionVertex("push", EmitHelpers.ToOperandSize(Type.Size),
-                            new IntegerOperand(0))),
+                    ControlFlow = new StartEndVertices(codeComment, declareVariableFlow),
                     UnconnectedJumps = new List<UnconnectedJump>()
                 };
             }
@@ -52,12 +57,14 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                     }
                 }
 
-                var pushInstructions =
-                    pushOperands.Select(o => new InstructionVertex("push", o, new IntegerOperand(0)));
+                var pushFlow = EmitHelpers.ConnectWithDirectFlow(pushOperands.Select(s =>
+                    new InstructionVertex("push", s, new IntegerOperand(0))));
+                
+                codeComment.ConnectTo(pushFlow, FlowEdgeType.DirectFlow);
 
                 return new GeneratedFlow
                 {
-                    ControlFlow = EmitHelpers.ConnectWithDirectFlow(pushInstructions),
+                    ControlFlow = new StartEndVertices(codeComment, pushFlow.End),
                     UnconnectedJumps = new List<UnconnectedJump>()
                 };
             }

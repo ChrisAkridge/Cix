@@ -31,10 +31,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             
             context.CurrentStack.Push(new VirtualStackEntry("<stringLiteral>", ComputedType));
 
-            return new StartEndVertices
-            {
-                Start = pushInstruction, End = pushInstruction
-            };
+            return StartEndVertices.MakePair(pushInstruction);
         }
     }
 }

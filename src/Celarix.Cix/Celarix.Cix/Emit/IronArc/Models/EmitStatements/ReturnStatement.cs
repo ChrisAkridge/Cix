@@ -25,6 +25,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 
                 var returnFlow = new IConnectable[]
                 {
+                    new CommentPrinterVertex(OriginalCode), 
                     EmitHelpers.ResetStack(),
                     new InstructionVertex("ret", OperandSize.NotUsed)
                 };
@@ -54,6 +55,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 
                     returnFlow = new IConnectable[]
                     {
+                        new CommentPrinterVertex(OriginalCode), 
                         new InstructionVertex("pop", operandSize, EmitHelpers.Register(Register.EAX)),
                         EmitHelpers.ResetStack(),
                         new InstructionVertex("push", operandSize, EmitHelpers.Register(Register.EAX)),
@@ -66,6 +68,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                     
                     returnFlow = new IConnectable[]
                     {
+                        new CommentPrinterVertex(OriginalCode), 
                         returnValueFlow,
                         new InstructionVertex("movln", OperandSize.NotUsed,
                             EmitHelpers.Register(Register.EBP, isPointer: true, returnValueOffsetFromEBP),

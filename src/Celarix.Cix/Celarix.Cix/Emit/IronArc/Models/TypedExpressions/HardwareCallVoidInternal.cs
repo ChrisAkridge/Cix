@@ -64,19 +64,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 stackArgsInstruction.ConnectTo(pushArgumentsFlow.First(), FlowEdgeType.DirectFlow);
                 pushArgumentsFlow.Last().ConnectTo(hwcallInstruction, FlowEdgeType.DirectFlow);
 
-                return new StartEndVertices
-                {
-                    Start = stackArgsInstruction,
-                    End = hwcallInstruction
-                };
+                return new StartEndVertices(stackArgsInstruction, hwcallInstruction);
             }
             else
             {
-                return new StartEndVertices
-                {
-                    Start = hwcallInstruction,
-                    End = hwcallInstruction
-                };
+                return StartEndVertices.MakePair(hwcallInstruction);
             }
         }
     }

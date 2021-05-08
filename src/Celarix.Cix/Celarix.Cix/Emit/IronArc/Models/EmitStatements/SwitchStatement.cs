@@ -13,9 +13,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
         public override GeneratedFlow Generate(EmitContext context, EmitStatement parent)
         {
             Expression.ComputeType(context, null);
+            var codeComment = new CommentPrinterVertex(OriginalCode);
             var expressionFlow = Expression.Generate(context, null);
             var operandSize = EmitHelpers.ToOperandSize(Expression.ComputedType.Size);
-
+            
+            codeComment.ConnectTo(expressionFlow, FlowEdgeType.DirectFlow);
             expressionFlow.ConnectTo(
                 new InstructionVertex("pop", operandSize,
                     EmitHelpers.Register(Register.EBX)), FlowEdgeType.DirectFlow);
@@ -67,10 +69,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 
             return new GeneratedFlow
             {
-                ControlFlow = new StartEndVertices
-                {
-                    Start = expressionFlow.Start, End = literalFlows.End
-                },
+                ControlFlow = new StartEndVertices(codeComment, literalFlows.End),
                 UnconnectedJumps = switchBlockCodeAndJumps.SelectMany(bcj => bcj.BlockFlow.UnconnectedJumps).ToList()
             };
         }

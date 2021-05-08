@@ -19,6 +19,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 
             var comparisonFlow = EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
             {
+                new CommentPrinterVertex(OriginalCode), 
                 conditionFlow,
                 EmitHelpers.ChangeWidthOfTopOfStack(
                     EmitHelpers.ToOperandSize(Condition.ComputedType.Size),

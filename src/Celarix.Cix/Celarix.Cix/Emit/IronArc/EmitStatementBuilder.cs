@@ -52,7 +52,9 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                         ? (Models.TypedExpressions.Literal)expressionBuilder.Build(caseStatement.CaseLiteral)
                         : null,
                     Statement = Build(caseStatement.Statement),
-                    OriginalCode = $"case {caseStatement.CaseLiteral.PrettyPrint()}"
+                    OriginalCode = caseStatement.CaseLiteral != null
+                        ? $"case {caseStatement.CaseLiteral.PrettyPrint()}"
+                        : "default"
                 },
                 ConditionalStatement conditionalStatement => new Models.EmitStatements.ConditionalStatement
                 {

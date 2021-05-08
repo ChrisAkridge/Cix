@@ -18,6 +18,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             var conditionSize = EmitHelpers.ToOperandSize(Condition.ComputedType.Size);
             var comparisonFlow = EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
             {
+                new CommentPrinterVertex(OriginalCode), 
                 Condition.Generate(context, null),
                 EmitHelpers.ChangeWidthOfTopOfStack(conditionSize, OperandSize.Dword),
                 new InstructionVertex("push", OperandSize.Dword, new IntegerOperand(0)),

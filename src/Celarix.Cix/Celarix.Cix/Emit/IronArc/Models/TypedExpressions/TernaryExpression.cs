@@ -57,11 +57,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
             conditionFlow.ConnectTo(conditionEvaluation, FlowEdgeType.DirectFlow);
 
-            return new StartEndVertices
-            {
-                Start = conditionFlow.Start,
-                End = afterNop
-            };
+            return new StartEndVertices(conditionFlow.Start, afterNop);
         }
     }
 }

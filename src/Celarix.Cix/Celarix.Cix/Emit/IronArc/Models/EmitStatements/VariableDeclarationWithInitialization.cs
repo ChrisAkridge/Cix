@@ -13,10 +13,16 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
         {
             Initializer.ComputeType(context, null);
             context.CurrentStack.Push(new VirtualStackEntry(Name, Type));
+
+            var codeComment = new CommentPrinterVertex(OriginalCode);
+            var initializationFlow = Initializer.Generate(context, null);
             
+            codeComment.ConnectTo(initializationFlow, FlowEdgeType.DirectFlow);
+
             return new GeneratedFlow
             {
-                ControlFlow = Initializer.Generate(context, null), UnconnectedJumps = new List<UnconnectedJump>()
+                ControlFlow = new StartEndVertices(codeComment, initializationFlow.End),
+                UnconnectedJumps = new List<UnconnectedJump>()
             };
         }
     }

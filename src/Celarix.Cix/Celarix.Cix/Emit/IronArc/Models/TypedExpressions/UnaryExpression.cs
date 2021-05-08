@@ -100,10 +100,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                     new InstructionVertex("push", OperandSize.Dword, new IntegerOperand(Operand.ComputedType.Size));
                 context.CurrentStack.Push(new VirtualStackEntry("<sizeofType>", ComputedType));
 
-                return new StartEndVertices
-                {
-                    Start = pushInstruction, End = pushInstruction
-                };
+                return StartEndVertices.MakePair(pushInstruction);
             }
             
             var operandSize = EmitHelpers.ToOperandSize(Operand.ComputedType.Size);

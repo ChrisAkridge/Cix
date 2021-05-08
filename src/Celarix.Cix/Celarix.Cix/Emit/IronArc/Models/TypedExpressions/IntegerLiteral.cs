@@ -53,10 +53,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             var pushInstruction = new InstructionVertex("push", operandSize, new IntegerOperand(ValueBits));
             context.CurrentStack.Push(new VirtualStackEntry("<integerLiteral>", ComputedType));
 
-            return new StartEndVertices
-            {
-                Start = pushInstruction, End = pushInstruction
-            };
+            return StartEndVertices.MakePair(pushInstruction);
         }
     }
 }

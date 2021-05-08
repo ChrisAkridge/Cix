@@ -51,10 +51,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
             context.CurrentStack.Pop();
 
-            return new StartEndVertices
-            {
-                Start = operandFlow.ConnectionTarget, End = callInstruction
-            };
+            return new StartEndVertices(operandFlow.ConnectionTarget, callInstruction);
         }
     }
 }

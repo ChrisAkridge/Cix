@@ -16,8 +16,16 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
         public override GeneratedFlow Generate(EmitContext context, EmitStatement parent)
         {
             logger.Trace("Generating code for case statement...");
+            var codeComment = new CommentPrinterVertex(OriginalCode);
+            var statementFlow = Statement.Generate(context, this);
             
-            return Statement.Generate(context, this);
+            codeComment.ConnectTo(statementFlow.ControlFlow, FlowEdgeType.DirectFlow);
+
+            return new GeneratedFlow
+            {
+                ControlFlow = new StartEndVertices(codeComment, statementFlow.ControlFlow.End),
+                UnconnectedJumps = statementFlow.UnconnectedJumps
+            };
         }
     }
 }
