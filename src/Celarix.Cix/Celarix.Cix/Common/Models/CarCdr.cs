@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace Celarix.Cix.Compiler.Common.Models
 {
+    /// <summary>
+    /// A collection type that holds an item and a reference to another <see cref="CarCdr{T}"/> that
+    /// holds the rest of the collection.
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the collection.</typeparam>
     public sealed class CarCdr<T> : IEnumerable<T>
     {
         public T Car { get; set; }

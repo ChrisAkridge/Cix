@@ -118,10 +118,10 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 }
                 case IdentifierReferentKind.LocalVariable:
                 {
-                    stackEntryName = "<localReference>";
+                    stackEntryName = $"<localReference>{ReferentVariable.Name}";
                     var computePointerFlow = new IConnectable[]
                     {
-                        new InstructionVertex("push", OperandSize.Qword, EmitHelpers.Register(Register.ESP)),
+                        new InstructionVertex("push", OperandSize.Qword, EmitHelpers.Register(Register.EBP)),
                         new InstructionVertex("push", OperandSize.Qword, new IntegerOperand(ReferentVariable.OffsetFromEBP)),
                         new InstructionVertex("add", OperandSize.Qword), 
                     };

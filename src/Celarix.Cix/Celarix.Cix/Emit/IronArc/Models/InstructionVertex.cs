@@ -12,11 +12,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
         public InstructionOperand Operand2 { get; set; }
         public InstructionOperand Operand3 { get; set; }
 
-        public InstructionVertex(string mnemonic)
-        {
-            Mnemonic = mnemonic;
-        }
-        
+        public InstructionVertex(string mnemonic) => Mnemonic = mnemonic;
+
         public InstructionVertex(string mnemonic, OperandSize operandSize, InstructionOperand operand1 = null,
             InstructionOperand operand2 = null, InstructionOperand operand3 = null)
         {

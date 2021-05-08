@@ -31,8 +31,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
             var operandFlow = Operand.Generate(context, this);
-            var operandStackEntry = new VirtualStackEntry("<functionTarget>", Operand.ComputedType);
-            context.CurrentStack.Push(operandStackEntry);
+            var operandStackEntry = context.CurrentStack.Peek();
             
             var argumentFlows = Arguments.Select(a => a.Generate(context, this)).ToList();
             var callInstruction = new InstructionVertex("call", OperandSize.NotUsed, EmitHelpers.Register(Register.EBP, isPointer: true, operandStackEntry.OffsetFromEBP));

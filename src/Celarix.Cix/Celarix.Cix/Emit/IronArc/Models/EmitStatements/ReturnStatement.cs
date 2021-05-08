@@ -55,7 +55,9 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 
                     returnFlow = new IConnectable[]
                     {
-                        new CommentPrinterVertex(OriginalCode), 
+                        new CommentPrinterVertex(OriginalCode),
+                        returnValueFlow,
+                        EmitHelpers.ZeroEAX(),
                         new InstructionVertex("pop", operandSize, EmitHelpers.Register(Register.EAX)),
                         EmitHelpers.ResetStack(),
                         new InstructionVertex("push", operandSize, EmitHelpers.Register(Register.EAX)),

@@ -397,7 +397,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                         EmitHelpers.Register(Register.EAX)),
                     new InstructionVertex("mov", computedTypeOperandSize,
                         EmitHelpers.Register(Register.EBP, isPointer: true, resultStackEntry.OffsetFromEBP),
-                        EmitHelpers.Register(Register.EAX, isPointer: true), new IntegerOperand(ComputedType.Size)),
+                        EmitHelpers.Register(Register.EAX, isPointer: true)),
                     new InstructionVertex("mov", computedTypeOperandSize,
                         EmitHelpers.Register(Register.EBP, isPointer: true, resultStackEntry.OffsetFromEBP),
                         EmitHelpers.Register(Register.EBP, isPointer: true, destinationPointerOffsetFromEBP)), 

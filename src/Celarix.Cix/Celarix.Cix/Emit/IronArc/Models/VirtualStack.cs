@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NLog;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models
 {
     internal sealed class VirtualStack
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        
         public Stack<VirtualStackEntry> Entries { get; set; } = new Stack<VirtualStackEntry>();
         public int Size { get; private set; }
 
@@ -16,12 +19,16 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
             Entries.Push(stackEntry);
             stackEntry.OffsetFromEBP = Size;
             Size += stackEntry.UsageType.Size;
+
+            logger.Trace($"Pushed {stackEntry.Name ?? "stack entry"} ({stackEntry.UsageType.Size} bytes) at EBP+{stackEntry.OffsetFromEBP}");
         }
 
         public VirtualStackEntry Pop()
         {
             var entry = Entries.Pop();
             Size -= entry.UsageType.Size;
+            
+            logger.Trace($"Popped {entry.Name ?? "stack entry"} ({entry.UsageType.Size} bytes) from EBP+{entry.OffsetFromEBP}");
 
             return entry;
         }
@@ -30,6 +37,9 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
 
         public void Clear()
         {
+            logger.Trace(Size > 0
+                ? $"Stack cleared, was {Peek().OffsetFromEBP} bytes in size"
+                : $"Stack cleared, was empty");
             Entries.Clear();
             Size = 0;
         }

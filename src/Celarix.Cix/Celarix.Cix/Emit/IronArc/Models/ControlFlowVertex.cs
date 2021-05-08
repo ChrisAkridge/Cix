@@ -18,17 +18,17 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
 
         public void ConnectTo(IConnectable other, FlowEdgeType flowEdgeType)
         {
-            if (this is InstructionVertex instructionVertex
-                && instructionVertex.Mnemonic == "mov"
-                && instructionVertex.OperandSize == OperandSize.Qword
-                && instructionVertex.Operand1 is IntegerOperand integerOperand
-                && integerOperand.ValueBits == 0
-                && instructionVertex.Operand2 is RegisterOperand registerOperand
-                && registerOperand.Register == Register.ECX
-                && OutboundEdges.Count(e => e.FlowEdgeType == FlowEdgeType.DirectFlow) == 1)
-            {
-                System.Diagnostics.Debugger.Break();
-            }
+            //if (this is InstructionVertex instructionVertex
+            //    && instructionVertex.Mnemonic == "mov"
+            //    && instructionVertex.OperandSize == OperandSize.Qword
+            //    && instructionVertex.Operand1 is IntegerOperand integerOperand
+            //    && integerOperand.ValueBits == 0
+            //    && instructionVertex.Operand2 is RegisterOperand registerOperand
+            //    && registerOperand.Register == Register.ECX
+            //    && OutboundEdges.Count(e => e.FlowEdgeType == FlowEdgeType.DirectFlow) == 1)
+            //{
+            //    System.Diagnostics.Debugger.Break();
+            //}
 
             if (OutboundEdges.Count(e => e.FlowEdgeType == FlowEdgeType.DirectFlow) == 1)
             {
