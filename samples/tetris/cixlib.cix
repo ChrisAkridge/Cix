@@ -1,6 +1,10 @@
-// cixlib.cix
-
-void* malloc(uint size)
-{
-	return (void*)0;
+struct a {
+	int b;
 }
+
+int func() {
+	int a;
+	return a = a = a = a;
+}
+
+void* malloc() { return 0; }
