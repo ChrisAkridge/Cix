@@ -102,6 +102,13 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             foreach (var codeBlock in functionAssemblyCodeBlocks) { builder.AppendLine(codeBlock); }
 
             IronArcAssembly = builder.ToString();
+            
+            // WYLO:
+            // - We definitely don't manage the virtual stack correctly WRT instructions
+            //   like add - that is a net -1 item for the stack.
+            // - We are not correctly clearing the stack in the generated assembly
+            //   - statements that should be +8 bytes instead add like 30.
+            // - We are not generating non-main-flow blocks!
         }
     }
 }

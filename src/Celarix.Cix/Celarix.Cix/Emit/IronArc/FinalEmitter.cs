@@ -53,6 +53,12 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                     // We've already generated this flow.
                     return new List<string>();
                 }
+
+                if (currentVertex is InstructionVertex instructionVertex
+                    && instructionVertex.Mnemonic == "bwand")
+                {
+                    System.Diagnostics.Debugger.Break();
+                }
                 
                 directFlowInstructionTexts.Add(currentVertex.GenerateInstructionText());
 

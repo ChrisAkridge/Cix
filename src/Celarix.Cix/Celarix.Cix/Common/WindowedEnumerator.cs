@@ -71,10 +71,10 @@ namespace Celarix.Cix.Compiler.Common
             enumerator.Reset();
             
             // Keep enumerator one ahead of what Current returns so we can set Next.
-            enumerator.MoveNext();
-            current = enumerator.Current;
-
-            if (enumerator.MoveNext()) { next = enumerator.Current; }
+            if (enumerator.MoveNext())
+            {
+                next = enumerator.Current;
+            }
         }
     }
 }

@@ -30,27 +30,42 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
         public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
-            var operandFlow = Operand.Generate(context, this);
-            var operandStackEntry = context.CurrentStack.Peek();
-            
+            // Set stackargs
+            // Push arguments
+            InstructionVertex stackArgsInstruction = null;
             var argumentFlows = Arguments.Select(a => a.Generate(context, this)).ToList();
-            var callInstruction = new InstructionVertex("call", OperandSize.NotUsed, EmitHelpers.Register(Register.EBP, isPointer: true, operandStackEntry.OffsetFromEBP));
 
             if (argumentFlows.Any())
             {
-                var stackArgsInstruction = new InstructionVertex("stackargs");
-                operandFlow.ConnectTo(stackArgsInstruction, FlowEdgeType.DirectFlow);
+                stackArgsInstruction = new InstructionVertex("stackargs");
                 stackArgsInstruction.ConnectTo(argumentFlows.First(), FlowEdgeType.DirectFlow);
-                argumentFlows.Last().ConnectTo(callInstruction, FlowEdgeType.DirectFlow);
+
+                StartEndVertices lastArgumentFlow = null;
+
+                foreach (var argumentFlow in argumentFlows)
+                {
+                    lastArgumentFlow?.ConnectTo(argumentFlow, FlowEdgeType.DirectFlow);
+                    lastArgumentFlow = argumentFlow;
+                }
             }
-            else
-            {
-                operandFlow.ConnectTo(callInstruction, FlowEdgeType.DirectFlow);
-            }
+
+            // Evaluate operand, which puts call address on the stack, after the arguments
+            var operandFlow = Operand.Generate(context, this);
+            argumentFlows.LastOrDefault()?.ConnectTo(operandFlow, FlowEdgeType.DirectFlow);
+            
+            // Pop the call address into EAX
+            var popCallAddress = new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX));
+            operandFlow.ConnectTo(popCallAddress, FlowEdgeType.DirectFlow);
 
             context.CurrentStack.Pop();
 
-            return new StartEndVertices(operandFlow.ConnectionTarget, callInstruction);
+            // Call EAX
+            var callInstruction = new InstructionVertex("call", OperandSize.NotUsed, EmitHelpers.Register(Register.EAX));
+            popCallAddress.ConnectTo(callInstruction, FlowEdgeType.DirectFlow);
+
+            return new StartEndVertices(
+                argumentFlows.Any() ? stackArgsInstruction : operandFlow.ConnectionTarget,
+                callInstruction);
         }
     }
 }
