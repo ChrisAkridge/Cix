@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Celarix.Cix.Compiler.Common;
+using Celarix.Cix.Compiler.Extensions;
 using NLog;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
@@ -25,14 +26,13 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                     new IntegerOperand(stackSizeAfterNewScope - stackSizeBeforeNewScope),
                     EmitHelpers.Register(Register.ESP))
             };
-            
-            var statementWindowedEnumerator = new WindowedEnumerator<GeneratedFlow>(statementFlows.GetEnumerator());
 
-            while (statementWindowedEnumerator.MoveNext())
+            foreach (var (current, next) in statementFlows.Pairwise())
             {
-                var currentTriplet = statementWindowedEnumerator.Current;
-                var currentJumps = currentTriplet.Current.UnconnectedJumps;
-                var breakAfterTarget = currentTriplet.Next?.ControlFlow?.Start ?? (ControlFlowVertex)resetStackAfterBlock[0];
+                var currentJumps = current.UnconnectedJumps;
+
+                var breakAfterTarget = next?.ControlFlow?.Start
+                    ?? (ControlFlowVertex)resetStackAfterBlock[0];
 
                 foreach (var jump in currentJumps.Where(j => j.TargetType == JumpTargetType.ToBreakOrAfterTarget))
                 {

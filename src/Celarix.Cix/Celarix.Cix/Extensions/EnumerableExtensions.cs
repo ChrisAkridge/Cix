@@ -86,5 +86,24 @@ namespace Celarix.Cix.Compiler.Extensions
 
             throw new ArgumentException("Sequence contains multiple elements", nameof(source));
         }
+
+        // https://stackoverflow.com/a/1581482/2709212
+        public static IEnumerable<(T, T)> Pairwise<T>(this IEnumerable<T> source)
+        {
+            var previous = default(T);
+            using var enumerator = source.GetEnumerator();
+
+            if (enumerator.MoveNext())
+            {
+                previous = enumerator.Current;
+            }
+
+            while (enumerator.MoveNext())
+            {
+                yield return (previous, previous = enumerator.Current);
+            }
+
+            yield return (previous, default(T));
+        }
     }
 }

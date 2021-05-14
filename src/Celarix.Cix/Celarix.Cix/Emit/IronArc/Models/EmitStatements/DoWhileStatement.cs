@@ -19,9 +19,14 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             doComment.ConnectTo(loopFlow.ControlFlow, FlowEdgeType.DirectFlow);
 
             var conditionSize = EmitHelpers.ToOperandSize(Condition.ComputedType.Size);
+            var commentPrinterVertex = new CommentPrinterVertex(OriginalCode)
+            {
+                IsJumpTarget = true
+            };
+
             var comparisonFlow = EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
             {
-                new CommentPrinterVertex(OriginalCode), 
+                commentPrinterVertex, 
                 Condition.Generate(context, null),
                 EmitHelpers.ChangeWidthOfTopOfStack(conditionSize, OperandSize.Dword),
                 new InstructionVertex("push", OperandSize.Dword, new IntegerOperand(0)),

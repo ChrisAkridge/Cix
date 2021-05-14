@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Environment = System.Environment;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models
 {
@@ -12,6 +13,9 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
 
         public CommentPrinterVertex(string commentText) => CommentText = commentText;
 
-        public override string GenerateInstructionText() => $"{Environment.NewLine}# {CommentText}";
+        public override string GenerateInstructionText() =>
+            !IsJumpTarget
+                ? $"{Environment.NewLine}# {CommentText}"
+                : $"{Environment.NewLine}{JumpLabel}:{Environment.NewLine}# {CommentText}";
     }
 }

@@ -108,7 +108,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             //   like add - that is a net -1 item for the stack.
             // - We are not correctly clearing the stack in the generated assembly
             //   - statements that should be +8 bytes instead add like 30.
-            // - We are not generating non-main-flow blocks!
+            // - Switch statements don't generate most of their code.
         }
     }
 }

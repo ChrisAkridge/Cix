@@ -15,11 +15,14 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             Condition.ComputeType(context, null);
             
             var conditionFlow = Condition.Generate(context, null);
-            conditionFlow.Start.IsJumpTarget = true;
+            var commentPrinterVertex = new CommentPrinterVertex(OriginalCode)
+            {
+                IsJumpTarget = true
+            };
 
             var comparisonFlow = EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
             {
-                new CommentPrinterVertex(OriginalCode), 
+                commentPrinterVertex, 
                 conditionFlow,
                 EmitHelpers.ChangeWidthOfTopOfStack(
                     EmitHelpers.ToOperandSize(Condition.ComputedType.Size),
@@ -32,7 +35,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 
             foreach (var jump in loopFlow.UnconnectedJumps.Where(j => j.TargetType == JumpTargetType.ToContinueTarget))
             {
-                jump.JumpVertex.ConnectTo(conditionFlow, jump.FlowType);
+                jump.JumpVertex.ConnectTo(comparisonFlow, jump.FlowType);
             }
 
             loopFlow.UnconnectedJumps.RemoveAll(j => j.TargetType == JumpTargetType.ToContinueTarget);
@@ -41,7 +44,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             loopFlow.ConnectTo(comparisonFlow, FlowEdgeType.UnconditionalJump);
             var jumpToAfter = new UnconnectedJump
             {
-                JumpVertex = loopFlow.ControlFlow.End,
+                JumpVertex = comparisonFlow.End,
                 FlowType = FlowEdgeType.JumpIfEqual,
                 TargetType = JumpTargetType.ToBreakOrAfterTarget
             };
@@ -49,7 +52,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             return new GeneratedFlow
             {
                 ControlFlow = comparisonFlow,
-                UnconnectedJumps = loopFlow.UnconnectedJumps
+                UnconnectedJumps = loopFlow.UnconnectedJumps.Append(jumpToAfter).ToList()
             };
         }
     }

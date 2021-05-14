@@ -37,7 +37,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                 last = current;
             }
 
-            return new StartEndVertices(start.ConnectionTarget, end.ConnectionTarget);
+            var endVertex = (end is StartEndVertices startEndVertices)
+                ? startEndVertices.End.ConnectionTarget
+                : end.ConnectionTarget;
+
+            return new StartEndVertices(start.ConnectionTarget, endVertex);
         }
 
         public static StartEndVertices ChangeWidthOfTopOfStack(OperandSize oldSize, OperandSize newSize) =>

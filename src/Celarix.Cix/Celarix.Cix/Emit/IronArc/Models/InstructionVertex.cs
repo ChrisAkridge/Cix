@@ -26,6 +26,10 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
 
         public override string GenerateInstructionText()
         {
+            var jumpLabelText = (IsJumpTarget)
+                ? $"{JumpLabel}:{Environment.NewLine}"
+                : "";
+            
             var operandSizeText = OperandSize switch
             {
                 OperandSize.Byte => "BYTE",
@@ -39,7 +43,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
             var operand2Text = Operand2?.GenerateOperandText() ?? "";
             var operand3Text = Operand3?.GenerateOperandText() ?? "";
 
-            return $"{Mnemonic} {operandSizeText} {operand1Text} {operand2Text} {operand3Text}".TrimEnd();
+            return $"{jumpLabelText}{Mnemonic} {operandSizeText} {operand1Text} {operand2Text} {operand3Text}".TrimEnd();
         }
 
         /// <summary>Returns a string that represents the current object.</summary>

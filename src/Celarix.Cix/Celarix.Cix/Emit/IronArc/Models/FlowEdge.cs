@@ -12,6 +12,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
 
         public string GenerateInstructionText()
         {
+            if (Destination is CommentPrinterVertex commentPrinterVertex)
+            {
+                commentPrinterVertex.IsJumpTarget = true;
+            }
+            
             var mnemonic = FlowEdgeType switch
             {
                 FlowEdgeType.UnconditionalJump => "jmp",

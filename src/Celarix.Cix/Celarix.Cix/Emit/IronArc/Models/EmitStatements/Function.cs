@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Celarix.Cix.Compiler.Common;
 using Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions;
+using Celarix.Cix.Compiler.Extensions;
 using Celarix.Cix.Compiler.Parse.Models.AST.v1;
 using NLog;
 
@@ -50,27 +51,25 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             var statementBuilder = new EmitStatementBuilder(context);
             var emitStatements = ASTFunction.Statements.Select(f => statementBuilder.Build(f)).ToList();
             var statementFlows = emitStatements.Select(s => s.Generate(context, this)).ToList();
-            var statementWindowedEnumerator = new WindowedEnumerator<GeneratedFlow>(statementFlows.GetEnumerator());
 
-            while (statementWindowedEnumerator.MoveNext())
+            foreach (var (previous, current) in statementFlows.Pairwise())
             {
-                var currentTriplet = statementWindowedEnumerator.Current;
-                var currentJumps = currentTriplet.Current.UnconnectedJumps;
+                var previousJumps = previous.UnconnectedJumps;
+                var breakAfterTarget = current?.ControlFlow?.Start;
 
-                var breakAfterTarget = currentTriplet.Next?.ControlFlow?.Start;
-
-                foreach (var jump in currentJumps.Where(j => j.TargetType == JumpTargetType.ToBreakOrAfterTarget))
+                foreach (var jump in previousJumps.Where(j => j.TargetType == JumpTargetType.ToBreakOrAfterTarget))
                 {
                     if (breakAfterTarget == null)
                     {
-                        throw new InvalidOperationException("Statement broke out to a place after the end of the function");
+                        throw new InvalidOperationException(
+                            "Statement broke out to a place after the end of the function");
                     }
-                    
+
                     breakAfterTarget.IsJumpTarget = true;
                     jump.JumpVertex.ConnectTo(breakAfterTarget, jump.FlowType);
                 }
 
-                currentJumps.RemoveAll(j => j.TargetType == JumpTargetType.ToBreakOrAfterTarget);
+                previousJumps.RemoveAll(j => j.TargetType == JumpTargetType.ToBreakOrAfterTarget);
             }
 
             context.CurrentStack.Clear();

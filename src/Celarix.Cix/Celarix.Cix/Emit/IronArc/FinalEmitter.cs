@@ -50,14 +50,12 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             {
                 if (currentVertex.VisitCount != unvisitedIndicator)
                 {
-                    // We've already generated this flow.
-                    return new List<string>();
-                }
-
-                if (currentVertex is InstructionVertex instructionVertex
-                    && instructionVertex.Mnemonic == "bwand")
-                {
-                    System.Diagnostics.Debugger.Break();
+                    // We've already generated this vertex and the ones that follow.
+                    // If we hit ANY statement that needs external jumps, every
+                    // statement in this block/function after it has already been
+                    // visited through the recursion via the jumps.
+                    return directFlowInstructionTexts.Concat(jumpedFlowsInstructionTexts.SelectMany(list => list))
+                        .ToList();
                 }
                 
                 directFlowInstructionTexts.Add(currentVertex.GenerateInstructionText());
