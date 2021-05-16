@@ -63,10 +63,10 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             {
                 Operand.Generate(context, this),
                 Index.Generate(context, this),
-                EmitHelpers.ChangeWidthOfTopOfStack(EmitHelpers.ToOperandSize(Index.ComputedType.Size), OperandSize.Dword),
+                EmitHelpers.ChangeWidthOfTopOfStack(context, EmitHelpers.ToOperandSize(Index.ComputedType.Size), OperandSize.Dword),
                 new InstructionVertex("push", OperandSize.Dword, new IntegerOperand(Operand.ComputedType.DeclaredType.Size)),
                 new InstructionVertex("mult", OperandSize.Dword),
-                EmitHelpers.ChangeWidthOfTopOfStack(OperandSize.Dword, OperandSize.Qword),
+                EmitHelpers.ChangeWidthOfTopOfStack(context, OperandSize.Dword, OperandSize.Qword),
                 new InstructionVertex("add", OperandSize.Qword)
             };
 

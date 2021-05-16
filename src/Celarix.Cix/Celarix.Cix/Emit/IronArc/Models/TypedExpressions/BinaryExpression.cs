@@ -181,12 +181,13 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
             if (matchingMember == null) { throw new InvalidOperationException("Struct doesn't have this member"); }
 
+            var pointerLevel = matchingMember.PointerLevel
+                + Convert.ToInt32(matchingMember.ArraySize > 1);
+            
             ComputedType = new UsageTypeInfo
             {
                 DeclaredType = matchingMember.UnderlyingType,
-                PointerLevel = (matchingMember.ArraySize == 1)
-                    ? matchingMember.PointerLevel
-                    : matchingMember.PointerLevel + 1
+                PointerLevel = pointerLevel
             };
             rightIdentifier.ReferentStructMember = matchingMember;
             rightIdentifier.ReferentKind = IdentifierReferentKind.StructMember;
@@ -194,9 +195,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             Right.ComputedType = new UsageTypeInfo
             {
                 DeclaredType = matchingMember.UnderlyingType,
-                PointerLevel = (matchingMember.ArraySize == 1)
-                    ? matchingMember.PointerLevel
-                    : matchingMember.PointerLevel + 1
+                PointerLevel = pointerLevel
             };
 
             return ComputedType;
@@ -233,16 +232,42 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             var computedTypeOperandSize = EmitHelpers.ToOperandSize(ComputedType.Size);
             var rightSize = Right.ComputedType.Size;
             var rightOperandSize = EmitHelpers.ToOperandSize(rightSize);
+            var thisRequiresPointer = EmitHelpers.ExpressionRequiresPointer(this);
+            
+            // Consider the expression a.b->c = 3 where c is of type int. The ComputedType
+            // of this expression is also int, but the Generate method for a.b->c knows
+            // that we need a pointer, and so generates it. That produces a mismatch
+            // between int and int*, so our stack becomes misaligned. But if we
+            // change the ComputedType to int*, the code to copy the result atop
+            // the pointer becomes misaligned. So we'll cheat here and pretend the
+            // computed type is int*.
+            var leftComputedType = (!thisRequiresPointer)
+                ? Left.ComputedType
+                : Left.ComputedType.WithPointerLevel(Left.ComputedType.PointerLevel + 1);
 
+            if (thisRequiresPointer
+                && Operator == "="
+                && Left is BinaryExpression binaryExpression0
+                && binaryExpression0.Left is BinaryExpression binaryExpression1
+                && binaryExpression1.Left is Identifier game
+                && game.Name == "game"
+                && binaryExpression1.Right is Identifier Board
+                && Board.Name == "Board"
+                && binaryExpression1.Operator == "."
+                && binaryExpression0.Operator == "->")
+            {
+                System.Diagnostics.Debugger.Break();
+            }
+            
             // <generate left>  [left]
             var operandFlows = new List<IConnectable>
             {
                 Left.Generate(context, this)
             };
 
-            if (!Left.ComputedType.Equals(ComputedType))
+            if (!thisRequiresPointer && !leftComputedType.Equals(ComputedType))
             {
-                operandFlows.Add(EmitHelpers.ChangeWidthOfTopOfStack(EmitHelpers.ToOperandSize(Left.ComputedType.Size),
+                operandFlows.Add(EmitHelpers.ChangeWidthOfTopOfStack(context, EmitHelpers.ToOperandSize(leftComputedType.Size),
                     computedTypeOperandSize));
             }
             
@@ -251,7 +276,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
             if (!Right.ComputedType.Equals(ComputedType) && !ConvertRightHandSideToResultType())
             {
-                operandFlows.Add(EmitHelpers.ChangeWidthOfTopOfStack(rightOperandSize,
+                operandFlows.Add(EmitHelpers.ChangeWidthOfTopOfStack(context, rightOperandSize,
                     computedTypeOperandSize));
             }
 
@@ -264,7 +289,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 {
                     if (Left.ComputedType.PointerLevel > 0)
                     {
-                        computationFlow = GeneratePointerArithmetic(rightOperandSize, rightSize);
+                        computationFlow = GeneratePointerArithmetic(context, rightOperandSize, rightSize);
                         resultEntry = GetPointerStackEntry();
                     }
                     else
@@ -301,7 +326,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                     break;
                 case "<<":
                 case ">>":
-                    computationFlow = GenerateShift(rightOperandSize, computedTypeOperandSize);
+                    computationFlow = GenerateShift(context, rightOperandSize, computedTypeOperandSize);
                     resultEntry = GetValueStackEntry();
                     break;
                 case ".":
@@ -340,7 +365,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 default:
                 {
                     computationFlow = comparisonOperands.TryGetValue(Operator, out var operands)
-                        ? GenerateComparison(computedTypeOperandSize, operands)
+                        ? GenerateComparison(context, computedTypeOperandSize, operands)
                         : Operator switch
                         {
                             "&&" => GenerateLogicalAND(computedTypeOperandSize),
@@ -500,7 +525,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 .ToArray();
         }
 
-        private static IConnectable[] GenerateComparison(OperandSize computedTypeOperandSize, (ulong flagMask, ulong shiftAmount) operands)
+        private static IConnectable[] GenerateComparison(EmitContext context, OperandSize computedTypeOperandSize, (ulong flagMask, ulong shiftAmount) operands)
         {
             /*
              * cmp sizeof(result)       []
@@ -521,7 +546,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 new InstructionVertex("bwand", OperandSize.Qword),
                 new InstructionVertex("push", OperandSize.Qword, new IntegerOperand(shiftAmount)),
                 new InstructionVertex("rshift", OperandSize.Qword),
-                EmitHelpers.ChangeWidthOfTopOfStack(OperandSize.Qword, OperandSize.Dword)
+                EmitHelpers.ChangeWidthOfTopOfStack(context, OperandSize.Qword, OperandSize.Dword)
             };
         }
 
@@ -564,13 +589,13 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             return computationFlow;
         }
 
-        private IConnectable[] GenerateShift(OperandSize rightOperandSize, OperandSize computedTypeOperandSize)
+        private IConnectable[] GenerateShift(EmitContext context, OperandSize rightOperandSize, OperandSize computedTypeOperandSize)
         {
             IConnectable[] computationFlow;
 
             computationFlow = new IConnectable[]
             {
-                EmitHelpers.ChangeWidthOfTopOfStack(rightOperandSize, OperandSize.Dword),
+                EmitHelpers.ChangeWidthOfTopOfStack(context, rightOperandSize, OperandSize.Dword),
                 new InstructionVertex((Operator == "<<") ? "lshift" : "rshift", computedTypeOperandSize)
             };
 
@@ -668,7 +693,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             return computationFlow;
         }
 
-        private IConnectable[] GeneratePointerArithmetic(OperandSize rightOperandSize, int rightSize)
+        private IConnectable[] GeneratePointerArithmetic(EmitContext context, OperandSize rightOperandSize, int rightSize)
         {
             /*
              * <convert right to DWORD>         [left (int)right]
@@ -679,10 +704,10 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
              */
             return new IConnectable[]
             {
-                EmitHelpers.ChangeWidthOfTopOfStack(rightOperandSize, OperandSize.Dword),
+                EmitHelpers.ChangeWidthOfTopOfStack(context, rightOperandSize, OperandSize.Dword),
                 new InstructionVertex("push", OperandSize.Dword, new IntegerOperand(rightSize)),
                 new InstructionVertex("mult", OperandSize.Dword),
-                EmitHelpers.ChangeWidthOfTopOfStack(OperandSize.Dword, OperandSize.Qword),
+                EmitHelpers.ChangeWidthOfTopOfStack(context, OperandSize.Dword, OperandSize.Qword),
                 new InstructionVertex((Operator == "+") ? "add" : "sub", OperandSize.Qword)
             };
         }

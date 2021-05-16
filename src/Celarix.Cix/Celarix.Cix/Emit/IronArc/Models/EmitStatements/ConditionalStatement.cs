@@ -25,7 +25,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             {
                 commentPrinterVertex, 
                 Condition.Generate(context, null),
-                EmitHelpers.ChangeWidthOfTopOfStack(conditionSize, OperandSize.Dword),
+                EmitHelpers.ChangeWidthOfTopOfStack(context, conditionSize, OperandSize.Dword),
                 new InstructionVertex("push", OperandSize.Dword, new IntegerOperand(0)),
                 new InstructionVertex("cmp", OperandSize.Dword),
             });

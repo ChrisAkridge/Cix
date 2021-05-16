@@ -36,7 +36,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
                 return EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
                 {
-                    EmitHelpers.ChangeWidthOfTopOfStack(EmitHelpers.ToOperandSize(Expression.ComputedType.Size),
+                    EmitHelpers.ChangeWidthOfTopOfStack(context, EmitHelpers.ToOperandSize(Expression.ComputedType.Size),
                         EmitHelpers.ToOperandSize(ToType.Size))
                 });
             }

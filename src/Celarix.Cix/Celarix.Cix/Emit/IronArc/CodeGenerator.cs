@@ -83,6 +83,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             ControlFlow = new Dictionary<string, StartEndVertices>();
             foreach (var function in sourceFile.Functions)
             {
+                if (function.Name == "Main")
+                {
+                    System.Diagnostics.Debugger.Break();
+                }
+                
                 logger.Trace($"Generating code for function {function.Name}");
                 emitContext.CurrentFunction = function;
                 var emitFunction = new Models.EmitStatements.Function
@@ -102,13 +107,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             foreach (var codeBlock in functionAssemblyCodeBlocks) { builder.AppendLine(codeBlock); }
 
             IronArcAssembly = builder.ToString();
-            
-            // WYLO:
-            // - We definitely don't manage the virtual stack correctly WRT instructions
-            //   like add - that is a net -1 item for the stack.
-            // - We are not correctly clearing the stack in the generated assembly
-            //   - statements that should be +8 bytes instead add like 30.
-            // - Switch statements don't generate most of their code.
         }
     }
 }

@@ -16,11 +16,12 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             var codeComment = new CommentPrinterVertex(OriginalCode);
             var expressionFlow = Expression.Generate(context, null);
             var operandSize = EmitHelpers.ToOperandSize(Expression.ComputedType.Size);
-            
+
+            var setUpComparisonRegister = new InstructionVertex("pop", operandSize,
+                EmitHelpers.Register(Register.EBX));
+
             codeComment.ConnectTo(expressionFlow, FlowEdgeType.DirectFlow);
-            expressionFlow.ConnectTo(
-                new InstructionVertex("pop", operandSize,
-                    EmitHelpers.Register(Register.EBX)), FlowEdgeType.DirectFlow);
+            expressionFlow.ConnectTo(setUpComparisonRegister, FlowEdgeType.DirectFlow);
 
             var switchBlockCodeAndJumps = Cases
                 .Select(c =>
@@ -65,7 +66,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                 .ToList());
 
             literalFlows.End.JumpTargetType = JumpTargetType.ToBreakOrAfterTarget;
-            expressionFlow.ConnectTo(literalFlows, FlowEdgeType.DirectFlow);
+            setUpComparisonRegister.ConnectTo(literalFlows, FlowEdgeType.DirectFlow);
 
             return new GeneratedFlow
             {
