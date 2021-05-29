@@ -12,6 +12,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
         public IDictionary<string, NamedTypeInfo> DeclaredTypes { get; set; }
         public IDictionary<string, GlobalVariableInfo> DeclaredGlobals { get; set; }
         public IDictionary<string, Function> Functions { get; set; }
+        public Stack<BreakContext> BreakContexts { get; set; } = new Stack<BreakContext>();
         public Stack<ControlFlowVertex> BreakTargets { get; set; } = new Stack<ControlFlowVertex>();
         public Stack<ControlFlowVertex> ContinueTargets { get; set; } = new Stack<ControlFlowVertex>();
 

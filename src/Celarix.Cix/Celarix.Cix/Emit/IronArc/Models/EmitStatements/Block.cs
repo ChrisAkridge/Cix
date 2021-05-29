@@ -29,17 +29,51 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 
             foreach (var (current, next) in statementFlows.Pairwise())
             {
-                var currentJumps = current.UnconnectedJumps;
-                var breakAfterTarget = (ControlFlowVertex)resetStackAfterBlock[0];
-
-                foreach (var jump in currentJumps.Where(j => j.TargetType == JumpTargetType.ToBreakOrAfterTarget))
+                var currentAfterJumps =
+                    current.UnconnectedJumps.Where(j => j.TargetType == JumpTargetType.ToAfterTarget);
+                var currentBreakJumps =
+                    current.UnconnectedJumps.Where(j => j.TargetType == JumpTargetType.ToBreakTarget);
+                
+                // After targets
+                var afterTarget = next?.ControlFlow.Start ?? (ControlFlowVertex)resetStackAfterBlock[0];
+                foreach (var jump in currentAfterJumps)
                 {
-                    logger.Trace($"Connected break statement inside block");
-                    breakAfterTarget.IsJumpTarget = true;
-                    jump.SourceVertex.ConnectTo(breakAfterTarget, jump.FlowType);
+                    logger.Trace($"Connected after target inside block");
+                    afterTarget.IsJumpTarget = true;
+                    jump.SourceVertex.ConnectTo(afterTarget, jump.FlowType);
                 }
 
-                currentJumps.RemoveAll(j => j.TargetType == JumpTargetType.ToBreakOrAfterTarget);
+                current.UnconnectedJumps.RemoveAll(j => j.TargetType == JumpTargetType.ToAfterTarget);
+
+                // Break targets
+                if (!(current.ControlFlow.Start is CommentPrinterVertex currentCodeComment))
+                {
+                    throw new InvalidOperationException("Internal compiler error: control flow not commented");
+                }
+
+                var commentText = currentCodeComment.CommentText;
+                if (!commentText.StartsWith("while", StringComparison.Ordinal)
+                    && !commentText.StartsWith("do", StringComparison.Ordinal)
+                    && !commentText.StartsWith("switch", StringComparison.Ordinal))
+                {
+                    continue;
+                    // by the way, ew
+                }
+                
+                var breakTarget = next?.ControlFlow.Start;
+                if (breakTarget == null)
+                {
+                    continue;
+                }
+
+                foreach (var jump in currentBreakJumps)
+                {
+                    logger.Trace($"Connected break statement inside block");
+                    breakTarget.IsJumpTarget = true;
+                    jump.SourceVertex.ConnectTo(breakTarget, jump.FlowType);
+                }
+
+                current.UnconnectedJumps.RemoveAll(j => j.TargetType == JumpTargetType.ToBreakTarget);
             }
 
             while (context.CurrentStack.Size > stackSizeBeforeNewScope)
@@ -48,15 +82,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             }
 
             var unconnectedJumps = statementFlows.SelectMany(f => f.UnconnectedJumps).ToList();
-
-            if (parent is CaseStatement)
-            {
-                unconnectedJumps.Add(new UnconnectedJump
-                {
-                    FlowType = FlowEdgeType.UnconditionalJump,
-                    TargetType = JumpTargetType.ToBreakOrAfterTarget 
-                });
-            }
 
             return new GeneratedFlow
             {

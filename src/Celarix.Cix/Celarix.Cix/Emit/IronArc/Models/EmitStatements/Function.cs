@@ -52,12 +52,32 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             var emitStatements = ASTFunction.Statements.Select(f => statementBuilder.Build(f)).ToList();
             var statementFlows = emitStatements.Select(s => s.Generate(context, this)).ToList();
 
-            foreach (var (previous, current) in statementFlows.Pairwise())
+            foreach (var (current, next) in statementFlows.Pairwise())
             {
-                var previousJumps = previous.UnconnectedJumps;
-                var breakAfterTarget = current?.ControlFlow?.Start;
+                var currentAfterJumps =
+                    current.UnconnectedJumps.Where(j => j.TargetType == JumpTargetType.ToAfterTarget);
+                var currentBreakJumps =
+                    current.UnconnectedJumps.Where(j => j.TargetType == JumpTargetType.ToBreakTarget);
 
-                foreach (var jump in previousJumps.Where(j => j.TargetType == JumpTargetType.ToBreakOrAfterTarget))
+                var breakAfterTarget = next?.ControlFlow.Start; // Don't worry if
+                // next is null - if it is, we'll always be on a return statement
+                // (or the code is wrong, anyway), and return statements never
+                // have jumps.
+
+                // After targets
+                foreach (var jump in currentAfterJumps)
+                {
+                    logger.Trace($"Connected after target inside function");
+                    breakAfterTarget.IsJumpTarget = true;
+                    jump.SourceVertex.ConnectTo(breakAfterTarget, jump.FlowType);
+                }
+
+                current.UnconnectedJumps.RemoveAll(j => j.TargetType == JumpTargetType.ToAfterTarget);
+
+                // Break targets
+                var breakTarget = next?.ControlFlow.Start;
+
+                foreach (var jump in currentBreakJumps)
                 {
                     if (breakAfterTarget == null)
                     {
@@ -65,20 +85,18 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                             "Statement broke out to a place after the end of the function");
                     }
 
+                    logger.Trace($"Connected break target inside function");
                     breakAfterTarget.IsJumpTarget = true;
                     jump.SourceVertex.ConnectTo(breakAfterTarget, jump.FlowType);
                 }
 
-                previousJumps.RemoveAll(j => j.TargetType == JumpTargetType.ToBreakOrAfterTarget);
+                current.UnconnectedJumps.RemoveAll(j => j.TargetType == JumpTargetType.ToBreakTarget);
             }
 
             context.CurrentStack.Clear();
 
             return new GeneratedFlow
             {
-                // WYLO: EmitHelpers is connecting like [push push add] => [pop pop ret]
-                // rather than connecting push => push => add => pop => pop => ret
-                // so we may need to add an ending "connection target"
                 ControlFlow = EmitHelpers.ConnectWithDirectFlow(statementFlows.Select(sf => sf.ControlFlow))
             };
         }

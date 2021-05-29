@@ -17,5 +17,9 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
             !IsJumpTarget
                 ? $"{Environment.NewLine}# {CommentText}"
                 : $"{Environment.NewLine}{JumpLabel}:{Environment.NewLine}# {CommentText}";
+
+        /// <summary>Returns a string that represents the current object.</summary>
+        /// <returns>A string that represents the current object.</returns>
+        public override string ToString() => CommentText;
     }
 }

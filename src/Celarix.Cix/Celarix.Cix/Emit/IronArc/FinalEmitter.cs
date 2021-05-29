@@ -48,12 +48,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
 
             while (true)
             {
-                //if (currentVertex is CommentPrinterVertex commentPrinterVertex
-                //    && commentPrinterVertex.CommentText.Contains("switch"))
-                //{
-                //    System.Diagnostics.Debugger.Break();
-                //}
-                
                 if (currentVertex.VisitCount != unvisitedIndicator)
                 {
                     // We've already generated this vertex and the ones that follow.

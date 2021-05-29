@@ -12,6 +12,12 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 
         public override GeneratedFlow Generate(EmitContext context, EmitStatement parent)
         {
+            context.BreakContexts.Push(new BreakContext
+            {
+                StackSizeAtStart = context.CurrentStack.Size,
+                SupportsContinue = false
+            });
+            
             Expression.ComputeType(context, null);
             var codeComment = new CommentPrinterVertex(OriginalCode);
             var expressionFlow = Expression.Generate(context, null);
@@ -68,8 +74,10 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                 .Select(block => block.LiteralFlow)
                 .ToList());
 
-            literalFlows.End.JumpTargetType = JumpTargetType.ToBreakOrAfterTarget;
+            literalFlows.End.JumpTargetType = JumpTargetType.ToAfterTarget;
             setUpComparisonRegister.ConnectTo(literalFlows, FlowEdgeType.DirectFlow);
+
+            context.BreakContexts.Pop();
 
             return new GeneratedFlow
             {

@@ -12,6 +12,12 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 
         public override GeneratedFlow Generate(EmitContext context, EmitStatement parent)
         {
+            context.BreakContexts.Push(new BreakContext
+            {
+                StackSizeAtStart = context.CurrentStack.Size,
+                SupportsContinue = true
+            });
+            
             Condition.ComputeType(context, null);
             
             var conditionFlow = Condition.Generate(context, null);
@@ -47,7 +53,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             {
                 SourceVertex = comparisonFlow.End,
                 FlowType = FlowEdgeType.JumpIfEqual,
-                TargetType = JumpTargetType.ToBreakOrAfterTarget
+                TargetType = JumpTargetType.ToAfterTarget
             };
 
             return new GeneratedFlow

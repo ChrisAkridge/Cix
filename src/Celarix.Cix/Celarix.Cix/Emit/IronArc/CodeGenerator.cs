@@ -83,11 +83,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             ControlFlow = new Dictionary<string, StartEndVertices>();
             foreach (var function in sourceFile.Functions)
             {
-                if (function.Name == "Main")
-                {
-                    // System.Diagnostics.Debugger.Break();
-                }
-                
                 logger.Trace($"Generating code for function {function.Name}");
                 emitContext.CurrentFunction = function;
                 var emitFunction = new Models.EmitStatements.Function

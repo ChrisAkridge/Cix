@@ -12,6 +12,12 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 
         public override GeneratedFlow Generate(EmitContext context, EmitStatement parent)
         {
+            context.BreakContexts.Push(new BreakContext
+            {
+                StackSizeAtStart = context.CurrentStack.Size,
+                SupportsContinue = true
+            });
+            
             Condition.ComputeType(context, null);
 
             var doComment = new CommentPrinterVertex("do {");
@@ -41,6 +47,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             loopFlow.ConnectTo(comparisonFlow, FlowEdgeType.UnconditionalJump);
             comparisonFlow.ConnectTo(loopFlow, FlowEdgeType.JumpIfNotEqual);
 
+            context.BreakContexts.Pop();
+
             return new GeneratedFlow
             {
                 ControlFlow = new StartEndVertices(doComment, loopFlow.ControlFlow.End),
@@ -49,7 +57,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                     {
                         SourceVertex = comparisonFlow.End,
                         FlowType = FlowEdgeType.JumpIfEqual,
-                        TargetType = JumpTargetType.ToBreakOrAfterTarget
+                        TargetType = JumpTargetType.ToAfterTarget
                     })
                     .ToList()
             };

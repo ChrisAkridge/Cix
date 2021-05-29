@@ -409,7 +409,7 @@ mov DWORD *EBP+24 *EBP+16
 subl QWORD ESP 8 ESP
 subl QWORD ESP 4 ESP
 
-block_1:
+block_2:
 # while (i < 200)
 push QWORD EBP
 push QWORD 12
@@ -431,10 +431,10 @@ pop DWORD ECX
 push DWORD ECX
 push DWORD 0
 cmp DWORD
-jne block_2
-je block_3
+jne block_3
+je block_1
 
-block_2:
+block_3:
 # game.Board->Cells[i] = 0;
 push QWORD ERP
 push QWORD 44
@@ -480,8 +480,8 @@ push DWORD *EAX
 incl DWORD *EAX
 subl QWORD ESP 4 ESP
 subl QWORD ESP 0 ESP
-jmp block_1
-block_3:
+jmp block_2
+block_1:
 subl QWORD ESP 0 ESP
 
 block_4:
@@ -507,14 +507,13 @@ push DWORD ECX
 push DWORD 0
 cmp DWORD
 jne block_5
-je block_7
+je block_6
 
 block_5:
 # break;
 subl QWORD ESP 0 ESP
-jmp block_7
+jmp block_6
 
-block_6:
 # i = 5;
 push QWORD EBP
 push QWORD 12
@@ -531,7 +530,7 @@ subl QWORD ESP 4 ESP
 subl QWORD ESP 0 ESP
 jmp block_4
 
-block_7:
+block_6:
 # switch (i)
 push QWORD EBP
 push QWORD 12
@@ -542,30 +541,22 @@ pop DWORD EBX
 push DWORD EBX
 push DWORD 2
 cmp DWORD
-je block_8
+je block_7
 push DWORD EBX
 push DWORD 1
 cmp DWORD
-je block_A
+je block_9
 push DWORD EBX
 push DWORD 0
 cmp DWORD
-je block_C
+je block_A
 push DWORD EBX
 push DWORD 4
 cmp DWORD
-je block_E
-jmp block_10
+je block_B
+jmp block_C
 
-# return 0;
-push DWORD 0
-mov QWORD 0 EAX
-pop DWORD EAX
-mov QWORD EBP ESP
-push DWORD EAX
-ret
-
-block_8:
+block_7:
 # i = 3;
 push QWORD EBP
 push QWORD 12
@@ -581,9 +572,9 @@ subl QWORD ESP 8 ESP
 subl QWORD ESP 4 ESP
 
 # break;
-jmp block_9
+subl QWORD ESP 0 ESP
+jmp block_8
 
-block_9:
 # i = 137;
 push QWORD EBP
 push QWORD 12
@@ -599,7 +590,16 @@ subl QWORD ESP 8 ESP
 subl QWORD ESP 4 ESP
 subl QWORD ESP 0 ESP
 
-block_A:
+block_8:
+# return 0;
+push DWORD 0
+mov QWORD 0 EAX
+pop DWORD EAX
+mov QWORD EBP ESP
+push DWORD EAX
+ret
+
+block_9:
 # i = 5;
 push QWORD EBP
 push QWORD 12
@@ -615,11 +615,11 @@ subl QWORD ESP 8 ESP
 subl QWORD ESP 4 ESP
 
 # break;
-jmp block_B
-block_B:
+subl QWORD ESP 0 ESP
+jmp block_8
 subl QWORD ESP 0 ESP
 
-block_C:
+block_A:
 # i = 27;
 push QWORD EBP
 push QWORD 12
@@ -635,11 +635,11 @@ subl QWORD ESP 8 ESP
 subl QWORD ESP 4 ESP
 
 # break;
-jmp block_D
-block_D:
+subl QWORD ESP 0 ESP
+jmp block_8
 subl QWORD ESP 0 ESP
 
-block_E:
+block_B:
 # i = 341;
 push QWORD EBP
 push QWORD 12
@@ -655,11 +655,11 @@ subl QWORD ESP 8 ESP
 subl QWORD ESP 4 ESP
 
 # break;
-jmp block_F
-block_F:
+subl QWORD ESP 0 ESP
+jmp block_8
 subl QWORD ESP 0 ESP
 
-block_10:
+block_C:
 # i = 22;
 push QWORD EBP
 push QWORD 12
@@ -675,8 +675,8 @@ subl QWORD ESP 8 ESP
 subl QWORD ESP 4 ESP
 
 # break;
-jmp block_11
-block_11:
+subl QWORD ESP 0 ESP
+jmp block_8
 subl QWORD ESP 0 ESP
 
 CreateI:

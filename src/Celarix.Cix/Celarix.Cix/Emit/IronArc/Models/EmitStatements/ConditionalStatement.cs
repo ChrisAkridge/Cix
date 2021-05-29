@@ -38,7 +38,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                 {
                     SourceVertex = trueFlow.ControlFlow.End,
                     FlowType = FlowEdgeType.UnconditionalJump,
-                    TargetType = JumpTargetType.ToBreakOrAfterTarget
+                    TargetType = JumpTargetType.ToAfterTarget
                 }
             };
             
@@ -54,7 +54,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                 {
                     SourceVertex = falseFlow.ControlFlow.End,
                     FlowType = FlowEdgeType.UnconditionalJump,
-                    TargetType = JumpTargetType.ToBreakOrAfterTarget
+                    TargetType = JumpTargetType.ToAfterTarget
                 });
             }
             else
@@ -63,7 +63,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                 {
                     SourceVertex = comparisonFlow.End,
                     FlowType = FlowEdgeType.UnconditionalJump,
-                    TargetType = JumpTargetType.ToBreakOrAfterTarget
+                    TargetType = JumpTargetType.ToAfterTarget
                 });
             }
 
