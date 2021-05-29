@@ -18,8 +18,7 @@ namespace Celarix.Cix.Compiler.Extensions
         // https://stackoverflow.com/a/14087738/2709212
         public static string ToLiteral(this string input)
         {
-            var literal = new StringBuilder(input.Length + 2);
-            literal.Append('"');
+            var literal = new StringBuilder(input.Length);
 
             foreach (var c in input)
             {
@@ -85,8 +84,6 @@ namespace Celarix.Cix.Compiler.Extensions
                         break;
                 }
             }
-
-            literal.Append('"');
 
             return literal.ToString();
         }

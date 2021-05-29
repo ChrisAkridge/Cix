@@ -26,7 +26,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         {
             logger.Trace($"Generating code for hardware call {CallName}");
             
-            var pushArgumentsFlow = new List<IConnectable>();
+            var pushArguments = new List<IConnectable>();
             var parameterSizeSum = 0;
             
             foreach (var parameterType in ParameterTypes)
@@ -37,14 +37,14 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                     || parameterType.Size == 8)
                 {
                     var operandSize = EmitHelpers.ToOperandSize(parameterType.Size);
-                    pushArgumentsFlow.Add(new InstructionVertex("push", operandSize, EmitHelpers.Register(Register.EBP, isPointer: true, parameterSizeSum)));
+                    pushArguments.Add(new InstructionVertex("push", operandSize, EmitHelpers.Register(Register.EBP, isPointer: true, parameterSizeSum)));
                 }
                 else
                 {
-                    pushArgumentsFlow.Add(new InstructionVertex("addl", OperandSize.Qword,
+                    pushArguments.Add(new InstructionVertex("addl", OperandSize.Qword,
                         EmitHelpers.Register(Register.ESP), new IntegerOperand(parameterType.Size),
                         EmitHelpers.Register(Register.ESP)));
-                    pushArgumentsFlow.Add(new InstructionVertex("movln", OperandSize.NotUsed,
+                    pushArguments.Add(new InstructionVertex("movln", OperandSize.NotUsed,
                         EmitHelpers.Register(Register.EBP, isPointer: true, parameterSizeSum),
                         EmitHelpers.Register(Register.ESP, isPointer: true, -parameterType.Size),
                         new IntegerOperand(parameterType.Size)));
@@ -61,11 +61,12 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             
             context.CurrentStack.Push(new VirtualStackEntry("<hwcallResult>", ComputedType));
 
-            if (pushArgumentsFlow.Any())
+            if (pushArguments.Any())
             {
+                var pushArgumentsFlow = EmitHelpers.ConnectWithDirectFlow(pushArguments);
                 var stackArgsInstruction = new InstructionVertex("stackargs");
-                stackArgsInstruction.ConnectTo(pushArgumentsFlow.First(), FlowEdgeType.DirectFlow);
-                pushArgumentsFlow.Last().ConnectTo(hwcallInstruction, FlowEdgeType.DirectFlow);
+                stackArgsInstruction.ConnectTo(pushArgumentsFlow.Start, FlowEdgeType.DirectFlow);
+                pushArgumentsFlow.End.ConnectTo(hwcallInstruction, FlowEdgeType.DirectFlow);
 
                 return new StartEndVertices(stackArgsInstruction, hwcallInstruction);
             }

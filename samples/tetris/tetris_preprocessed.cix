@@ -263,107 +263,107 @@ Tetrimino* RandomTetrimino()
 
 byte HW_System_RegisterInterruptHandler(uint deviceId, byte* interruptName, void* handlerAddress)
 {
-    return 0 /* hardware call: RegisterInterruptHandler */;
+    return 0 /* hardware call: System::RegisterInterruptHandler */;
 }
 
 void HW_System_UnregisterInterruptHandler(uint deviceId, byte* interruptName, byte handlerIndex)
 {
-    /* hardware call: UnregisterInterruptHandler */;
+    /* hardware call: System::UnregisterInterruptHandler */;
 }
 
 void HW_System_RaiseError(uint errorCode)
 {
-    /* hardware call: RaiseError */;
+    /* hardware call: System::RaiseError */;
 }
 
 void HW_System_RegisterErrorHandler(uint errorCode, void* handlerAddress)
 {
-    /* hardware call: RegisterErrorHandler */;
+    /* hardware call: System::RegisterErrorHandler */;
 }
 
 void HW_System_UnregisterErrorHandler(uint errorCode)
 {
-    /* hardware call: UnregisterErrorHandler */;
+    /* hardware call: System::UnregisterErrorHandler */;
 }
 
 ulong HW_System_GetLastErrorDescriptionSize()
 {
-    return 0 /* hardware call: GetLastErrorDescriptionSize */;
+    return 0 /* hardware call: System::GetLastErrorDescriptionSize */;
 }
 
 void HW_System_GetLastErrorDescription(void* destination)
 {
-    /* hardware call: GetLastErrorDescription */;
+    /* hardware call: System::GetLastErrorDescription */;
 }
 
 int HW_System_GetHardwareDeviceCount()
 {
-    return 0 /* hardware call: GetHardwareDeviceCount */;
+    return 0 /* hardware call: System::GetHardwareDeviceCount */;
 }
 
 ulong HW_System_GetHardwareDeviceDescriptionSize(uint deviceId)
 {
-    return 0 /* hardware call: GetHardwareDeviceDescriptionSize */;
+    return 0 /* hardware call: System::GetHardwareDeviceDescriptionSize */;
 }
 
 void HW_System_GetHardwareDeviceDescription(uint deviceId, void* destination)
 {
-    /* hardware call: GetHardwareDeviceDescription */;
+    /* hardware call: System::GetHardwareDeviceDescription */;
 }
 
 ulong HW_System_GetAllHardwareDeviceDescriptionsSize()
 {
-    return 0 /* hardware call: GetAllHardwareDeviceDescriptionsSize */;
+    return 0 /* hardware call: System::GetAllHardwareDeviceDescriptionsSize */;
 }
 
 void HW_System_GetAllHardwareDeviceDescriptions(void* destination)
 {
-    /* hardware call: GetAllHardwareDeviceDescriptions */;
+    /* hardware call: System::GetAllHardwareDeviceDescriptions */;
 }
 
 uint HW_System_CreatePageTable()
 {
-    return 0 /* hardware call: CreatePageTable */;
+    return 0 /* hardware call: System::CreatePageTable */;
 }
 
 void HW_System_DestroyPageTable(uint pageTableId)
 {
-    /* hardware call: DestroyPageTable */;
+    /* hardware call: System::DestroyPageTable */;
 }
 
 void HW_System_ChangeCurrentPageTable(uint pageTableId)
 {
-    /* hardware call: ChangeCurrentPageTable */;
+    /* hardware call: System::ChangeCurrentPageTable */;
 }
 
 void HW_System_CopyMemory(byte direction, uint pageTableId, void* srcAddress, void* destAddress, ulong length)
 {
-    /* hardware call: CopyMemory */;
+    /* hardware call: System::CopyMemory */;
 }
 
 void HW_TerminalDevice_Write(byte* text)
 {
-    /* hardware call: Write */;
+    /* hardware call: TerminalDevice::Write */;
 }
 
 void HW_TerminalDevice_WriteLine(byte* text)
 {
-    /* hardware call: WriteLine */;
+    /* hardware call: TerminalDevice::WriteLine */;
 }
 
 ushort HW_TerminalDevice_Read()
 {
-    return 0 /* hardware call: Read */;
+    return 0 /* hardware call: TerminalDevice::Read */;
 }
 
 void HW_TerminalDevice_ReadLine(void* destination)
 {
-    /* hardware call: ReadLine */;
+    /* hardware call: TerminalDevice::ReadLine */;
 }
 
 void HW_Debugger_Break()
 {
-    /* hardware call: Break */;
+    /* hardware call: Debugger::Break */;
 }
 
 void __globals_init()

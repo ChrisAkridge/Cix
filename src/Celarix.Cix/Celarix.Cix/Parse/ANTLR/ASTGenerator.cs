@@ -321,7 +321,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
 
                 var literal = (literalCase.Integer() != null)
                     ? GenerateIntegerLiteral(literalCase.Integer())
-                    : (Literal)new StringLiteral { Value = literalCase.StringLiteral().GetText() };
+                    : (Literal)new StringLiteral { Value = literalCase.StringLiteral().GetText().Trim('\"') };
 
                 return new CaseStatement
                 {
@@ -665,7 +665,7 @@ namespace Celarix.Cix.Compiler.Parse.ANTLR
             primaryExpression.Identifier() != null
                 ? new Identifier { IdentifierText = primaryExpression.Identifier().GetText() }
                 : primaryExpression.StringLiteral() != null
-                    ? new StringLiteral { Value = primaryExpression.StringLiteral().GetText() }
+                    ? new StringLiteral { Value = primaryExpression.StringLiteral().GetText().Trim('\"') }
                     : primaryExpression.number() != null
                         ? GenerateNumber(primaryExpression.number())
                         : GenerateExpression(primaryExpression.expression());

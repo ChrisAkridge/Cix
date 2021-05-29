@@ -22,7 +22,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                 {
                     throw new InvalidOperationException("Function must return value");
                 }
-
+                
                 var returnFlow = new IConnectable[]
                 {
                     new CommentPrinterVertex(OriginalCode), 

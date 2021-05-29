@@ -62,12 +62,12 @@ namespace Celarix.Cix.Compiler.Lowering
                     {
                         Expression = new HardwareCallVoidInternal
                         {
-                            CallName = call.CallName,
+                            CallName = $"{deviceName}::{call.CallName}",
                             ParameterTypes = call.Parameters.Select(p => (DataType)new NamedDataType
-                                {
-                                    Name = p.Type.TypeName, PointerLevel = p.Type.PointerLevel
-                                })
-                                .ToList()
+                            {
+                                Name = p.Type.TypeName, PointerLevel = p.Type.PointerLevel
+                            })
+                            .ToList()
                         }
                     }
                 };
@@ -87,7 +87,7 @@ namespace Celarix.Cix.Compiler.Lowering
                     {
                         ReturnValue = new HardwareCallReturnsInternal
                         {
-                            CallName = call.CallName,
+                            CallName = $"{deviceName}::{call.CallName}",
                             ReturnType = returnType,
                             ParameterTypes = call.Parameters
                                 .Select(p => (DataType)new NamedDataType

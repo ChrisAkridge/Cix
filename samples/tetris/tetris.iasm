@@ -102,11 +102,11 @@ ret
 Main:
 
 # "System::GetMemoryMappedHWStartAddress";
-push  "\"System::GetMemoryMappedHWStartAddress\""
+push  "System::GetMemoryMappedHWStartAddress"
 subl QWORD ESP 8 ESP
 
 # "VGAMonitor";
-push  "\"VGAMonitor\""
+push  "VGAMonitor"
 subl QWORD ESP 8 ESP
 
 # InitRNG();
@@ -297,7 +297,7 @@ subl QWORD ESP 8 ESP
 subl QWORD ESP 8 ESP
 
 # "Timer::CallOnLoop";
-push  "\"Timer::CallOnLoop\""
+push  "Timer::CallOnLoop"
 subl QWORD ESP 8 ESP
 
 # game = malloc(sizeof(Game));
@@ -409,7 +409,7 @@ mov DWORD *EBP+24 *EBP+16
 subl QWORD ESP 8 ESP
 subl QWORD ESP 4 ESP
 
-block_2:
+block_1:
 # while (i < 200)
 push QWORD EBP
 push QWORD 12
@@ -431,10 +431,10 @@ pop DWORD ECX
 push DWORD ECX
 push DWORD 0
 cmp DWORD
-jne block_3
-je block_1
+jne block_2
+je block_3
 
-block_3:
+block_2:
 # game.Board->Cells[i] = 0;
 push QWORD ERP
 push QWORD 44
@@ -480,8 +480,8 @@ push DWORD *EAX
 incl DWORD *EAX
 subl QWORD ESP 4 ESP
 subl QWORD ESP 0 ESP
-jmp block_2
-block_1:
+jmp block_1
+block_3:
 subl QWORD ESP 0 ESP
 
 block_4:
@@ -1937,23 +1937,37 @@ ret
 
 HW_System_RegisterInterruptHandler:
 
-# return 0 /* hardware call: RegisterInterruptHandler */;
+# return 0 /* hardware call: System::RegisterInterruptHandler */;
 stackargs
 push DWORD *EBP
+push QWORD *EBP+4
+push QWORD *EBP+12
+hwcall  "System::RegisterInterruptHandler"
+mov QWORD 0 EAX
+pop BYTE EAX
+mov QWORD EBP ESP
+push BYTE EAX
+ret
 
 HW_System_UnregisterInterruptHandler:
 
-# /* hardware call: UnregisterInterruptHandler */;
+# /* hardware call: System::UnregisterInterruptHandler */;
 stackargs
 push DWORD *EBP
+push QWORD *EBP+4
+push BYTE *EBP+12
+hwcall  "System::UnregisterInterruptHandler"
+
+# return;
+mov QWORD EBP ESP
+ret
 
 HW_System_RaiseError:
 
-# /* hardware call: RaiseError */;
+# /* hardware call: System::RaiseError */;
 stackargs
 push DWORD *EBP
-hwcall  "RaiseError"
-subl QWORD ESP 1 ESP
+hwcall  "System::RaiseError"
 
 # return;
 mov QWORD EBP ESP
@@ -1961,17 +1975,22 @@ ret
 
 HW_System_RegisterErrorHandler:
 
-# /* hardware call: RegisterErrorHandler */;
+# /* hardware call: System::RegisterErrorHandler */;
 stackargs
 push DWORD *EBP
+push QWORD *EBP+4
+hwcall  "System::RegisterErrorHandler"
+
+# return;
+mov QWORD EBP ESP
+ret
 
 HW_System_UnregisterErrorHandler:
 
-# /* hardware call: UnregisterErrorHandler */;
+# /* hardware call: System::UnregisterErrorHandler */;
 stackargs
 push DWORD *EBP
-hwcall  "UnregisterErrorHandler"
-subl QWORD ESP 1 ESP
+hwcall  "System::UnregisterErrorHandler"
 
 # return;
 mov QWORD EBP ESP
@@ -1979,8 +1998,8 @@ ret
 
 HW_System_GetLastErrorDescriptionSize:
 
-# return 0 /* hardware call: GetLastErrorDescriptionSize */;
-hwcall  "GetLastErrorDescriptionSize"
+# return 0 /* hardware call: System::GetLastErrorDescriptionSize */;
+hwcall  "System::GetLastErrorDescriptionSize"
 mov QWORD 0 EAX
 pop QWORD EAX
 mov QWORD EBP ESP
@@ -1989,11 +2008,10 @@ ret
 
 HW_System_GetLastErrorDescription:
 
-# /* hardware call: GetLastErrorDescription */;
+# /* hardware call: System::GetLastErrorDescription */;
 stackargs
 push QWORD *EBP
-hwcall  "GetLastErrorDescription"
-subl QWORD ESP 1 ESP
+hwcall  "System::GetLastErrorDescription"
 
 # return;
 mov QWORD EBP ESP
@@ -2001,8 +2019,8 @@ ret
 
 HW_System_GetHardwareDeviceCount:
 
-# return 0 /* hardware call: GetHardwareDeviceCount */;
-hwcall  "GetHardwareDeviceCount"
+# return 0 /* hardware call: System::GetHardwareDeviceCount */;
+hwcall  "System::GetHardwareDeviceCount"
 mov QWORD 0 EAX
 pop DWORD EAX
 mov QWORD EBP ESP
@@ -2011,10 +2029,10 @@ ret
 
 HW_System_GetHardwareDeviceDescriptionSize:
 
-# return 0 /* hardware call: GetHardwareDeviceDescriptionSize */;
+# return 0 /* hardware call: System::GetHardwareDeviceDescriptionSize */;
 stackargs
 push DWORD *EBP
-hwcall  "GetHardwareDeviceDescriptionSize"
+hwcall  "System::GetHardwareDeviceDescriptionSize"
 mov QWORD 0 EAX
 pop QWORD EAX
 mov QWORD EBP ESP
@@ -2023,14 +2041,20 @@ ret
 
 HW_System_GetHardwareDeviceDescription:
 
-# /* hardware call: GetHardwareDeviceDescription */;
+# /* hardware call: System::GetHardwareDeviceDescription */;
 stackargs
 push DWORD *EBP
+push QWORD *EBP+4
+hwcall  "System::GetHardwareDeviceDescription"
+
+# return;
+mov QWORD EBP ESP
+ret
 
 HW_System_GetAllHardwareDeviceDescriptionsSize:
 
-# return 0 /* hardware call: GetAllHardwareDeviceDescriptionsSize */;
-hwcall  "GetAllHardwareDeviceDescriptionsSize"
+# return 0 /* hardware call: System::GetAllHardwareDeviceDescriptionsSize */;
+hwcall  "System::GetAllHardwareDeviceDescriptionsSize"
 mov QWORD 0 EAX
 pop QWORD EAX
 mov QWORD EBP ESP
@@ -2039,11 +2063,10 @@ ret
 
 HW_System_GetAllHardwareDeviceDescriptions:
 
-# /* hardware call: GetAllHardwareDeviceDescriptions */;
+# /* hardware call: System::GetAllHardwareDeviceDescriptions */;
 stackargs
 push QWORD *EBP
-hwcall  "GetAllHardwareDeviceDescriptions"
-subl QWORD ESP 1 ESP
+hwcall  "System::GetAllHardwareDeviceDescriptions"
 
 # return;
 mov QWORD EBP ESP
@@ -2051,8 +2074,8 @@ ret
 
 HW_System_CreatePageTable:
 
-# return 0 /* hardware call: CreatePageTable */;
-hwcall  "CreatePageTable"
+# return 0 /* hardware call: System::CreatePageTable */;
+hwcall  "System::CreatePageTable"
 mov QWORD 0 EAX
 pop DWORD EAX
 mov QWORD EBP ESP
@@ -2061,11 +2084,10 @@ ret
 
 HW_System_DestroyPageTable:
 
-# /* hardware call: DestroyPageTable */;
+# /* hardware call: System::DestroyPageTable */;
 stackargs
 push DWORD *EBP
-hwcall  "DestroyPageTable"
-subl QWORD ESP 1 ESP
+hwcall  "System::DestroyPageTable"
 
 # return;
 mov QWORD EBP ESP
@@ -2073,11 +2095,10 @@ ret
 
 HW_System_ChangeCurrentPageTable:
 
-# /* hardware call: ChangeCurrentPageTable */;
+# /* hardware call: System::ChangeCurrentPageTable */;
 stackargs
 push DWORD *EBP
-hwcall  "ChangeCurrentPageTable"
-subl QWORD ESP 1 ESP
+hwcall  "System::ChangeCurrentPageTable"
 
 # return;
 mov QWORD EBP ESP
@@ -2085,17 +2106,25 @@ ret
 
 HW_System_CopyMemory:
 
-# /* hardware call: CopyMemory */;
+# /* hardware call: System::CopyMemory */;
 stackargs
 push BYTE *EBP
+push DWORD *EBP+1
+push QWORD *EBP+5
+push QWORD *EBP+13
+push QWORD *EBP+21
+hwcall  "System::CopyMemory"
+
+# return;
+mov QWORD EBP ESP
+ret
 
 HW_TerminalDevice_Write:
 
-# /* hardware call: Write */;
+# /* hardware call: TerminalDevice::Write */;
 stackargs
 push QWORD *EBP
-hwcall  "Write"
-subl QWORD ESP 1 ESP
+hwcall  "TerminalDevice::Write"
 
 # return;
 mov QWORD EBP ESP
@@ -2103,11 +2132,10 @@ ret
 
 HW_TerminalDevice_WriteLine:
 
-# /* hardware call: WriteLine */;
+# /* hardware call: TerminalDevice::WriteLine */;
 stackargs
 push QWORD *EBP
-hwcall  "WriteLine"
-subl QWORD ESP 1 ESP
+hwcall  "TerminalDevice::WriteLine"
 
 # return;
 mov QWORD EBP ESP
@@ -2115,8 +2143,8 @@ ret
 
 HW_TerminalDevice_Read:
 
-# return 0 /* hardware call: Read */;
-hwcall  "Read"
+# return 0 /* hardware call: TerminalDevice::Read */;
+hwcall  "TerminalDevice::Read"
 mov QWORD 0 EAX
 pop WORD EAX
 mov QWORD EBP ESP
@@ -2125,11 +2153,10 @@ ret
 
 HW_TerminalDevice_ReadLine:
 
-# /* hardware call: ReadLine */;
+# /* hardware call: TerminalDevice::ReadLine */;
 stackargs
 push QWORD *EBP
-hwcall  "ReadLine"
-subl QWORD ESP 1 ESP
+hwcall  "TerminalDevice::ReadLine"
 
 # return;
 mov QWORD EBP ESP
@@ -2137,9 +2164,8 @@ ret
 
 HW_Debugger_Break:
 
-# /* hardware call: Break */;
-hwcall  "Break"
-subl QWORD ESP 1 ESP
+# /* hardware call: Debugger::Break */;
+hwcall  "Debugger::Break"
 
 # return;
 mov QWORD EBP ESP
@@ -2151,7 +2177,7 @@ __globals_init:
 push QWORD ERP
 push QWORD 68
 add QWORD
-push  "\"Hello, world!\""
+push  "Hello, world!"
 mov QWORD 0 ECX
 pop QWORD ECX
 push QWORD ECX
