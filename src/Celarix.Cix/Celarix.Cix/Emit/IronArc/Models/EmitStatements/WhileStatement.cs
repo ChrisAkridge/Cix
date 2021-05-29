@@ -30,11 +30,13 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                 new InstructionVertex("cmp", OperandSize.Dword),
             });
 
+            context.CurrentStack.Pop();
+
             var loopFlow = LoopStatement.Generate(context, this);
 
             foreach (var jump in loopFlow.UnconnectedJumps.Where(j => j.TargetType == JumpTargetType.ToContinueTarget))
             {
-                jump.JumpVertex.ConnectTo(comparisonFlow, jump.FlowType);
+                jump.SourceVertex.ConnectTo(comparisonFlow, jump.FlowType);
             }
 
             loopFlow.UnconnectedJumps.RemoveAll(j => j.TargetType == JumpTargetType.ToContinueTarget);
@@ -43,7 +45,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             loopFlow.ConnectTo(comparisonFlow, FlowEdgeType.UnconditionalJump);
             var jumpToAfter = new UnconnectedJump
             {
-                JumpVertex = comparisonFlow.End,
+                SourceVertex = comparisonFlow.End,
                 FlowType = FlowEdgeType.JumpIfEqual,
                 TargetType = JumpTargetType.ToBreakOrAfterTarget
             };

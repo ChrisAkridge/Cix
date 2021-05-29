@@ -48,28 +48,34 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             {
                 ArrayAccess arrayAccess => new TypedArrayAccess
                 {
-                    Operand = Build(arrayAccess.Operand), Index = Build(arrayAccess.Index)
+                    Operand = Build(arrayAccess.Operand),
+                    Index = Build(arrayAccess.Index),
+                    OriginalCode = arrayAccess.PrettyPrint()
                 },
                 BinaryExpression binaryExpression => new TypedBinaryExpression
                 {
                     Left = Build(binaryExpression.Left),
                     Right = Build(binaryExpression.Right),
-                    Operator = binaryExpression.Operator
+                    Operator = binaryExpression.Operator,
+                    OriginalCode = binaryExpression.PrettyPrint()
                 },
                 CastExpression castExpression => new TypedCastExpression
                 {
                     Expression = Build(castExpression.Operand),
-                    ToType = context.LookupDataTypeWithPointerLevel(castExpression.ToType)
+                    ToType = context.LookupDataTypeWithPointerLevel(castExpression.ToType),
+                    OriginalCode = castExpression.PrettyPrint()
                 },
                 FloatingPointLiteral floatingPointLiteral => new TypedFloatingPointLiteral
                 {
                     ValueBits = floatingPointLiteral.ValueBits,
-                    NumericLiteralType = floatingPointLiteral.NumericLiteralType
+                    NumericLiteralType = floatingPointLiteral.NumericLiteralType,
+                    OriginalCode = floatingPointLiteral.PrettyPrint()
                 },
                 FunctionInvocation functionInvocation => new TypedFunctionInvocation
                 {
                     Operand = Build(functionInvocation.Operand),
-                    Arguments = functionInvocation.Arguments.Select(Build).ToList()
+                    Arguments = functionInvocation.Arguments.Select(Build).ToList(),
+                    OriginalCode = functionInvocation.PrettyPrint()
                 },
                 HardwareCallReturnsInternal hardwareCallReturnsInternal => new
                     TypedHardwareCallReturnsInternal
@@ -80,6 +86,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                         ParameterTypes = hardwareCallReturnsInternal.ParameterTypes
                             .Select(context.LookupDataTypeWithPointerLevel)
                             .ToList(),
+                        OriginalCode = hardwareCallReturnsInternal.PrettyPrint()
                     },
                 HardwareCallVoidInternal hardwareCallVoidInternal => new TypedHardwareCallVoidInternal
                 {
@@ -87,24 +94,29 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                     CallName = hardwareCallVoidInternal.CallName,
                     ParameterTypes = hardwareCallVoidInternal.ParameterTypes
                         .Select(context.LookupDataTypeWithPointerLevel)
-                        .ToList()
+                        .ToList(),
+                    OriginalCode = hardwareCallVoidInternal.PrettyPrint()
                 },
                 Identifier identifier => new TypedIdentifier
                 {
-                    Name = identifier.IdentifierText
+                    Name = identifier.IdentifierText,
+                    OriginalCode = identifier.PrettyPrint()
                 },
                 IntegerLiteral integerLiteral => new TypedIntegerLiteral
                 {
                     ValueBits = integerLiteral.ValueBits,
-                    LiteralType = integerLiteral.LiteralType
+                    LiteralType = integerLiteral.LiteralType,
+                    OriginalCode = integerLiteral.PrettyPrint()
                 },
                 SizeOfExpression sizeOfExpression => new TypedSizeOfExpression
                 {
-                    Type = context.LookupDataTypeWithPointerLevel(sizeOfExpression.Type)
+                    Type = context.LookupDataTypeWithPointerLevel(sizeOfExpression.Type),
+                    OriginalCode = sizeOfExpression.PrettyPrint()
                 },
                 StringLiteral stringLiteral => new TypedStringLiteral
                 {
-                    LiteralValue = stringLiteral.Value
+                    LiteralValue = stringLiteral.Value,
+                    OriginalCode = stringLiteral.PrettyPrint()
                 },
                 TernaryExpression ternaryExpression => new TypedTernaryExpression
                 {
@@ -112,13 +124,15 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                     Operand2 = Build(ternaryExpression.Operand2),
                     Operand3 = Build(ternaryExpression.Operand3),
                     Operator1 = ternaryExpression.Operator1,
-                    Operator2 = ternaryExpression.Operator2
+                    Operator2 = ternaryExpression.Operator2,
+                    OriginalCode = ternaryExpression.PrettyPrint()
                 },
                 UnaryExpression unaryExpression => new TypedUnaryExpression
                 {
                     Operand = Build(unaryExpression.Operand),
                     Operator = unaryExpression.Operator,
-                    IsPostfix = unaryExpression.IsPostfix
+                    IsPostfix = unaryExpression.IsPostfix,
+                    OriginalCode = unaryExpression.PrettyPrint()
                 },
                 _ => throw new InvalidOperationException("Internal compiler error: unrecognized expression type")
             };

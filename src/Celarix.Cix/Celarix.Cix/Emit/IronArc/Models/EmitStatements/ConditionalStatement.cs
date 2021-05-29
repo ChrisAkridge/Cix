@@ -36,11 +36,13 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             {
                 new UnconnectedJump
                 {
-                    JumpVertex = trueFlow.ControlFlow.End,
+                    SourceVertex = trueFlow.ControlFlow.End,
                     FlowType = FlowEdgeType.UnconditionalJump,
                     TargetType = JumpTargetType.ToBreakOrAfterTarget
                 }
             };
+            
+            // WYLO: read the Notepad++ doc
             
             comparisonFlow.ConnectTo(trueFlow, FlowEdgeType.JumpIfNotEqual);
 
@@ -50,7 +52,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                 
                 unconnectedJumps.Add(new UnconnectedJump
                 {
-                    JumpVertex = falseFlow.ControlFlow.End,
+                    SourceVertex = falseFlow.ControlFlow.End,
                     FlowType = FlowEdgeType.UnconditionalJump,
                     TargetType = JumpTargetType.ToBreakOrAfterTarget
                 });
@@ -59,7 +61,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             {
                 unconnectedJumps.Add(new UnconnectedJump
                 {
-                    JumpVertex = comparisonFlow.End,
+                    SourceVertex = comparisonFlow.End,
                     FlowType = FlowEdgeType.UnconditionalJump,
                     TargetType = JumpTargetType.ToBreakOrAfterTarget
                 });

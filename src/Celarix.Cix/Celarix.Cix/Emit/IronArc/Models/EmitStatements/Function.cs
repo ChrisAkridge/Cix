@@ -66,7 +66,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                     }
 
                     breakAfterTarget.IsJumpTarget = true;
-                    jump.JumpVertex.ConnectTo(breakAfterTarget, jump.FlowType);
+                    jump.SourceVertex.ConnectTo(breakAfterTarget, jump.FlowType);
                 }
 
                 previousJumps.RemoveAll(j => j.TargetType == JumpTargetType.ToBreakOrAfterTarget);

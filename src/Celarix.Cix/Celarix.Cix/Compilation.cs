@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Celarix.Cix.Compiler.Emit;
 using Celarix.Cix.Compiler.Emit.IronArc;
@@ -59,6 +60,16 @@ namespace Celarix.Cix.Compiler
             
             var sourceFileContext = ParserInvoker.Invoke(preparseFile);
             AbstractSyntaxTreeRoot = ASTGenerator.GenerateSourceFile(sourceFileContext);
+
+            if (CompilationOptions.SaveTemps)
+            {
+                var astJson = JsonConvert.SerializeObject(AbstractSyntaxTreeRoot, new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.All
+                });
+                
+                File.WriteAllText(IO.IO.GetSaveTempsPath(CompilationOptions.OutputFilePath, SaveTempsFile.AbstractSyntaxTree), astJson);
+            }
             
             logger.Info("Ending parse phase...");
         }
@@ -74,9 +85,12 @@ namespace Celarix.Cix.Compiler
             
             Lowerings.PerformLowerings(AbstractSyntaxTreeRoot);
 
-            var tempFileText = AbstractSyntaxTreeRoot.PrettyPrint(0);
-            File.WriteAllText(CompilationOptions.OutputFilePath, tempFileText);
-            
+            if (CompilationOptions.SaveTemps)
+            {
+                var tempFileText = AbstractSyntaxTreeRoot.PrettyPrint(0);
+                File.WriteAllText(IO.IO.GetSaveTempsPath(CompilationOptions.OutputFilePath, SaveTempsFile.Preprocessed), tempFileText);
+            }
+
             logger.Info("End lowering phase...");
         }
 
@@ -86,8 +100,18 @@ namespace Celarix.Cix.Compiler
 
             var codeGenerator = new CodeGenerator(AbstractSyntaxTreeRoot);
             codeGenerator.GenerateCode();
+            IronArcAssemblyFile = codeGenerator.IronArcAssembly;
             
             logger.Info("End emit phase...");
+        }
+
+        public void SaveAssemblyFile()
+        {
+            logger.Info("Saving assembly file...");
+            
+            File.WriteAllText(CompilationOptions.OutputFilePath, IronArcAssemblyFile);
+            
+            logger.Info("Saved assembly file");
         }
     }
 }

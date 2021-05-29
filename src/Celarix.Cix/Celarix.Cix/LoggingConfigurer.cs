@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
@@ -26,9 +27,25 @@ namespace Celarix.Cix.Compiler
                 Layout = "${time}|${level:uppercase=true}|${logger}|${message}"
             };
             config.AddRule(LogLevel.FromString(minimumLevel), LogLevel.Fatal, coloredConsoleTarget);
-            LogManager.Configuration = config;
 
+            ConfigureLoggingToFile(config);
+
+            LogManager.Configuration = config;
             LogManager.GetCurrentClassLogger().Info($"Configured logging with minimum level {minimumLevel}");
+        }
+
+        [Conditional("DEBUG")]
+        private static void ConfigureLoggingToFile(LoggingConfiguration config)
+        {
+            var fileTarget = new FileTarget
+            {
+                Name = "debugFile",
+                FileName = @"G:\Documents\Files\Programming\Cix Logs\log.txt",
+                DeleteOldFileOnStartup = true,
+                KeepFileOpen = true
+            };
+            
+            config.AddRule(LogLevel.Trace, LogLevel.Fatal, fileTarget);
         }
 	}
 }

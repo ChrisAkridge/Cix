@@ -20,7 +20,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
             stackEntry.OffsetFromEBP = Size;
             Size += stackEntry.UsageType.Size;
 
-            logger.Trace($"Pushed {stackEntry.Name ?? "stack entry"} ({stackEntry.UsageType.Size} bytes) at EBP+{stackEntry.OffsetFromEBP}");
+            logger.Trace($"Pushed {stackEntry.Name ?? "stack entry"} ({stackEntry.UsageType.Size} bytes) at EBP+{stackEntry.OffsetFromEBP} ({Size} bytes of stack)");
         }
 
         public VirtualStackEntry Pop()
@@ -28,7 +28,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
             var entry = Entries.Pop();
             Size -= entry.UsageType.Size;
             
-            logger.Trace($"Popped {entry.Name ?? "stack entry"} ({entry.UsageType.Size} bytes) from EBP+{entry.OffsetFromEBP}");
+            logger.Trace($"Popped {entry.Name ?? "stack entry"} ({entry.UsageType.Size} bytes) from EBP+{entry.OffsetFromEBP}  ({Size} bytes of stack)");
 
             return entry;
         }

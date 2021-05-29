@@ -33,6 +33,7 @@ namespace Celarix.Cix.Console
             compilation.Parse();
             compilation.Lower();
             compilation.Emit();
+            compilation.SaveAssemblyFile();
         }
 	}
 }

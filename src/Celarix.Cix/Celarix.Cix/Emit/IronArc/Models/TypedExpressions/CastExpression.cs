@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NLog;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 {
     internal sealed class CastExpression : TypedExpression
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         public UsageTypeInfo ToType { get; set; }
         public TypedExpression Expression { get; set; }
 
@@ -24,11 +27,16 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             }
             
             ComputedType = ToType;
+            
+            logger.Trace($"Cast expression {OriginalCode} has type {ComputedType}");
+            
             return ToType;
         }
 
         public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
+            logger.Trace($"Generating code for {OriginalCode}");
+            
             if (Expression.ComputedType.Size != ToType.Size)
             {
                 var oldEntry = context.CurrentStack.Pop();

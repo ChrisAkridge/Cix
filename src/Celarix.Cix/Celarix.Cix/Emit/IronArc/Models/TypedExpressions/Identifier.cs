@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using Celarix.Cix.Compiler.Parse.Models.AST.v1;
+using NLog;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 {
     internal sealed class Identifier : Literal
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         public Function ReferentFunction { get; set; }
         public VirtualStackEntry ReferentVariable { get; set; }
         public GlobalVariableInfo ReferentGlobal { get; set; }
@@ -81,11 +84,15 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             }
 
             ComputedType = computedType;
+            logger.Trace($"Identifier {OriginalCode} has type {ComputedType}");
+            
             return computedType;
         }
 
         public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
+            logger.Trace($"Generating code for identifier {OriginalCode}");
+            
             bool parentRequiresPointer = EmitHelpers.ExpressionRequiresPointer(parent);
             string stackEntryName;
             StartEndVertices computationFlow;
@@ -93,7 +100,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             switch (ReferentKind)
             {
                 case IdentifierReferentKind.Function:
-                    stackEntryName = "<functionReference>";
+                    stackEntryName = $"<functionReference>{Name}";
                     computationFlow = EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
                     {
                         new InstructionVertex("push", OperandSize.Qword, new LabelOperand(ReferentFunction.Name)),
@@ -102,7 +109,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                     break;
                 case IdentifierReferentKind.GlobalVariable:
                 {
-                    stackEntryName = "<globalReference>";
+                    stackEntryName = $"<globalReference>{Name}";
                     var computePointerFlow = new IConnectable[]
                     {
                         new InstructionVertex("push", OperandSize.Qword, EmitHelpers.Register(Register.ERP)),

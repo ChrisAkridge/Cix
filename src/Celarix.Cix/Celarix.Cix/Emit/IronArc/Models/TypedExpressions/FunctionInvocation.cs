@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NLog;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 {
     internal sealed class FunctionInvocation : TypedExpression
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         public TypedExpression Operand { get; set; }
         public List<TypedExpression> Arguments { get; set; }
 
@@ -25,6 +28,9 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
             var functionReturnType = (operandType.DeclaredType as FuncptrTypeInfo).ReturnType;
             ComputedType = functionReturnType;
+            
+            logger.Trace($"Function invocation {OriginalCode} has type {ComputedType}");
+            
             return ComputedType;
         }
 
@@ -32,6 +38,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         {
             // Set stackargs
             // Push arguments
+            logger.Trace($"Generating code for function invocation {OriginalCode}");
+            
             InstructionVertex stackArgsInstruction = null;
             var argumentFlows = Arguments.Select(a => a.Generate(context, this)).ToList();
 

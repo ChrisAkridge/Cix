@@ -105,14 +105,22 @@ int Main(int argc, byte** argv)
 		game.Board->Cells[i] = 0x00;
 	}
 	
+	while (i != 0)
+	{
+		break;
+		i = 5;
+	}
+	
 	switch (i)
 	{
-		case 2: { i = 3; break;  }
-		case 1: { i = 5; break;  }
+		case 2: { i = 3; break; i = 137; }
+		case 1: { i = 5; break; }
 		case 0: { i = 27; break; }
 		case 4: { i = 341; break; }
 		default: { i = 22; break; }
 	}
+	
+	return 0;
 }
 
 Tetrimino* CreateI()
@@ -123,6 +131,8 @@ Tetrimino* CreateI()
 	result.X1 = -1; result.Y1 = 0;
 	result.X2 = 1; result.Y2 = 0;
 	result.X3 = 2; result.Y2 = 0;
+	
+	return result;
 }
 
 Tetrimino* CreateO()
@@ -133,6 +143,8 @@ Tetrimino* CreateO()
 	result.X1 = 1; result.Y1 = 0;
 	result.X2 = 0; result.Y2 = 1;
 	result.X3 = 1; result.Y2 = 1;
+	
+	return result;
 }
 
 Tetrimino* CreateJ()
@@ -143,6 +155,8 @@ Tetrimino* CreateJ()
 	result.X1 = 0; result.Y1 = -1;
 	result.X2 = 0; result.Y2 = -2;
 	result.X3 = -1; result.Y2 = 0;
+	
+	return result;
 }
 
 Tetrimino* CreateL()
@@ -153,6 +167,8 @@ Tetrimino* CreateL()
 	result.X1 = 0; result.Y1 = -1;
 	result.X2 = 0; result.Y2 = -2;
 	result.X3 = 1; result.Y2 = 0;
+	
+	return result;
 }
 
 Tetrimino* CreateS()
@@ -163,6 +179,8 @@ Tetrimino* CreateS()
 	result.X1 = 1; result.Y1 = 0;
 	result.X2 = 1; result.Y2 = -1;
 	result.X3 = 2; result.Y2 = -1;
+	
+	return result;
 }
 
 Tetrimino* CreateT()
@@ -174,6 +192,7 @@ Tetrimino* CreateT()
 	result.X2 = 1; result.Y2 = 0;
 	result.X3 = 0; result.Y2 = 1;
 	return result;
+	
 }
 
 Tetrimino* CreateZ()

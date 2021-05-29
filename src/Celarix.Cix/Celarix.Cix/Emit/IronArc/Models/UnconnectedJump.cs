@@ -8,7 +8,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
 {
     internal sealed class UnconnectedJump
     {
-        public ControlFlowVertex JumpVertex { get; set; }
+        public ControlFlowVertex SourceVertex { get; set; }
         public FlowEdgeType FlowType { get; set; }
         public JumpTargetType TargetType { get; set; }
     }

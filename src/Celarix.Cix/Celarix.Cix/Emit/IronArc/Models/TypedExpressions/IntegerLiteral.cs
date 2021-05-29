@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NLog;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 {
     internal sealed class IntegerLiteral : Literal
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         public ulong ValueBits { get; set; }
         public NumericLiteralType LiteralType { get; set; }
 
@@ -43,12 +46,16 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 },
                 _ => throw new InvalidOperationException("Internal compiler error: wrong literal type assigned")
             };
+            
+            logger.Trace($"Integer literal {OriginalCode} has type {ComputedType}");
 
             return ComputedType;
         }
 
         public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
+            logger.Trace($"Generating code for integer literal {OriginalCode}");
+            
             var operandSize = EmitHelpers.ToOperandSize(ComputedType.Size);
             var pushInstruction = new InstructionVertex("push", operandSize, new IntegerOperand(ValueBits));
             context.CurrentStack.Push(new VirtualStackEntry("<integerLiteral>", ComputedType));

@@ -22,7 +22,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                 {
                     new UnconnectedJump
                     {
-                        JumpVertex = jumpPlaceholder,
+                        SourceVertex = jumpPlaceholder,
                         FlowType = FlowEdgeType.UnconditionalJump,
                         TargetType = JumpTargetType.ToContinueTarget
                     }

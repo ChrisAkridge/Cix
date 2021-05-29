@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NLog;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 {
     internal sealed class ArrayAccess : TypedExpression
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        
         public TypedExpression Operand { get; set; }
         public TypedExpression Index { get; set; }
 
@@ -41,6 +44,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 DeclaredType = operandType.DeclaredType,
                 PointerLevel = operandType.PointerLevel - 1
             };
+            
+            logger.Trace($"Array access {OriginalCode} has type {ComputedType}");
 
             return ComputedType;
         }
@@ -58,6 +63,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
              * <convert top of stack to QWORD>  [a (long)b*sizeof(TArray)]  Change b to be the right width
              * add QWORD                        [&(a[b])]                   Get pointer to array element
              */
+            
+            logger.Trace($"Generating code for {OriginalCode}");
             
             var getElementPointer = new List<IConnectable>
             {

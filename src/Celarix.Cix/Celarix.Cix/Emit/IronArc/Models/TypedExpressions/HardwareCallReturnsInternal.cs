@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using Celarix.Cix.Compiler.Parse.Models.AST.v1;
+using NLog;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 {
     internal sealed class HardwareCallReturnsInternal : TypedExpression
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         public Celarix.Cix.Compiler.Parse.Models.AST.v1.HardwareCallReturnsInternal ASTNode { get; set; }
         public string CallName { get; set; }
         public UsageTypeInfo ReturnType { get; set; }
@@ -15,12 +18,14 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         public override UsageTypeInfo ComputeType(EmitContext context, TypedExpression parent)
         {
             ComputedType = ReturnType;
-
+            logger.Trace($"Hardware call {CallName} has type {ComputedType}");
             return ComputedType;
         }
 
         public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
+            logger.Trace($"Generating code for hardware call {CallName}");
+            
             var pushArgumentsFlow = new List<IConnectable>();
             var parameterSizeSum = 0;
             

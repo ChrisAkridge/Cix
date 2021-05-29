@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NLog;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 {
     internal sealed class BinaryExpression : TypedExpression
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         private static readonly UsageTypeInfo intType =
             new UsageTypeInfo
             {
@@ -50,7 +53,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
             IsAssignable = Operator == "." || Operator == "->";
 
-            return ExpressionHelpers.GetOperatorKind(Operator, OperationKind.Binary) switch
+            var computedType = ExpressionHelpers.GetOperatorKind(Operator, OperationKind.Binary) switch
             {
                 OperatorKind.Arithmetic => ComputeTypeForArithmetic(),
                 OperatorKind.Bitwise => ComputeTypeForNumericOperation(),
@@ -67,6 +70,10 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 OperatorKind.Conditional => throw new InvalidOperationException("Unrecognized operator"),
                 _ => throw new InvalidOperationException("Unrecognized operator")
             };
+            
+            logger.Trace($"Binary expression {OriginalCode} has type {ComputedType}");
+
+            return computedType;
         }
 
         private UsageTypeInfo ComputeTypeForArithmetic()
@@ -227,6 +234,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         #region Instruction Emit
         public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
+            logger.Trace($"Generating code for {OriginalCode}");
+            
             var computedTypeIsFloatingPoint = ComputedType.DeclaredType is NamedTypeInfo namedType
                 && (namedType.Name == "float" || namedType.Name == "double");
             var computedTypeOperandSize = EmitHelpers.ToOperandSize(ComputedType.Size);
@@ -244,20 +253,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             var leftComputedType = (!thisRequiresPointer)
                 ? Left.ComputedType
                 : Left.ComputedType.WithPointerLevel(Left.ComputedType.PointerLevel + 1);
-
-            if (thisRequiresPointer
-                && Operator == "="
-                && Left is BinaryExpression binaryExpression0
-                && binaryExpression0.Left is BinaryExpression binaryExpression1
-                && binaryExpression1.Left is Identifier game
-                && game.Name == "game"
-                && binaryExpression1.Right is Identifier Board
-                && Board.Name == "Board"
-                && binaryExpression1.Operator == "."
-                && binaryExpression0.Operator == "->")
-            {
-                System.Diagnostics.Debugger.Break();
-            }
             
             // <generate left>  [left]
             var operandFlows = new List<IConnectable>
@@ -417,6 +412,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 
                 return new IConnectable[]
                 {
+                    EmitHelpers.ChangeWidthOfTopOfStack(context, EmitHelpers.ToOperandSize(Right.ComputedType.Size), computedTypeOperandSize),
                     new InstructionVertex("mov", OperandSize.Qword,
                         EmitHelpers.Register(Register.EBP, isPointer: true, destinationPointerOffsetFromEBP),
                         EmitHelpers.Register(Register.EAX)),
@@ -580,10 +576,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         {
             var computationFlow = new IConnectable[]
             {
-                new InstructionVertex("add", OperandSize.Qword), EmitHelpers.ZeroEAX(),
-                new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)), new InstructionVertex(
-                    "push", EmitHelpers.ToOperandSize(ComputedType.Size),
-                    EmitHelpers.Register(Register.EBP, isPointer: true)),
+                new InstructionVertex("add", OperandSize.Qword),
+                EmitHelpers.ZeroEAX(),
+                new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)),
+                new InstructionVertex("push", EmitHelpers.ToOperandSize(ComputedType.Size),
+                    EmitHelpers.Register(Register.EAX, isPointer: true)),
             };
 
             return computationFlow;

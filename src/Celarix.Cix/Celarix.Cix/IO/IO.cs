@@ -56,13 +56,14 @@ namespace Celarix.Cix.Compiler.IO
         }
 
         public static string GetSaveTempsPath(string outputFilePath, SaveTempsFile saveTempsFile) =>
-            Path.GetFileNameWithoutExtension(outputFilePath)
-            + saveTempsFile switch
-            {
-                SaveTempsFile.Preprocessed => "_preprocessed.cix",
-                SaveTempsFile.AbstractSyntaxTree => "_ast.json",
-                _ => throw new ArgumentException($"Unknown --save-temps file type {saveTempsFile}.",
-                    nameof(saveTempsFile))
-            };
+            Path.Combine(Path.GetDirectoryName(outputFilePath) ?? string.Empty,
+                Path.GetFileNameWithoutExtension(outputFilePath)
+                + saveTempsFile switch
+                {
+                    SaveTempsFile.Preprocessed => "_preprocessed.cix",
+                    SaveTempsFile.AbstractSyntaxTree => "_ast.json",
+                    _ => throw new ArgumentException($"Unknown --save-temps file type {saveTempsFile}.",
+                        nameof(saveTempsFile))
+                });
     }
 }

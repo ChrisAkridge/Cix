@@ -19,6 +19,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
 
             var setUpComparisonRegister = new InstructionVertex("pop", operandSize,
                 EmitHelpers.Register(Register.EBX));
+            context.CurrentStack.Pop();
 
             codeComment.ConnectTo(expressionFlow, FlowEdgeType.DirectFlow);
             expressionFlow.ConnectTo(setUpComparisonRegister, FlowEdgeType.DirectFlow);
@@ -42,6 +43,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                             c.CaseLiteral.Generate(context, null),
                             comparisonInstruction
                         };
+
+                        context.CurrentStack.Pop();
 
                         return new
                         {

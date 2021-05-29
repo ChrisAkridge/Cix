@@ -85,7 +85,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             {
                 if (function.Name == "Main")
                 {
-                    System.Diagnostics.Debugger.Break();
+                    // System.Diagnostics.Debugger.Break();
                 }
                 
                 logger.Trace($"Generating code for function {function.Name}");

@@ -117,6 +117,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                 "<<" => OperatorKind.Shift,
                 ">>" => OperatorKind.Shift,
                 "==" => OperatorKind.Comparison,
+                "!=" => OperatorKind.Comparison,
                 "<" => OperatorKind.Comparison,
                 ">" => OperatorKind.Comparison,
                 "<=" => OperatorKind.Comparison,

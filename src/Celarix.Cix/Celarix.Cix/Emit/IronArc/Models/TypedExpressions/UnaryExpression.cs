@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NLog;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 {
     internal sealed class UnaryExpression : TypedExpression
     {
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+
         public TypedExpression Operand { get; set; }
         public string Operator { get; set; }
         public bool IsPostfix { get; set; }
@@ -28,6 +31,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                     _ => throw new InvalidOperationException("Internal compiler error: unexpected unary operator")
                 };
 
+            logger.Trace($"Unary expression {OriginalCode} has type {ComputedType}");
+            
             return ComputedType;
         }
 
@@ -94,6 +99,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
         public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
+            logger.Trace($"Generating code for unary expression {OriginalCode}");
+            
             if (Operator == "sizeof")
             {
                 var pushInstruction =
@@ -207,6 +214,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             }
             else
             {
+                var operandFlow = Operand.Generate(context, this);
+                
                 context.CurrentStack.Pop();
                 context.CurrentStack.Push(new VirtualStackEntry("<postIncrementDecrementResult>", ComputedType));
                 var floatSize = (ComputedType.Size == 4) ? FloatSize.Single : FloatSize.Double;
@@ -214,6 +223,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 return !EmitHelpers.IsFloatingPointType(ComputedType.DeclaredType)
                     ? EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
                     {
+                        operandFlow,
                         new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)),
                         new InstructionVertex("push", operandSize,
                             EmitHelpers.Register(Register.EAX, isPointer: true)),
@@ -222,6 +232,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                     })
                     : EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
                     {
+                        operandFlow,
                         new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)),
                         new InstructionVertex("push", operandSize,
                             EmitHelpers.Register(Register.EAX, isPointer: true)),

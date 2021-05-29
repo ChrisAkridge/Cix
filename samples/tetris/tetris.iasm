@@ -1,0 +1,2167 @@
+func:
+
+# int a;
+push DWORD 0
+
+# return a = a = a = a;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD EBP
+push QWORD 0
+add QWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+20 EAX
+mov DWORD *EBP+28 *EAX
+mov DWORD *EBP+28 *EBP+20
+subl QWORD ESP 8 ESP
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+12 EAX
+mov DWORD *EBP+20 *EAX
+mov DWORD *EBP+20 *EBP+12
+subl QWORD ESP 8 ESP
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+4 EAX
+mov DWORD *EBP+12 *EAX
+mov DWORD *EBP+12 *EBP+4
+subl QWORD ESP 8 ESP
+mov QWORD 0 EAX
+pop DWORD EAX
+mov QWORD EBP ESP
+push DWORD EAX
+ret
+
+malloc:
+
+# return 0;
+push DWORD 0
+mov QWORD 0 EAX
+pop DWORD EAX
+mov QWORD EBP ESP
+push DWORD EAX
+ret
+
+InitRNG:
+
+# return;
+mov QWORD EBP ESP
+ret
+
+randomInt:
+
+# return min;
+push QWORD EBP
+push QWORD 0
+add QWORD
+pop QWORD EAX
+push DWORD *EAX
+mov QWORD 0 EAX
+pop DWORD EAX
+mov QWORD EBP ESP
+push DWORD EAX
+ret
+
+main:
+
+# __globals_init();
+push QWORD __globals_init
+pop QWORD EAX
+call  EAX
+
+# int size = sizeof(@funcptr<int>);
+push DWORD 8
+
+# int size2 = sizeof(Game*);
+push DWORD 8
+
+# Main(0, 0);
+stackargs
+push DWORD 0
+push DWORD 0
+push QWORD Main
+pop QWORD EAX
+call  EAX
+subl QWORD ESP 4 ESP
+
+# return;
+mov QWORD EBP ESP
+ret
+
+Main:
+
+# "System::GetMemoryMappedHWStartAddress";
+push  "\"System::GetMemoryMappedHWStartAddress\""
+subl QWORD ESP 8 ESP
+
+# "VGAMonitor";
+push  "\"VGAMonitor\""
+subl QWORD ESP 8 ESP
+
+# InitRNG();
+push QWORD InitRNG
+pop QWORD EAX
+call  EAX
+
+# tetriminoFunctions[0] = CreateI;
+push QWORD ERP
+push QWORD 52
+add QWORD
+pop QWORD EAX
+push QWORD *EAX
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+push DWORD 8
+mult DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push QWORD ECX
+add QWORD
+push QWORD CreateI
+mov QWORD 0 ECX
+pop QWORD ECX
+push QWORD ECX
+mov QWORD *EBP+12 EAX
+mov QWORD *EBP+20 *EAX
+mov QWORD *EBP+20 *EBP+12
+subl QWORD ESP 8 ESP
+subl QWORD ESP 8 ESP
+
+# tetriminoFunctions[1] = CreateO;
+push QWORD ERP
+push QWORD 52
+add QWORD
+pop QWORD EAX
+push QWORD *EAX
+push DWORD 1
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+push DWORD 8
+mult DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push QWORD ECX
+add QWORD
+push QWORD CreateO
+mov QWORD 0 ECX
+pop QWORD ECX
+push QWORD ECX
+mov QWORD *EBP+12 EAX
+mov QWORD *EBP+20 *EAX
+mov QWORD *EBP+20 *EBP+12
+subl QWORD ESP 8 ESP
+subl QWORD ESP 8 ESP
+
+# tetriminoFunctions[2] = CreateJ;
+push QWORD ERP
+push QWORD 52
+add QWORD
+pop QWORD EAX
+push QWORD *EAX
+push DWORD 2
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+push DWORD 8
+mult DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push QWORD ECX
+add QWORD
+push QWORD CreateJ
+mov QWORD 0 ECX
+pop QWORD ECX
+push QWORD ECX
+mov QWORD *EBP+12 EAX
+mov QWORD *EBP+20 *EAX
+mov QWORD *EBP+20 *EBP+12
+subl QWORD ESP 8 ESP
+subl QWORD ESP 8 ESP
+
+# tetriminoFunctions[3] = CreateL;
+push QWORD ERP
+push QWORD 52
+add QWORD
+pop QWORD EAX
+push QWORD *EAX
+push DWORD 3
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+push DWORD 8
+mult DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push QWORD ECX
+add QWORD
+push QWORD CreateL
+mov QWORD 0 ECX
+pop QWORD ECX
+push QWORD ECX
+mov QWORD *EBP+12 EAX
+mov QWORD *EBP+20 *EAX
+mov QWORD *EBP+20 *EBP+12
+subl QWORD ESP 8 ESP
+subl QWORD ESP 8 ESP
+
+# tetriminoFunctions[4] = CreateS;
+push QWORD ERP
+push QWORD 52
+add QWORD
+pop QWORD EAX
+push QWORD *EAX
+push DWORD 4
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+push DWORD 8
+mult DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push QWORD ECX
+add QWORD
+push QWORD CreateS
+mov QWORD 0 ECX
+pop QWORD ECX
+push QWORD ECX
+mov QWORD *EBP+12 EAX
+mov QWORD *EBP+20 *EAX
+mov QWORD *EBP+20 *EBP+12
+subl QWORD ESP 8 ESP
+subl QWORD ESP 8 ESP
+
+# tetriminoFunctions[5] = CreateZ;
+push QWORD ERP
+push QWORD 52
+add QWORD
+pop QWORD EAX
+push QWORD *EAX
+push DWORD 5
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+push DWORD 8
+mult DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push QWORD ECX
+add QWORD
+push QWORD CreateZ
+mov QWORD 0 ECX
+pop QWORD ECX
+push QWORD ECX
+mov QWORD *EBP+12 EAX
+mov QWORD *EBP+20 *EAX
+mov QWORD *EBP+20 *EBP+12
+subl QWORD ESP 8 ESP
+subl QWORD ESP 8 ESP
+
+# tetriminoFunctions[6] = CreateT;
+push QWORD ERP
+push QWORD 52
+add QWORD
+pop QWORD EAX
+push QWORD *EAX
+push DWORD 6
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+push DWORD 8
+mult DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push QWORD ECX
+add QWORD
+push QWORD CreateT
+mov QWORD 0 ECX
+pop QWORD ECX
+push QWORD ECX
+mov QWORD *EBP+12 EAX
+mov QWORD *EBP+20 *EAX
+mov QWORD *EBP+20 *EBP+12
+subl QWORD ESP 8 ESP
+subl QWORD ESP 8 ESP
+
+# "Timer::CallOnLoop";
+push  "\"Timer::CallOnLoop\""
+subl QWORD ESP 8 ESP
+
+# game = malloc(sizeof(Game));
+push QWORD ERP
+push QWORD 44
+add QWORD
+stackargs
+push DWORD 44
+push QWORD malloc
+pop QWORD EAX
+call  EAX
+mov QWORD *EBP+12 EAX
+movln  *EBP+20 *EAX 8
+movln  *EBP+20 *EBP+12 8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 8 ESP
+
+# game.Board = malloc(sizeof(Board));
+push QWORD ERP
+push QWORD 44
+add QWORD
+push QWORD 0
+add QWORD
+stackargs
+push DWORD 16
+push QWORD malloc
+pop QWORD EAX
+call  EAX
+mov QWORD *EBP+12 EAX
+movln  *EBP+20 *EAX 8
+movln  *EBP+20 *EBP+12 8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 8 ESP
+
+# game.Board->Width = 10;
+push QWORD ERP
+push QWORD 44
+add QWORD
+push QWORD 0
+add QWORD
+push QWORD 8
+add QWORD
+push DWORD 10
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# game.Board->Height = 20;
+push QWORD ERP
+push QWORD 44
+add QWORD
+push QWORD 0
+add QWORD
+push QWORD 12
+add QWORD
+push DWORD 20
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# game.Board->Cells = malloc(10 * 20);
+push QWORD ERP
+push QWORD 44
+add QWORD
+push QWORD 0
+add QWORD
+push QWORD 0
+add QWORD
+stackargs
+push DWORD 10
+push DWORD 20
+mult DWORD
+push QWORD malloc
+pop QWORD EAX
+call  EAX
+mov QWORD 0 ECX
+pop QWORD ECX
+push QWORD ECX
+mov QWORD *EBP+12 EAX
+mov QWORD *EBP+20 *EAX
+mov QWORD *EBP+20 *EBP+12
+subl QWORD ESP 8 ESP
+subl QWORD ESP 8 ESP
+
+# int i;
+push DWORD 0
+
+# i = 0;
+push QWORD EBP
+push QWORD 12
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+16 EAX
+mov DWORD *EBP+24 *EAX
+mov DWORD *EBP+24 *EBP+16
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+block_1:
+# while (i < 200)
+push QWORD EBP
+push QWORD 12
+add QWORD
+pop QWORD EAX
+push DWORD *EAX
+push DWORD 200
+cmp DWORD
+push QWORD EFLAGS
+push QWORD 1152921504606846976
+bwand QWORD
+push QWORD 60
+rshift QWORD
+mov QWORD 0 ECX
+pop QWORD ECX
+push DWORD ECX
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+push DWORD 0
+cmp DWORD
+jne block_2
+je block_3
+
+block_2:
+# game.Board->Cells[i] = 0;
+push QWORD ERP
+push QWORD 44
+add QWORD
+push QWORD 0
+add QWORD
+push QWORD 0
+add QWORD
+mov QWORD 0 EAX
+pop QWORD EAX
+push QWORD *EAX
+push QWORD EBP
+push QWORD 12
+add QWORD
+pop QWORD EAX
+push DWORD *EAX
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+push DWORD 1
+mult DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push QWORD ECX
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push BYTE ECX
+mov QWORD *EBP+16 EAX
+mov BYTE *EBP+24 *EAX
+mov BYTE *EBP+24 *EBP+16
+subl QWORD ESP 8 ESP
+subl QWORD ESP 1 ESP
+subl QWORD ESP 0 ESP
+
+# (i)++;
+push QWORD EBP
+push QWORD 12
+add QWORD
+pop QWORD EAX
+push DWORD *EAX
+incl DWORD *EAX
+subl QWORD ESP 4 ESP
+subl QWORD ESP 0 ESP
+jmp block_1
+block_3:
+subl QWORD ESP 0 ESP
+
+block_4:
+# while (i != 0)
+push QWORD EBP
+push QWORD 12
+add QWORD
+pop QWORD EAX
+push DWORD *EAX
+push DWORD 0
+cmp DWORD
+push QWORD EFLAGS
+push QWORD 2305843009213693952
+bwand QWORD
+push QWORD 61
+rshift QWORD
+mov QWORD 0 ECX
+pop QWORD ECX
+push DWORD ECX
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+push DWORD 0
+cmp DWORD
+jne block_5
+je block_7
+
+block_5:
+# break;
+subl QWORD ESP 0 ESP
+jmp block_7
+
+block_6:
+# i = 5;
+push QWORD EBP
+push QWORD 12
+add QWORD
+push DWORD 5
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+16 EAX
+mov DWORD *EBP+24 *EAX
+mov DWORD *EBP+24 *EBP+16
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+subl QWORD ESP 0 ESP
+jmp block_4
+
+block_7:
+# switch (i)
+push QWORD EBP
+push QWORD 12
+add QWORD
+pop QWORD EAX
+push DWORD *EAX
+pop DWORD EBX
+push DWORD EBX
+push DWORD 2
+cmp DWORD
+je block_8
+push DWORD EBX
+push DWORD 1
+cmp DWORD
+je block_A
+push DWORD EBX
+push DWORD 0
+cmp DWORD
+je block_C
+push DWORD EBX
+push DWORD 4
+cmp DWORD
+je block_E
+jmp block_10
+
+# return 0;
+push DWORD 0
+mov QWORD 0 EAX
+pop DWORD EAX
+mov QWORD EBP ESP
+push DWORD EAX
+ret
+
+block_8:
+# i = 3;
+push QWORD EBP
+push QWORD 12
+add QWORD
+push DWORD 3
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+16 EAX
+mov DWORD *EBP+24 *EAX
+mov DWORD *EBP+24 *EBP+16
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# break;
+jmp block_9
+
+block_9:
+# i = 137;
+push QWORD EBP
+push QWORD 12
+add QWORD
+push DWORD 137
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+16 EAX
+mov DWORD *EBP+24 *EAX
+mov DWORD *EBP+24 *EBP+16
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+subl QWORD ESP 0 ESP
+
+block_A:
+# i = 5;
+push QWORD EBP
+push QWORD 12
+add QWORD
+push DWORD 5
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+16 EAX
+mov DWORD *EBP+24 *EAX
+mov DWORD *EBP+24 *EBP+16
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# break;
+jmp block_B
+block_B:
+subl QWORD ESP 0 ESP
+
+block_C:
+# i = 27;
+push QWORD EBP
+push QWORD 12
+add QWORD
+push DWORD 27
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+16 EAX
+mov DWORD *EBP+24 *EAX
+mov DWORD *EBP+24 *EBP+16
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# break;
+jmp block_D
+block_D:
+subl QWORD ESP 0 ESP
+
+block_E:
+# i = 341;
+push QWORD EBP
+push QWORD 12
+add QWORD
+push DWORD 341
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+16 EAX
+mov DWORD *EBP+24 *EAX
+mov DWORD *EBP+24 *EBP+16
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# break;
+jmp block_F
+block_F:
+subl QWORD ESP 0 ESP
+
+block_10:
+# i = 22;
+push QWORD EBP
+push QWORD 12
+add QWORD
+push DWORD 22
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+16 EAX
+mov DWORD *EBP+24 *EAX
+mov DWORD *EBP+24 *EBP+16
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# break;
+jmp block_11
+block_11:
+subl QWORD ESP 0 ESP
+
+CreateI:
+
+# Tetrimino* result = malloc(sizeof(Tetrimino));
+stackargs
+push DWORD 33
+push QWORD malloc
+pop QWORD EAX
+call  EAX
+
+# result.Color = 3;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 0
+add QWORD
+push DWORD 3
+mov QWORD 0 ECX
+pop DWORD ECX
+push BYTE ECX
+mov QWORD *EBP+5 EAX
+mov BYTE *EBP+13 *EAX
+mov BYTE *EBP+13 *EBP+5
+subl QWORD ESP 8 ESP
+subl QWORD ESP 1 ESP
+
+# result.X0 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 1
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y0 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 5
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X1 = -(1);
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 9
+add QWORD
+push DWORD 1
+mov QWORD 0 EAX
+pop DWORD EAX
+push DWORD 0
+push DWORD EAX
+sub DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y1 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 13
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X2 = 1;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 17
+add QWORD
+push DWORD 1
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y2 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 21
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X3 = 2;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 25
+add QWORD
+push DWORD 2
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y2 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 21
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# return result;
+push QWORD EBP
+push QWORD 0
+add QWORD
+pop QWORD EAX
+push QWORD *EAX
+mov QWORD 0 EAX
+pop QWORD EAX
+mov QWORD EBP ESP
+push QWORD EAX
+ret
+
+CreateO:
+
+# Tetrimino* result = malloc(sizeof(Tetrimino));
+stackargs
+push DWORD 33
+push QWORD malloc
+pop QWORD EAX
+call  EAX
+
+# result.Color = 252;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 0
+add QWORD
+push DWORD 252
+mov QWORD 0 ECX
+pop DWORD ECX
+push BYTE ECX
+mov QWORD *EBP+5 EAX
+mov BYTE *EBP+13 *EAX
+mov BYTE *EBP+13 *EBP+5
+subl QWORD ESP 8 ESP
+subl QWORD ESP 1 ESP
+
+# result.X0 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 1
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y0 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 5
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X1 = 1;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 9
+add QWORD
+push DWORD 1
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y1 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 13
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X2 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 17
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y2 = 1;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 21
+add QWORD
+push DWORD 1
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X3 = 1;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 25
+add QWORD
+push DWORD 1
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y2 = 1;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 21
+add QWORD
+push DWORD 1
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# return result;
+push QWORD EBP
+push QWORD 0
+add QWORD
+pop QWORD EAX
+push QWORD *EAX
+mov QWORD 0 EAX
+pop QWORD EAX
+mov QWORD EBP ESP
+push QWORD EAX
+ret
+
+CreateJ:
+
+# Tetrimino* result = malloc(sizeof(Tetrimino));
+stackargs
+push DWORD 33
+push QWORD malloc
+pop QWORD EAX
+call  EAX
+
+# result.Color = 28;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 0
+add QWORD
+push DWORD 28
+mov QWORD 0 ECX
+pop DWORD ECX
+push BYTE ECX
+mov QWORD *EBP+5 EAX
+mov BYTE *EBP+13 *EAX
+mov BYTE *EBP+13 *EBP+5
+subl QWORD ESP 8 ESP
+subl QWORD ESP 1 ESP
+
+# result.X0 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 1
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y0 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 5
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X1 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 9
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y1 = -(1);
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 13
+add QWORD
+push DWORD 1
+mov QWORD 0 EAX
+pop DWORD EAX
+push DWORD 0
+push DWORD EAX
+sub DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X2 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 17
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y2 = -(2);
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 21
+add QWORD
+push DWORD 2
+mov QWORD 0 EAX
+pop DWORD EAX
+push DWORD 0
+push DWORD EAX
+sub DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X3 = -(1);
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 25
+add QWORD
+push DWORD 1
+mov QWORD 0 EAX
+pop DWORD EAX
+push DWORD 0
+push DWORD EAX
+sub DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y2 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 21
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# return result;
+push QWORD EBP
+push QWORD 0
+add QWORD
+pop QWORD EAX
+push QWORD *EAX
+mov QWORD 0 EAX
+pop QWORD EAX
+mov QWORD EBP ESP
+push QWORD EAX
+ret
+
+CreateL:
+
+# Tetrimino* result = malloc(sizeof(Tetrimino));
+stackargs
+push DWORD 33
+push QWORD malloc
+pop QWORD EAX
+call  EAX
+
+# result.Color = 232;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 0
+add QWORD
+push DWORD 232
+mov QWORD 0 ECX
+pop DWORD ECX
+push BYTE ECX
+mov QWORD *EBP+5 EAX
+mov BYTE *EBP+13 *EAX
+mov BYTE *EBP+13 *EBP+5
+subl QWORD ESP 8 ESP
+subl QWORD ESP 1 ESP
+
+# result.X0 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 1
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y0 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 5
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X1 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 9
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y1 = -(1);
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 13
+add QWORD
+push DWORD 1
+mov QWORD 0 EAX
+pop DWORD EAX
+push DWORD 0
+push DWORD EAX
+sub DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X2 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 17
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y2 = -(2);
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 21
+add QWORD
+push DWORD 2
+mov QWORD 0 EAX
+pop DWORD EAX
+push DWORD 0
+push DWORD EAX
+sub DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X3 = 1;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 25
+add QWORD
+push DWORD 1
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y2 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 21
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# return result;
+push QWORD EBP
+push QWORD 0
+add QWORD
+pop QWORD EAX
+push QWORD *EAX
+mov QWORD 0 EAX
+pop QWORD EAX
+mov QWORD EBP ESP
+push QWORD EAX
+ret
+
+CreateS:
+
+# Tetrimino* result = malloc(sizeof(Tetrimino));
+stackargs
+push DWORD 33
+push QWORD malloc
+pop QWORD EAX
+call  EAX
+
+# result.Color = 28;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 0
+add QWORD
+push DWORD 28
+mov QWORD 0 ECX
+pop DWORD ECX
+push BYTE ECX
+mov QWORD *EBP+5 EAX
+mov BYTE *EBP+13 *EAX
+mov BYTE *EBP+13 *EBP+5
+subl QWORD ESP 8 ESP
+subl QWORD ESP 1 ESP
+
+# result.X0 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 1
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y0 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 5
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X1 = 1;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 9
+add QWORD
+push DWORD 1
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y1 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 13
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X2 = 1;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 17
+add QWORD
+push DWORD 1
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y2 = -(1);
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 21
+add QWORD
+push DWORD 1
+mov QWORD 0 EAX
+pop DWORD EAX
+push DWORD 0
+push DWORD EAX
+sub DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X3 = 2;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 25
+add QWORD
+push DWORD 2
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y2 = -(1);
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 21
+add QWORD
+push DWORD 1
+mov QWORD 0 EAX
+pop DWORD EAX
+push DWORD 0
+push DWORD EAX
+sub DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# return result;
+push QWORD EBP
+push QWORD 0
+add QWORD
+pop QWORD EAX
+push QWORD *EAX
+mov QWORD 0 EAX
+pop QWORD EAX
+mov QWORD EBP ESP
+push QWORD EAX
+ret
+
+CreateT:
+
+# Tetrimino* result = malloc(sizeof(Tetrimino));
+stackargs
+push DWORD 33
+push QWORD malloc
+pop QWORD EAX
+call  EAX
+
+# result.Color = 227;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 0
+add QWORD
+push DWORD 227
+mov QWORD 0 ECX
+pop DWORD ECX
+push BYTE ECX
+mov QWORD *EBP+5 EAX
+mov BYTE *EBP+13 *EAX
+mov BYTE *EBP+13 *EBP+5
+subl QWORD ESP 8 ESP
+subl QWORD ESP 1 ESP
+
+# result.X0 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 1
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y0 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 5
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X1 = -(1);
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 9
+add QWORD
+push DWORD 1
+mov QWORD 0 EAX
+pop DWORD EAX
+push DWORD 0
+push DWORD EAX
+sub DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y1 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 13
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X2 = 1;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 17
+add QWORD
+push DWORD 1
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y2 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 21
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X3 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 25
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y2 = 1;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 21
+add QWORD
+push DWORD 1
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# return result;
+push QWORD EBP
+push QWORD 0
+add QWORD
+pop QWORD EAX
+push QWORD *EAX
+mov QWORD 0 EAX
+pop QWORD EAX
+mov QWORD EBP ESP
+push QWORD EAX
+ret
+
+CreateZ:
+
+# Tetrimino* result = malloc(sizeof(Tetrimino));
+stackargs
+push DWORD 33
+push QWORD malloc
+pop QWORD EAX
+call  EAX
+
+# result.Color = 224;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 0
+add QWORD
+push DWORD 224
+mov QWORD 0 ECX
+pop DWORD ECX
+push BYTE ECX
+mov QWORD *EBP+5 EAX
+mov BYTE *EBP+13 *EAX
+mov BYTE *EBP+13 *EBP+5
+subl QWORD ESP 8 ESP
+subl QWORD ESP 1 ESP
+
+# result.X0 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 1
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y0 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 5
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X1 = -(1);
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 9
+add QWORD
+push DWORD 1
+mov QWORD 0 EAX
+pop DWORD EAX
+push DWORD 0
+push DWORD EAX
+sub DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y1 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 13
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X2 = 0;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 17
+add QWORD
+push DWORD 0
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y2 = -(1);
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 21
+add QWORD
+push DWORD 1
+mov QWORD 0 EAX
+pop DWORD EAX
+push DWORD 0
+push DWORD EAX
+sub DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.X3 = 1;
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 25
+add QWORD
+push DWORD 1
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# result.Y2 = -(1);
+push QWORD EBP
+push QWORD 0
+add QWORD
+push QWORD 21
+add QWORD
+push DWORD 1
+mov QWORD 0 EAX
+pop DWORD EAX
+push DWORD 0
+push DWORD EAX
+sub DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+mov QWORD *EBP+8 EAX
+mov DWORD *EBP+16 *EAX
+mov DWORD *EBP+16 *EBP+8
+subl QWORD ESP 8 ESP
+subl QWORD ESP 4 ESP
+
+# return result;
+push QWORD EBP
+push QWORD 0
+add QWORD
+pop QWORD EAX
+push QWORD *EAX
+mov QWORD 0 EAX
+pop QWORD EAX
+mov QWORD EBP ESP
+push QWORD EAX
+ret
+
+RandomTetrimino:
+
+# int next = randomInt(0, 6);
+stackargs
+push DWORD 0
+push DWORD 6
+push QWORD randomInt
+pop QWORD EAX
+call  EAX
+
+# return tetriminoFunctions[next]();
+push QWORD ERP
+push QWORD 52
+add QWORD
+pop QWORD EAX
+push QWORD *EAX
+push QWORD EBP
+push QWORD 0
+add QWORD
+pop QWORD EAX
+push DWORD *EAX
+mov QWORD 0 ECX
+pop DWORD ECX
+push DWORD ECX
+push DWORD 8
+mult DWORD
+mov QWORD 0 ECX
+pop DWORD ECX
+push QWORD ECX
+add QWORD
+mov QWORD 0 EAX
+pop QWORD EAX
+push QWORD *EAX
+pop QWORD EAX
+call  EAX
+mov QWORD 0 EAX
+pop QWORD EAX
+mov QWORD EBP ESP
+push QWORD EAX
+ret
+
+HW_System_RegisterInterruptHandler:
+
+# return 0 /* hardware call: RegisterInterruptHandler */;
+stackargs
+push DWORD *EBP
+
+HW_System_UnregisterInterruptHandler:
+
+# /* hardware call: UnregisterInterruptHandler */;
+stackargs
+push DWORD *EBP
+
+HW_System_RaiseError:
+
+# /* hardware call: RaiseError */;
+stackargs
+push DWORD *EBP
+hwcall  "RaiseError"
+subl QWORD ESP 1 ESP
+
+# return;
+mov QWORD EBP ESP
+ret
+
+HW_System_RegisterErrorHandler:
+
+# /* hardware call: RegisterErrorHandler */;
+stackargs
+push DWORD *EBP
+
+HW_System_UnregisterErrorHandler:
+
+# /* hardware call: UnregisterErrorHandler */;
+stackargs
+push DWORD *EBP
+hwcall  "UnregisterErrorHandler"
+subl QWORD ESP 1 ESP
+
+# return;
+mov QWORD EBP ESP
+ret
+
+HW_System_GetLastErrorDescriptionSize:
+
+# return 0 /* hardware call: GetLastErrorDescriptionSize */;
+hwcall  "GetLastErrorDescriptionSize"
+mov QWORD 0 EAX
+pop QWORD EAX
+mov QWORD EBP ESP
+push QWORD EAX
+ret
+
+HW_System_GetLastErrorDescription:
+
+# /* hardware call: GetLastErrorDescription */;
+stackargs
+push QWORD *EBP
+hwcall  "GetLastErrorDescription"
+subl QWORD ESP 1 ESP
+
+# return;
+mov QWORD EBP ESP
+ret
+
+HW_System_GetHardwareDeviceCount:
+
+# return 0 /* hardware call: GetHardwareDeviceCount */;
+hwcall  "GetHardwareDeviceCount"
+mov QWORD 0 EAX
+pop DWORD EAX
+mov QWORD EBP ESP
+push DWORD EAX
+ret
+
+HW_System_GetHardwareDeviceDescriptionSize:
+
+# return 0 /* hardware call: GetHardwareDeviceDescriptionSize */;
+stackargs
+push DWORD *EBP
+hwcall  "GetHardwareDeviceDescriptionSize"
+mov QWORD 0 EAX
+pop QWORD EAX
+mov QWORD EBP ESP
+push QWORD EAX
+ret
+
+HW_System_GetHardwareDeviceDescription:
+
+# /* hardware call: GetHardwareDeviceDescription */;
+stackargs
+push DWORD *EBP
+
+HW_System_GetAllHardwareDeviceDescriptionsSize:
+
+# return 0 /* hardware call: GetAllHardwareDeviceDescriptionsSize */;
+hwcall  "GetAllHardwareDeviceDescriptionsSize"
+mov QWORD 0 EAX
+pop QWORD EAX
+mov QWORD EBP ESP
+push QWORD EAX
+ret
+
+HW_System_GetAllHardwareDeviceDescriptions:
+
+# /* hardware call: GetAllHardwareDeviceDescriptions */;
+stackargs
+push QWORD *EBP
+hwcall  "GetAllHardwareDeviceDescriptions"
+subl QWORD ESP 1 ESP
+
+# return;
+mov QWORD EBP ESP
+ret
+
+HW_System_CreatePageTable:
+
+# return 0 /* hardware call: CreatePageTable */;
+hwcall  "CreatePageTable"
+mov QWORD 0 EAX
+pop DWORD EAX
+mov QWORD EBP ESP
+push DWORD EAX
+ret
+
+HW_System_DestroyPageTable:
+
+# /* hardware call: DestroyPageTable */;
+stackargs
+push DWORD *EBP
+hwcall  "DestroyPageTable"
+subl QWORD ESP 1 ESP
+
+# return;
+mov QWORD EBP ESP
+ret
+
+HW_System_ChangeCurrentPageTable:
+
+# /* hardware call: ChangeCurrentPageTable */;
+stackargs
+push DWORD *EBP
+hwcall  "ChangeCurrentPageTable"
+subl QWORD ESP 1 ESP
+
+# return;
+mov QWORD EBP ESP
+ret
+
+HW_System_CopyMemory:
+
+# /* hardware call: CopyMemory */;
+stackargs
+push BYTE *EBP
+
+HW_TerminalDevice_Write:
+
+# /* hardware call: Write */;
+stackargs
+push QWORD *EBP
+hwcall  "Write"
+subl QWORD ESP 1 ESP
+
+# return;
+mov QWORD EBP ESP
+ret
+
+HW_TerminalDevice_WriteLine:
+
+# /* hardware call: WriteLine */;
+stackargs
+push QWORD *EBP
+hwcall  "WriteLine"
+subl QWORD ESP 1 ESP
+
+# return;
+mov QWORD EBP ESP
+ret
+
+HW_TerminalDevice_Read:
+
+# return 0 /* hardware call: Read */;
+hwcall  "Read"
+mov QWORD 0 EAX
+pop WORD EAX
+mov QWORD EBP ESP
+push WORD EAX
+ret
+
+HW_TerminalDevice_ReadLine:
+
+# /* hardware call: ReadLine */;
+stackargs
+push QWORD *EBP
+hwcall  "ReadLine"
+subl QWORD ESP 1 ESP
+
+# return;
+mov QWORD EBP ESP
+ret
+
+HW_Debugger_Break:
+
+# /* hardware call: Break */;
+hwcall  "Break"
+subl QWORD ESP 1 ESP
+
+# return;
+mov QWORD EBP ESP
+ret
+
+__globals_init:
+
+# stringLiteral = "Hello, world!";
+push QWORD ERP
+push QWORD 68
+add QWORD
+push  "\"Hello, world!\""
+mov QWORD 0 ECX
+pop QWORD ECX
+push QWORD ECX
+mov QWORD *EBP EAX
+mov QWORD *EBP+8 *EAX
+mov QWORD *EBP+8 *EBP
+subl QWORD ESP 8 ESP
+subl QWORD ESP 8 ESP
+
+# return;
+mov QWORD EBP ESP
+ret
+

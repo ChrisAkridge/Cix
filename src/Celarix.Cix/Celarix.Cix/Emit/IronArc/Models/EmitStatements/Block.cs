@@ -30,15 +30,13 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             foreach (var (current, next) in statementFlows.Pairwise())
             {
                 var currentJumps = current.UnconnectedJumps;
-
-                var breakAfterTarget = next?.ControlFlow?.Start
-                    ?? (ControlFlowVertex)resetStackAfterBlock[0];
+                var breakAfterTarget = (ControlFlowVertex)resetStackAfterBlock[0];
 
                 foreach (var jump in currentJumps.Where(j => j.TargetType == JumpTargetType.ToBreakOrAfterTarget))
                 {
                     logger.Trace($"Connected break statement inside block");
                     breakAfterTarget.IsJumpTarget = true;
-                    jump.JumpVertex.ConnectTo(breakAfterTarget, jump.FlowType);
+                    jump.SourceVertex.ConnectTo(breakAfterTarget, jump.FlowType);
                 }
 
                 currentJumps.RemoveAll(j => j.TargetType == JumpTargetType.ToBreakOrAfterTarget);
@@ -49,12 +47,23 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                 context.CurrentStack.Pop();
             }
 
+            var unconnectedJumps = statementFlows.SelectMany(f => f.UnconnectedJumps).ToList();
+
+            if (parent is CaseStatement)
+            {
+                unconnectedJumps.Add(new UnconnectedJump
+                {
+                    FlowType = FlowEdgeType.UnconditionalJump,
+                    TargetType = JumpTargetType.ToBreakOrAfterTarget 
+                });
+            }
+
             return new GeneratedFlow
             {
                 ControlFlow =
                     EmitHelpers.ConnectWithDirectFlow(statementFlows.Select(f => f.ControlFlow)
                         .Concat(resetStackAfterBlock)),
-                UnconnectedJumps = statementFlows.SelectMany(f => f.UnconnectedJumps).ToList()
+                UnconnectedJumps = unconnectedJumps
             };
         }
     }

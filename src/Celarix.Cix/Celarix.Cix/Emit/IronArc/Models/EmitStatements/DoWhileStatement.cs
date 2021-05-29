@@ -35,7 +35,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             
             foreach (var jump in loopFlow.UnconnectedJumps.Where(j => j.TargetType == JumpTargetType.ToContinueTarget))
             {
-                jump.JumpVertex.ConnectTo(comparisonFlow.Start, FlowEdgeType.UnconditionalJump);
+                jump.SourceVertex.ConnectTo(comparisonFlow.Start, FlowEdgeType.UnconditionalJump);
             }
             
             loopFlow.ConnectTo(comparisonFlow, FlowEdgeType.UnconditionalJump);
@@ -47,7 +47,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                 UnconnectedJumps = loopFlow.UnconnectedJumps
                     .Append(new UnconnectedJump
                     {
-                        JumpVertex = comparisonFlow.End,
+                        SourceVertex = comparisonFlow.End,
                         FlowType = FlowEdgeType.JumpIfEqual,
                         TargetType = JumpTargetType.ToBreakOrAfterTarget
                     })

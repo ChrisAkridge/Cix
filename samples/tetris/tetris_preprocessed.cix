@@ -48,7 +48,7 @@ int func()
     return a = a = a = a;
 }
 
-void* malloc()
+void* malloc(int size)
 {
     return 0;
 }
@@ -101,12 +101,19 @@ int Main(int argc, byte** argv)
 
     }
 
+    while (i != 0)
+        {
+            break;
+            i = 5;
+        }
+
     switch (i)
     {
         case 2:
             {
                 i = 3;
                 break;
+                i = 137;
             }
 
 
@@ -140,6 +147,7 @@ int Main(int argc, byte** argv)
 
     }
 
+    return 0;
 }
 
 Tetrimino* CreateI()
@@ -154,6 +162,7 @@ Tetrimino* CreateI()
     result.Y2 = 0;
     result.X3 = 2;
     result.Y2 = 0;
+    return result;
 }
 
 Tetrimino* CreateO()
@@ -168,6 +177,7 @@ Tetrimino* CreateO()
     result.Y2 = 1;
     result.X3 = 1;
     result.Y2 = 1;
+    return result;
 }
 
 Tetrimino* CreateJ()
@@ -182,6 +192,7 @@ Tetrimino* CreateJ()
     result.Y2 = -(2);
     result.X3 = -(1);
     result.Y2 = 0;
+    return result;
 }
 
 Tetrimino* CreateL()
@@ -196,6 +207,7 @@ Tetrimino* CreateL()
     result.Y2 = -(2);
     result.X3 = 1;
     result.Y2 = 0;
+    return result;
 }
 
 Tetrimino* CreateS()
@@ -210,6 +222,7 @@ Tetrimino* CreateS()
     result.Y2 = -(1);
     result.X3 = 2;
     result.Y2 = -(1);
+    return result;
 }
 
 Tetrimino* CreateT()
