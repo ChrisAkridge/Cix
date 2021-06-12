@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Celarix.Cix.Compiler.Extensions;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc.Models
 {
@@ -11,7 +12,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models
 
         public override string GenerateOperandText()
         {
-            var registerText = $"{((IsPointer) ? "*" : "")}{Register}";
+            var registerText = $"{((IsPointer) ? "*" : "")}{Register.GetEmitName()}";
 
             if (Offset == 0) { return registerText; }
 

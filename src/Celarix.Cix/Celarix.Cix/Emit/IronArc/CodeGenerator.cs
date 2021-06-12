@@ -99,6 +99,9 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             var functionAssemblyCodeBlocks = finalEmitters.Select(e => e.GenerateInstructionsForControlFlow());
             var builder = new StringBuilder();
 
+            builder.AppendLine($"globals: {emitContext.DeclaredGlobals.Values.Sum(g => g.UsageType.Size)}");
+            builder.AppendLine("jmp main");
+
             foreach (var codeBlock in functionAssemblyCodeBlocks) { builder.AppendLine(codeBlock); }
 
             IronArcAssembly = builder.ToString();
