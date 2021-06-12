@@ -1,8 +1,0 @@
-// random.cix
-
-void InitRNG() {}
-
-int randomInt(int min, int max)
-{
-	return min;
-}

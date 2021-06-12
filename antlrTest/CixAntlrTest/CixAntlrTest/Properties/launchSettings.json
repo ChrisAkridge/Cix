@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "CixAntlrTest": {
-      "commandName": "Project",
-      "commandLineArgs": "\"D:\\Documents\\GitHub\\Cix\\antlrTest\\testFiles\\tetris\\processed.cix\""
-    }
-  }
-}
