@@ -1,0 +1,4 @@
+Cix issues:
+	- main not at top of file
+	- globals size block not defined
+	- Register names must be lowercase
