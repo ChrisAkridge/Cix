@@ -51,6 +51,8 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             var statementBuilder = new EmitStatementBuilder(context);
             var emitStatements = ASTFunction.Statements.Select(f => statementBuilder.Build(f)).ToList();
             var statementFlows = emitStatements.Select(s => s.Generate(context, this)).ToList();
+            
+            MoveEBPBeforeArguments(context, statementFlows);
 
             foreach (var (current, next) in statementFlows.Pairwise())
             {
@@ -67,7 +69,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                 // After targets
                 foreach (var jump in currentAfterJumps)
                 {
-                    logger.Trace($"Connected after target inside function");
+                    logger.Trace("Connected after target inside function");
                     breakAfterTarget.IsJumpTarget = true;
                     jump.SourceVertex.ConnectTo(breakAfterTarget, jump.FlowType);
                 }
@@ -75,8 +77,6 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                 current.UnconnectedJumps.RemoveAll(j => j.TargetType == JumpTargetType.ToAfterTarget);
 
                 // Break targets
-                var breakTarget = next?.ControlFlow.Start;
-
                 foreach (var jump in currentBreakJumps)
                 {
                     if (breakAfterTarget == null)
@@ -85,7 +85,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
                             "Statement broke out to a place after the end of the function");
                     }
 
-                    logger.Trace($"Connected break target inside function");
+                    logger.Trace("Connected break target inside function");
                     breakAfterTarget.IsJumpTarget = true;
                     jump.SourceVertex.ConnectTo(breakAfterTarget, jump.FlowType);
                 }
@@ -99,6 +99,27 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
             {
                 ControlFlow = EmitHelpers.ConnectWithDirectFlow(statementFlows.Select(sf => sf.ControlFlow))
             };
+        }
+
+        private void MoveEBPBeforeArguments(EmitContext context, IReadOnlyList<GeneratedFlow> statementFlows)
+        {
+            var argumentsSize = ASTFunction.Parameters
+                .Select(p => context.LookupDataTypeWithPointerLevel(p.Type))
+                .Sum(t => t.Size);
+
+            if (argumentsSize == 0)
+            {
+                return;
+            }
+            
+            var firstInstruction = statementFlows[0].ControlFlow.Start;
+            var pushEBPBackInstruction = new InstructionVertex("subl",
+                OperandSize.Qword,
+                EmitHelpers.Register(Register.EBP),
+                new IntegerOperand(argumentsSize),
+                EmitHelpers.Register(Register.EBP));
+            pushEBPBackInstruction.ConnectTo(firstInstruction, FlowEdgeType.DirectFlow);
+            statementFlows[0].ControlFlow.Start = pushEBPBackInstruction;
         }
     }
 }

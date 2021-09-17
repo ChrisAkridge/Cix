@@ -46,6 +46,7 @@ push DWORD eax
 ret
 
 malloc:
+subl QWORD ebp 4 ebp
 
 # return 0;
 push DWORD 0
@@ -62,6 +63,7 @@ mov QWORD ebp esp
 ret
 
 randomInt:
+subl QWORD ebp 8 ebp
 
 # return min;
 push QWORD ebp
@@ -102,6 +104,7 @@ mov QWORD ebp esp
 ret
 
 Main:
+subl QWORD ebp 12 ebp
 
 # "System::GetMemoryMappedHWStartAddress";
 push "System::GetMemoryMappedHWStartAddress"
@@ -1938,6 +1941,7 @@ push QWORD eax
 ret
 
 HW_System_RegisterInterruptHandler:
+subl QWORD ebp 20 ebp
 
 # return 0 /* hardware call: System::RegisterInterruptHandler */;
 stackargs
@@ -1952,6 +1956,7 @@ push BYTE eax
 ret
 
 HW_System_UnregisterInterruptHandler:
+subl QWORD ebp 13 ebp
 
 # /* hardware call: System::UnregisterInterruptHandler */;
 stackargs
@@ -1965,6 +1970,7 @@ mov QWORD ebp esp
 ret
 
 HW_System_RaiseError:
+subl QWORD ebp 4 ebp
 
 # /* hardware call: System::RaiseError */;
 stackargs
@@ -1976,6 +1982,7 @@ mov QWORD ebp esp
 ret
 
 HW_System_RegisterErrorHandler:
+subl QWORD ebp 12 ebp
 
 # /* hardware call: System::RegisterErrorHandler */;
 stackargs
@@ -1988,6 +1995,7 @@ mov QWORD ebp esp
 ret
 
 HW_System_UnregisterErrorHandler:
+subl QWORD ebp 4 ebp
 
 # /* hardware call: System::UnregisterErrorHandler */;
 stackargs
@@ -2009,6 +2017,7 @@ push QWORD eax
 ret
 
 HW_System_GetLastErrorDescription:
+subl QWORD ebp 8 ebp
 
 # /* hardware call: System::GetLastErrorDescription */;
 stackargs
@@ -2030,6 +2039,7 @@ push DWORD eax
 ret
 
 HW_System_GetHardwareDeviceDescriptionSize:
+subl QWORD ebp 4 ebp
 
 # return 0 /* hardware call: System::GetHardwareDeviceDescriptionSize */;
 stackargs
@@ -2042,6 +2052,7 @@ push QWORD eax
 ret
 
 HW_System_GetHardwareDeviceDescription:
+subl QWORD ebp 12 ebp
 
 # /* hardware call: System::GetHardwareDeviceDescription */;
 stackargs
@@ -2064,6 +2075,7 @@ push QWORD eax
 ret
 
 HW_System_GetAllHardwareDeviceDescriptions:
+subl QWORD ebp 8 ebp
 
 # /* hardware call: System::GetAllHardwareDeviceDescriptions */;
 stackargs
@@ -2085,6 +2097,7 @@ push DWORD eax
 ret
 
 HW_System_DestroyPageTable:
+subl QWORD ebp 4 ebp
 
 # /* hardware call: System::DestroyPageTable */;
 stackargs
@@ -2096,6 +2109,7 @@ mov QWORD ebp esp
 ret
 
 HW_System_ChangeCurrentPageTable:
+subl QWORD ebp 4 ebp
 
 # /* hardware call: System::ChangeCurrentPageTable */;
 stackargs
@@ -2107,6 +2121,7 @@ mov QWORD ebp esp
 ret
 
 HW_System_CopyMemory:
+subl QWORD ebp 29 ebp
 
 # /* hardware call: System::CopyMemory */;
 stackargs
@@ -2122,6 +2137,7 @@ mov QWORD ebp esp
 ret
 
 HW_TerminalDevice_Write:
+subl QWORD ebp 8 ebp
 
 # /* hardware call: TerminalDevice::Write */;
 stackargs
@@ -2133,6 +2149,7 @@ mov QWORD ebp esp
 ret
 
 HW_TerminalDevice_WriteLine:
+subl QWORD ebp 8 ebp
 
 # /* hardware call: TerminalDevice::WriteLine */;
 stackargs
@@ -2154,6 +2171,7 @@ push WORD eax
 ret
 
 HW_TerminalDevice_ReadLine:
+subl QWORD ebp 8 ebp
 
 # /* hardware call: TerminalDevice::ReadLine */;
 stackargs
