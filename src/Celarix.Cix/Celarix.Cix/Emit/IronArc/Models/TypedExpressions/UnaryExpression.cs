@@ -188,6 +188,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                             {
                                 new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)),
                                 new InstructionVertex((Operator == "++") ? "incl" : "decl", operandSize,
+                                    EmitHelpers.Register(Register.EAX, isPointer: true),
                                     EmitHelpers.Register(Register.EAX, isPointer: true)),
                                 new InstructionVertex("push", operandSize,
                                     EmitHelpers.Register(Register.EAX, isPointer: true))
@@ -228,6 +229,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                         new InstructionVertex("push", operandSize,
                             EmitHelpers.Register(Register.EAX, isPointer: true)),
                         new InstructionVertex((Operator == "++") ? "incl" : "decl", operandSize,
+                            EmitHelpers.Register(Register.EAX, isPointer: true),
                             EmitHelpers.Register(Register.EAX, isPointer: true)),
                     })
                     : EmitHelpers.ConnectWithDirectFlow(new IConnectable[]

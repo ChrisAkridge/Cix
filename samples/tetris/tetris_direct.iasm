@@ -1,11 +1,7 @@
-globals: 48
-jmp main
+globals:  48
+jmp  main
 func:
-
-# int a;
 push DWORD 0
-
-# return a = a = a = a;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -44,26 +40,17 @@ pop DWORD eax
 mov QWORD ebp esp
 push DWORD eax
 ret
-
 malloc:
-
-# return 0;
 push DWORD 0
 mov QWORD 0 eax
 pop DWORD eax
 mov QWORD ebp esp
 push DWORD eax
 ret
-
 InitRNG:
-
-# return;
 mov QWORD ebp esp
 ret
-
 randomInt:
-
-# return min;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -74,49 +61,29 @@ pop DWORD eax
 mov QWORD ebp esp
 push DWORD eax
 ret
-
 main:
-
-# __globals_init();
 push QWORD __globals_init
 pop QWORD eax
-call eax
-
-# int size = sizeof(@funcptr<int>);
+call  eax
 push DWORD 8
-
-# int size2 = sizeof(Game*);
 push DWORD 8
-
-# Main(0, 0);
 stackargs
 push DWORD 0
 push DWORD 0
 push QWORD Main
 pop QWORD eax
-call eax
+call  eax
 subl QWORD esp 4 esp
-
-# return;
 mov QWORD ebp esp
 ret
-
 Main:
-
-# "System::GetMemoryMappedHWStartAddress";
-push "System::GetMemoryMappedHWStartAddress"
+push QWORD str:0
 subl QWORD esp 8 esp
-
-# "VGAMonitor";
-push "VGAMonitor"
+push QWORD str:1
 subl QWORD esp 8 esp
-
-# InitRNG();
 push QWORD InitRNG
 pop QWORD eax
-call eax
-
-# tetriminoFunctions[0] = CreateI;
+call  eax
 push QWORD erp
 push QWORD 52
 add QWORD
@@ -141,8 +108,6 @@ mov QWORD *ebp+20 *eax
 mov QWORD *ebp+20 *ebp+12
 subl QWORD esp 8 esp
 subl QWORD esp 8 esp
-
-# tetriminoFunctions[1] = CreateO;
 push QWORD erp
 push QWORD 52
 add QWORD
@@ -167,8 +132,6 @@ mov QWORD *ebp+20 *eax
 mov QWORD *ebp+20 *ebp+12
 subl QWORD esp 8 esp
 subl QWORD esp 8 esp
-
-# tetriminoFunctions[2] = CreateJ;
 push QWORD erp
 push QWORD 52
 add QWORD
@@ -193,8 +156,6 @@ mov QWORD *ebp+20 *eax
 mov QWORD *ebp+20 *ebp+12
 subl QWORD esp 8 esp
 subl QWORD esp 8 esp
-
-# tetriminoFunctions[3] = CreateL;
 push QWORD erp
 push QWORD 52
 add QWORD
@@ -219,8 +180,6 @@ mov QWORD *ebp+20 *eax
 mov QWORD *ebp+20 *ebp+12
 subl QWORD esp 8 esp
 subl QWORD esp 8 esp
-
-# tetriminoFunctions[4] = CreateS;
 push QWORD erp
 push QWORD 52
 add QWORD
@@ -245,8 +204,6 @@ mov QWORD *ebp+20 *eax
 mov QWORD *ebp+20 *ebp+12
 subl QWORD esp 8 esp
 subl QWORD esp 8 esp
-
-# tetriminoFunctions[5] = CreateZ;
 push QWORD erp
 push QWORD 52
 add QWORD
@@ -271,8 +228,6 @@ mov QWORD *ebp+20 *eax
 mov QWORD *ebp+20 *ebp+12
 subl QWORD esp 8 esp
 subl QWORD esp 8 esp
-
-# tetriminoFunctions[6] = CreateT;
 push QWORD erp
 push QWORD 52
 add QWORD
@@ -297,12 +252,8 @@ mov QWORD *ebp+20 *eax
 mov QWORD *ebp+20 *ebp+12
 subl QWORD esp 8 esp
 subl QWORD esp 8 esp
-
-# "Timer::CallOnLoop";
-push "Timer::CallOnLoop"
+push QWORD str:2
 subl QWORD esp 8 esp
-
-# game = malloc(sizeof(Game));
 push QWORD erp
 push QWORD 44
 add QWORD
@@ -310,14 +261,12 @@ stackargs
 push DWORD 44
 push QWORD malloc
 pop QWORD eax
-call eax
+call  eax
 mov QWORD *ebp+12 eax
-movln *ebp+20 *eax 8
-movln *ebp+20 *ebp+12 8
+movln  *ebp+20 *eax 8
+movln  *ebp+20 *ebp+12 8
 subl QWORD esp 8 esp
 subl QWORD esp 8 esp
-
-# game.Board = malloc(sizeof(Board));
 push QWORD erp
 push QWORD 44
 add QWORD
@@ -327,14 +276,12 @@ stackargs
 push DWORD 16
 push QWORD malloc
 pop QWORD eax
-call eax
+call  eax
 mov QWORD *ebp+12 eax
-movln *ebp+20 *eax 8
-movln *ebp+20 *ebp+12 8
+movln  *ebp+20 *eax 8
+movln  *ebp+20 *ebp+12 8
 subl QWORD esp 8 esp
 subl QWORD esp 8 esp
-
-# game.Board->Width = 10;
 push QWORD erp
 push QWORD 44
 add QWORD
@@ -351,8 +298,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# game.Board->Height = 20;
 push QWORD erp
 push QWORD 44
 add QWORD
@@ -369,8 +314,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# game.Board->Cells = malloc(10 * 20);
 push QWORD erp
 push QWORD 44
 add QWORD
@@ -384,7 +327,7 @@ push DWORD 20
 mult DWORD
 push QWORD malloc
 pop QWORD eax
-call eax
+call  eax
 mov QWORD 0 ecx
 pop QWORD ecx
 push QWORD ecx
@@ -393,11 +336,7 @@ mov QWORD *ebp+20 *eax
 mov QWORD *ebp+20 *ebp+12
 subl QWORD esp 8 esp
 subl QWORD esp 8 esp
-
-# int i;
 push DWORD 0
-
-# i = 0;
 push QWORD ebp
 push QWORD 12
 add QWORD
@@ -410,9 +349,7 @@ mov DWORD *ebp+24 *eax
 mov DWORD *ebp+24 *ebp+16
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
 block_1:
-# while (i < 200)
 push QWORD ebp
 push QWORD 12
 add QWORD
@@ -433,11 +370,9 @@ pop DWORD ecx
 push DWORD ecx
 push DWORD 0
 cmp DWORD
-jne block_2
-je block_3
-
+jne  block_2
+je  block_3
 block_2:
-# game.Board->Cells[i] = 0;
 push QWORD erp
 push QWORD 44
 add QWORD
@@ -472,8 +407,6 @@ mov BYTE *ebp+24 *ebp+16
 subl QWORD esp 8 esp
 subl QWORD esp 1 esp
 subl QWORD esp 0 esp
-
-# (i)++;
 push QWORD ebp
 push QWORD 12
 add QWORD
@@ -482,12 +415,10 @@ push DWORD *eax
 incl DWORD *eax *eax
 subl QWORD esp 4 esp
 subl QWORD esp 0 esp
-jmp block_1
+jmp  block_1
 block_3:
 subl QWORD esp 0 esp
-
 block_4:
-# while (i != 0)
 push QWORD ebp
 push QWORD 12
 add QWORD
@@ -508,15 +439,11 @@ pop DWORD ecx
 push DWORD ecx
 push DWORD 0
 cmp DWORD
-jne block_5
-je block_6
-
+jne  block_5
+je  block_6
 block_5:
-# break;
 subl QWORD esp 0 esp
-jmp block_6
-
-# i = 5;
+jmp  block_6
 push QWORD ebp
 push QWORD 12
 add QWORD
@@ -530,10 +457,8 @@ mov DWORD *ebp+24 *ebp+16
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
 subl QWORD esp 0 esp
-jmp block_4
-
+jmp  block_4
 block_6:
-# switch (i)
 push QWORD ebp
 push QWORD 12
 add QWORD
@@ -543,23 +468,21 @@ pop DWORD ebx
 push DWORD ebx
 push DWORD 2
 cmp DWORD
-je block_7
+je  block_7
 push DWORD ebx
 push DWORD 1
 cmp DWORD
-je block_9
+je  block_9
 push DWORD ebx
 push DWORD 0
 cmp DWORD
-je block_A
+je  block_A
 push DWORD ebx
 push DWORD 4
 cmp DWORD
-je block_B
-jmp block_C
-
+je  block_B
+jmp  block_C
 block_7:
-# i = 3;
 push QWORD ebp
 push QWORD 12
 add QWORD
@@ -572,12 +495,8 @@ mov DWORD *ebp+24 *eax
 mov DWORD *ebp+24 *ebp+16
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# break;
 subl QWORD esp 0 esp
-jmp block_8
-
-# i = 137;
+jmp  block_8
 push QWORD ebp
 push QWORD 12
 add QWORD
@@ -591,18 +510,14 @@ mov DWORD *ebp+24 *ebp+16
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
 subl QWORD esp 0 esp
-
 block_8:
-# return 0;
 push DWORD 0
 mov QWORD 0 eax
 pop DWORD eax
 mov QWORD ebp esp
 push DWORD eax
 ret
-
 block_9:
-# i = 5;
 push QWORD ebp
 push QWORD 12
 add QWORD
@@ -615,14 +530,10 @@ mov DWORD *ebp+24 *eax
 mov DWORD *ebp+24 *ebp+16
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# break;
 subl QWORD esp 0 esp
-jmp block_8
+jmp  block_8
 subl QWORD esp 0 esp
-
 block_A:
-# i = 27;
 push QWORD ebp
 push QWORD 12
 add QWORD
@@ -635,14 +546,10 @@ mov DWORD *ebp+24 *eax
 mov DWORD *ebp+24 *ebp+16
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# break;
 subl QWORD esp 0 esp
-jmp block_8
+jmp  block_8
 subl QWORD esp 0 esp
-
 block_B:
-# i = 341;
 push QWORD ebp
 push QWORD 12
 add QWORD
@@ -655,14 +562,10 @@ mov DWORD *ebp+24 *eax
 mov DWORD *ebp+24 *ebp+16
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# break;
 subl QWORD esp 0 esp
-jmp block_8
+jmp  block_8
 subl QWORD esp 0 esp
-
 block_C:
-# i = 22;
 push QWORD ebp
 push QWORD 12
 add QWORD
@@ -675,22 +578,15 @@ mov DWORD *ebp+24 *eax
 mov DWORD *ebp+24 *ebp+16
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# break;
 subl QWORD esp 0 esp
-jmp block_8
+jmp  block_8
 subl QWORD esp 0 esp
-
 CreateI:
-
-# Tetrimino* result = malloc(sizeof(Tetrimino));
 stackargs
 push DWORD 33
 push QWORD malloc
 pop QWORD eax
-call eax
-
-# result.Color = 3;
+call  eax
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -705,8 +601,6 @@ mov BYTE *ebp+13 *eax
 mov BYTE *ebp+13 *ebp+5
 subl QWORD esp 8 esp
 subl QWORD esp 1 esp
-
-# result.X0 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -721,8 +615,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y0 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -737,8 +629,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X1 = -(1);
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -758,8 +648,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y1 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -774,8 +662,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X2 = 1;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -790,8 +676,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y2 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -806,8 +690,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X3 = 2;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -822,8 +704,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y2 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -838,8 +718,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# return result;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -850,17 +728,12 @@ pop QWORD eax
 mov QWORD ebp esp
 push QWORD eax
 ret
-
 CreateO:
-
-# Tetrimino* result = malloc(sizeof(Tetrimino));
 stackargs
 push DWORD 33
 push QWORD malloc
 pop QWORD eax
-call eax
-
-# result.Color = 252;
+call  eax
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -875,8 +748,6 @@ mov BYTE *ebp+13 *eax
 mov BYTE *ebp+13 *ebp+5
 subl QWORD esp 8 esp
 subl QWORD esp 1 esp
-
-# result.X0 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -891,8 +762,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y0 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -907,8 +776,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X1 = 1;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -923,8 +790,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y1 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -939,8 +804,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X2 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -955,8 +818,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y2 = 1;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -971,8 +832,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X3 = 1;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -987,8 +846,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y2 = 1;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1003,8 +860,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# return result;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1015,17 +870,12 @@ pop QWORD eax
 mov QWORD ebp esp
 push QWORD eax
 ret
-
 CreateJ:
-
-# Tetrimino* result = malloc(sizeof(Tetrimino));
 stackargs
 push DWORD 33
 push QWORD malloc
 pop QWORD eax
-call eax
-
-# result.Color = 28;
+call  eax
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1040,8 +890,6 @@ mov BYTE *ebp+13 *eax
 mov BYTE *ebp+13 *ebp+5
 subl QWORD esp 8 esp
 subl QWORD esp 1 esp
-
-# result.X0 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1056,8 +904,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y0 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1072,8 +918,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X1 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1088,8 +932,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y1 = -(1);
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1109,8 +951,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X2 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1125,8 +965,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y2 = -(2);
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1146,8 +984,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X3 = -(1);
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1167,8 +1003,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y2 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1183,8 +1017,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# return result;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1195,17 +1027,12 @@ pop QWORD eax
 mov QWORD ebp esp
 push QWORD eax
 ret
-
 CreateL:
-
-# Tetrimino* result = malloc(sizeof(Tetrimino));
 stackargs
 push DWORD 33
 push QWORD malloc
 pop QWORD eax
-call eax
-
-# result.Color = 232;
+call  eax
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1220,8 +1047,6 @@ mov BYTE *ebp+13 *eax
 mov BYTE *ebp+13 *ebp+5
 subl QWORD esp 8 esp
 subl QWORD esp 1 esp
-
-# result.X0 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1236,8 +1061,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y0 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1252,8 +1075,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X1 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1268,8 +1089,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y1 = -(1);
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1289,8 +1108,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X2 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1305,8 +1122,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y2 = -(2);
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1326,8 +1141,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X3 = 1;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1342,8 +1155,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y2 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1358,8 +1169,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# return result;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1370,17 +1179,12 @@ pop QWORD eax
 mov QWORD ebp esp
 push QWORD eax
 ret
-
 CreateS:
-
-# Tetrimino* result = malloc(sizeof(Tetrimino));
 stackargs
 push DWORD 33
 push QWORD malloc
 pop QWORD eax
-call eax
-
-# result.Color = 28;
+call  eax
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1395,8 +1199,6 @@ mov BYTE *ebp+13 *eax
 mov BYTE *ebp+13 *ebp+5
 subl QWORD esp 8 esp
 subl QWORD esp 1 esp
-
-# result.X0 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1411,8 +1213,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y0 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1427,8 +1227,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X1 = 1;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1443,8 +1241,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y1 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1459,8 +1255,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X2 = 1;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1475,8 +1269,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y2 = -(1);
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1496,8 +1288,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X3 = 2;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1512,8 +1302,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y2 = -(1);
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1533,8 +1321,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# return result;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1545,17 +1331,12 @@ pop QWORD eax
 mov QWORD ebp esp
 push QWORD eax
 ret
-
 CreateT:
-
-# Tetrimino* result = malloc(sizeof(Tetrimino));
 stackargs
 push DWORD 33
 push QWORD malloc
 pop QWORD eax
-call eax
-
-# result.Color = 227;
+call  eax
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1570,8 +1351,6 @@ mov BYTE *ebp+13 *eax
 mov BYTE *ebp+13 *ebp+5
 subl QWORD esp 8 esp
 subl QWORD esp 1 esp
-
-# result.X0 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1586,8 +1365,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y0 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1602,8 +1379,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X1 = -(1);
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1623,8 +1398,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y1 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1639,8 +1412,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X2 = 1;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1655,8 +1426,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y2 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1671,8 +1440,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X3 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1687,8 +1454,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y2 = 1;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1703,8 +1468,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# return result;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1715,17 +1478,12 @@ pop QWORD eax
 mov QWORD ebp esp
 push QWORD eax
 ret
-
 CreateZ:
-
-# Tetrimino* result = malloc(sizeof(Tetrimino));
 stackargs
 push DWORD 33
 push QWORD malloc
 pop QWORD eax
-call eax
-
-# result.Color = 224;
+call  eax
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1740,8 +1498,6 @@ mov BYTE *ebp+13 *eax
 mov BYTE *ebp+13 *ebp+5
 subl QWORD esp 8 esp
 subl QWORD esp 1 esp
-
-# result.X0 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1756,8 +1512,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y0 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1772,8 +1526,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X1 = -(1);
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1793,8 +1545,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y1 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1809,8 +1559,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X2 = 0;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1825,8 +1573,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y2 = -(1);
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1846,8 +1592,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.X3 = 1;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1862,8 +1606,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# result.Y2 = -(1);
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1883,8 +1625,6 @@ mov DWORD *ebp+16 *eax
 mov DWORD *ebp+16 *ebp+8
 subl QWORD esp 8 esp
 subl QWORD esp 4 esp
-
-# return result;
 push QWORD ebp
 push QWORD 0
 add QWORD
@@ -1895,18 +1635,13 @@ pop QWORD eax
 mov QWORD ebp esp
 push QWORD eax
 ret
-
 RandomTetrimino:
-
-# int next = randomInt(0, 6);
 stackargs
 push DWORD 0
 push DWORD 6
 push QWORD randomInt
 pop QWORD eax
-call eax
-
-# return tetriminoFunctions[next]();
+call  eax
 push QWORD erp
 push QWORD 52
 add QWORD
@@ -1930,256 +1665,162 @@ mov QWORD 0 eax
 pop QWORD eax
 push QWORD *eax
 pop QWORD eax
-call eax
+call  eax
 mov QWORD 0 eax
 pop QWORD eax
 mov QWORD ebp esp
 push QWORD eax
 ret
-
 HW_System_RegisterInterruptHandler:
-
-# return 0 /* hardware call: System::RegisterInterruptHandler */;
 stackargs
 push DWORD *ebp
 push QWORD *ebp+4
 push QWORD *ebp+12
-hwcall "System::RegisterInterruptHandler"
+hwcall str:3
 mov QWORD 0 eax
 pop BYTE eax
 mov QWORD ebp esp
 push BYTE eax
 ret
-
 HW_System_UnregisterInterruptHandler:
-
-# /* hardware call: System::UnregisterInterruptHandler */;
 stackargs
 push DWORD *ebp
 push QWORD *ebp+4
 push BYTE *ebp+12
-hwcall "System::UnregisterInterruptHandler"
-
-# return;
+hwcall str:4
 mov QWORD ebp esp
 ret
-
 HW_System_RaiseError:
-
-# /* hardware call: System::RaiseError */;
 stackargs
 push DWORD *ebp
-hwcall "System::RaiseError"
-
-# return;
+hwcall str:5
 mov QWORD ebp esp
 ret
-
 HW_System_RegisterErrorHandler:
-
-# /* hardware call: System::RegisterErrorHandler */;
 stackargs
 push DWORD *ebp
 push QWORD *ebp+4
-hwcall "System::RegisterErrorHandler"
-
-# return;
+hwcall str:6
 mov QWORD ebp esp
 ret
-
 HW_System_UnregisterErrorHandler:
-
-# /* hardware call: System::UnregisterErrorHandler */;
 stackargs
 push DWORD *ebp
-hwcall "System::UnregisterErrorHandler"
-
-# return;
+hwcall str:7
 mov QWORD ebp esp
 ret
-
 HW_System_GetLastErrorDescriptionSize:
-
-# return 0 /* hardware call: System::GetLastErrorDescriptionSize */;
-hwcall "System::GetLastErrorDescriptionSize"
+hwcall str:8
 mov QWORD 0 eax
 pop QWORD eax
 mov QWORD ebp esp
 push QWORD eax
 ret
-
 HW_System_GetLastErrorDescription:
-
-# /* hardware call: System::GetLastErrorDescription */;
 stackargs
 push QWORD *ebp
-hwcall "System::GetLastErrorDescription"
-
-# return;
+hwcall str:9
 mov QWORD ebp esp
 ret
-
 HW_System_GetHardwareDeviceCount:
-
-# return 0 /* hardware call: System::GetHardwareDeviceCount */;
-hwcall "System::GetHardwareDeviceCount"
+hwcall str:10
 mov QWORD 0 eax
 pop DWORD eax
 mov QWORD ebp esp
 push DWORD eax
 ret
-
 HW_System_GetHardwareDeviceDescriptionSize:
-
-# return 0 /* hardware call: System::GetHardwareDeviceDescriptionSize */;
 stackargs
 push DWORD *ebp
-hwcall "System::GetHardwareDeviceDescriptionSize"
+hwcall str:11
 mov QWORD 0 eax
 pop QWORD eax
 mov QWORD ebp esp
 push QWORD eax
 ret
-
 HW_System_GetHardwareDeviceDescription:
-
-# /* hardware call: System::GetHardwareDeviceDescription */;
 stackargs
 push DWORD *ebp
 push QWORD *ebp+4
-hwcall "System::GetHardwareDeviceDescription"
-
-# return;
+hwcall str:12
 mov QWORD ebp esp
 ret
-
 HW_System_GetAllHardwareDeviceDescriptionsSize:
-
-# return 0 /* hardware call: System::GetAllHardwareDeviceDescriptionsSize */;
-hwcall "System::GetAllHardwareDeviceDescriptionsSize"
+hwcall str:13
 mov QWORD 0 eax
 pop QWORD eax
 mov QWORD ebp esp
 push QWORD eax
 ret
-
 HW_System_GetAllHardwareDeviceDescriptions:
-
-# /* hardware call: System::GetAllHardwareDeviceDescriptions */;
 stackargs
 push QWORD *ebp
-hwcall "System::GetAllHardwareDeviceDescriptions"
-
-# return;
+hwcall str:14
 mov QWORD ebp esp
 ret
-
 HW_System_CreatePageTable:
-
-# return 0 /* hardware call: System::CreatePageTable */;
-hwcall "System::CreatePageTable"
+hwcall str:15
 mov QWORD 0 eax
 pop DWORD eax
 mov QWORD ebp esp
 push DWORD eax
 ret
-
 HW_System_DestroyPageTable:
-
-# /* hardware call: System::DestroyPageTable */;
 stackargs
 push DWORD *ebp
-hwcall "System::DestroyPageTable"
-
-# return;
+hwcall str:16
 mov QWORD ebp esp
 ret
-
 HW_System_ChangeCurrentPageTable:
-
-# /* hardware call: System::ChangeCurrentPageTable */;
 stackargs
 push DWORD *ebp
-hwcall "System::ChangeCurrentPageTable"
-
-# return;
+hwcall str:17
 mov QWORD ebp esp
 ret
-
 HW_System_CopyMemory:
-
-# /* hardware call: System::CopyMemory */;
 stackargs
 push BYTE *ebp
 push DWORD *ebp+1
 push QWORD *ebp+5
 push QWORD *ebp+13
 push QWORD *ebp+21
-hwcall "System::CopyMemory"
-
-# return;
+hwcall str:18
 mov QWORD ebp esp
 ret
-
 HW_TerminalDevice_Write:
-
-# /* hardware call: TerminalDevice::Write */;
 stackargs
 push QWORD *ebp
-hwcall "TerminalDevice::Write"
-
-# return;
+hwcall str:19
 mov QWORD ebp esp
 ret
-
 HW_TerminalDevice_WriteLine:
-
-# /* hardware call: TerminalDevice::WriteLine */;
 stackargs
 push QWORD *ebp
-hwcall "TerminalDevice::WriteLine"
-
-# return;
+hwcall str:20
 mov QWORD ebp esp
 ret
-
 HW_TerminalDevice_Read:
-
-# return 0 /* hardware call: TerminalDevice::Read */;
-hwcall "TerminalDevice::Read"
+hwcall str:21
 mov QWORD 0 eax
 pop WORD eax
 mov QWORD ebp esp
 push WORD eax
 ret
-
 HW_TerminalDevice_ReadLine:
-
-# /* hardware call: TerminalDevice::ReadLine */;
 stackargs
 push QWORD *ebp
-hwcall "TerminalDevice::ReadLine"
-
-# return;
+hwcall str:22
 mov QWORD ebp esp
 ret
-
 HW_Debugger_Break:
-
-# /* hardware call: Debugger::Break */;
-hwcall "Debugger::Break"
-
-# return;
+hwcall str:23
 mov QWORD ebp esp
 ret
-
 __globals_init:
-
-# stringLiteral = "Hello, world!";
 push QWORD erp
 push QWORD 68
 add QWORD
-push "Hello, world!"
+push QWORD str:24
 mov QWORD 0 ecx
 pop QWORD ecx
 push QWORD ecx
@@ -2188,8 +1829,31 @@ mov QWORD *ebp+8 *eax
 mov QWORD *ebp+8 *ebp
 subl QWORD esp 8 esp
 subl QWORD esp 8 esp
-
-# return;
 mov QWORD ebp esp
 ret
-
+strings:
+0: "System::GetMemoryMappedHWStartAddress"
+1: "VGAMonitor"
+2: "Timer::CallOnLoop"
+3: "System::RegisterInterruptHandler"
+4: "System::UnregisterInterruptHandler"
+5: "System::RaiseError"
+6: "System::RegisterErrorHandler"
+7: "System::UnregisterErrorHandler"
+8: "System::GetLastErrorDescriptionSize"
+9: "System::GetLastErrorDescription"
+10: "System::GetHardwareDeviceCount"
+11: "System::GetHardwareDeviceDescriptionSize"
+12: "System::GetHardwareDeviceDescription"
+13: "System::GetAllHardwareDeviceDescriptionsSize"
+14: "System::GetAllHardwareDeviceDescriptions"
+15: "System::CreatePageTable"
+16: "System::DestroyPageTable"
+17: "System::ChangeCurrentPageTable"
+18: "System::CopyMemory"
+19: "TerminalDevice::Write"
+20: "TerminalDevice::WriteLine"
+21: "TerminalDevice::Read"
+22: "TerminalDevice::ReadLine"
+23: "Debugger::Break"
+24: "Hello, world!"
