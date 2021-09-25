@@ -6,15 +6,15 @@ namespace Celarix.Cix.Compiler.Lowering.Models
 {
     public sealed class HardwareDevice
     {
-        private readonly List<HardwareCall> hardwareCalls;
+        private readonly List<HardwareMethod> hardwareMethods;
 
         public string DeviceName { get; }
-        public IReadOnlyList<HardwareCall> HardwareCalls => hardwareCalls.AsReadOnly();
+        public IReadOnlyList<HardwareMethod> HardwareMethods => hardwareMethods.AsReadOnly();
 
-        public HardwareDevice(string deviceName, IList<HardwareCall> hardwareCalls)
+        public HardwareDevice(string deviceName, IList<HardwareMethod> hardwareMethods)
         {
             DeviceName = deviceName;
-            this.hardwareCalls = (List<HardwareCall>) hardwareCalls;
+            this.hardwareMethods = (List<HardwareMethod>)hardwareMethods;
         }
     }
 }

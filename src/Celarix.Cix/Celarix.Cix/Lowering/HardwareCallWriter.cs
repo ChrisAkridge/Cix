@@ -20,7 +20,7 @@ namespace Celarix.Cix.Compiler.Lowering
             var functions = new List<Function>();
             foreach (var hardwareDevice in hardware.HardwareDevices)
             {
-                functions.AddRange(hardwareDevice.HardwareCalls.Select(c =>
+                functions.AddRange(hardwareDevice.HardwareMethods.Select(c =>
                     WriteHardwareCallFunction(c, hardwareDevice.DeviceName)));
             }
             
@@ -29,14 +29,14 @@ namespace Celarix.Cix.Compiler.Lowering
             return functions;
         }
 
-        private static Function WriteHardwareCallFunction(HardwareCall call, string deviceName)
+        private static Function WriteHardwareCallFunction(HardwareMethod method, string deviceName)
         {
-            logger.Trace($"Generating function for hardware call {deviceName}::{call.CallName}");
+            logger.Trace($"Generating function for hardware method {deviceName}::{method.CallName}");
             
             var function = new Function
             {
-                Name = $"HW_{deviceName}_{call.CallName}",
-                Parameters = call.Parameters
+                Name = $"HW_{deviceName}_{method.CallName}",
+                Parameters = method.Parameters
                     .Select(p => new FunctionParameter
                     {
                         Name = p.ParameterName,
@@ -48,7 +48,7 @@ namespace Celarix.Cix.Compiler.Lowering
                     .ToList()
             };
 
-            if (call.ReturnType == null || (call.ReturnType.TypeName == "void" && call.ReturnType.PointerLevel == 0))
+            if (method.ReturnType == null || (method.ReturnType.TypeName == "void" && method.ReturnType.PointerLevel == 0))
             {
                 function.ReturnType = new NamedDataType
                 {
@@ -62,8 +62,8 @@ namespace Celarix.Cix.Compiler.Lowering
                     {
                         Expression = new HardwareCallVoidInternal
                         {
-                            CallName = $"{deviceName}::{call.CallName}",
-                            ParameterTypes = call.Parameters.Select(p => (DataType)new NamedDataType
+                            CallName = $"{deviceName}::{method.CallName}",
+                            ParameterTypes = method.Parameters.Select(p => (DataType)new NamedDataType
                             {
                                 Name = p.Type.TypeName, PointerLevel = p.Type.PointerLevel
                             })
@@ -76,8 +76,8 @@ namespace Celarix.Cix.Compiler.Lowering
             {
                 var returnType = new NamedDataType
                 {
-                    Name = call.ReturnType.TypeName,
-                    PointerLevel = call.ReturnType.PointerLevel
+                    Name = method.ReturnType.TypeName,
+                    PointerLevel = method.ReturnType.PointerLevel
                 };
                 function.ReturnType = returnType;
                 
@@ -87,9 +87,9 @@ namespace Celarix.Cix.Compiler.Lowering
                     {
                         ReturnValue = new HardwareCallReturnsInternal
                         {
-                            CallName = $"{deviceName}::{call.CallName}",
+                            CallName = $"{deviceName}::{method.CallName}",
                             ReturnType = returnType,
-                            ParameterTypes = call.Parameters
+                            ParameterTypes = method.Parameters
                                 .Select(p => (DataType)new NamedDataType
                                 {
                                     Name = p.Type.TypeName,

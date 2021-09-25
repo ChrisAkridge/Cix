@@ -68,11 +68,9 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             if (pushArguments.Any())
             {
                 var pushArgumentsFlow = EmitHelpers.ConnectWithDirectFlow(pushArguments);
-                var stackArgsInstruction = new InstructionVertex("stackargs");
-                stackArgsInstruction.ConnectTo(pushArgumentsFlow.Start, FlowEdgeType.DirectFlow);
                 pushArgumentsFlow.End.ConnectTo(hwcallInstruction, FlowEdgeType.DirectFlow);
 
-                return new StartEndVertices(stackArgsInstruction, hwcallInstruction);
+                return new StartEndVertices(pushArgumentsFlow.ConnectionTarget, hwcallInstruction);
             }
             else
             {

@@ -36,19 +36,23 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
             logger.Trace($"Generating code for {OriginalCode}");
-            
-            if (Expression.ComputedType.Size != ToType.Size)
-            {
-                var oldEntry = context.CurrentStack.Pop();
-                context.CurrentStack.Push(new VirtualStackEntry($"<castResult>{oldEntry.Name}", ComputedType));
 
-                return EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
-                {
-                    EmitHelpers.ChangeWidthOfTopOfStack(context, EmitHelpers.ToOperandSize(Expression.ComputedType.Size),
-                        EmitHelpers.ToOperandSize(ToType.Size))
-                });
-            }
-            else { return null; }
+            var expressionFlow = Expression.Generate(context, this);
+
+            var oldEntry = context.CurrentStack.Pop();
+            context.CurrentStack.Push(new VirtualStackEntry(oldEntry.Name, ComputedType));
+
+            if (Expression.ComputedType.Size == ToType.Size) { return expressionFlow; }
+
+            var castFlow = EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
+            {
+                EmitHelpers.ChangeWidthOfTopOfStack(context,
+                    EmitHelpers.ToOperandSize(Expression.ComputedType.Size),
+                    EmitHelpers.ToOperandSize(ToType.Size))
+            });
+                
+            expressionFlow.ConnectTo(castFlow, FlowEdgeType.DirectFlow);
+            return new StartEndVertices(expressionFlow.Start, castFlow.End);
         }
     }
 }

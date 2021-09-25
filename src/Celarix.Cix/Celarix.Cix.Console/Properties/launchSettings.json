@@ -2,7 +2,7 @@
   "profiles": {
     "Celarix.Cix.Console": {
       "commandName": "Project",
-      "commandLineArgs": "--input \"D:\\Documents\\GitHub\\Cix\\samples\\tetris\\tetris.cix\" -o \"D:\\Documents\\GitHub\\Cix\\samples\\tetris\\tetris.iasm\" -h \"..\\..\\..\\..\\..\\..\\hardware_20210302.json\" -s DEBUG,TRACE,HELP --save-temps --log-level trace"
+      "commandLineArgs": "-i \"D:\\Documents\\GitHub\\IronArc\\Samples\\Assembly\\StorageTest\\StorageTest.cix\" -o \"D:\\Documents\\GitHub\\IronArc\\Samples\\Assembly\\StorageTest\\StorageTest.iasm\" -h \"D:\\Documents\\GitHub\\IronArc\\Samples\\Assembly\\StorageTest\\hardware_20210923.json\" -t -l trace"
     }
   }
 }

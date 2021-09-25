@@ -223,7 +223,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             ComputedType = new UsageTypeInfo
             {
                 DeclaredType = pointerOperand.ComputedType.DeclaredType,
-                PointerLevel = pointerOperand.ComputedType.PointerLevel - 1
+                PointerLevel = pointerOperand.ComputedType.PointerLevel
             };
             IsAssignable = true;
 

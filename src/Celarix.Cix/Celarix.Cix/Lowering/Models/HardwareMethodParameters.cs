@@ -4,12 +4,12 @@ using System.Linq;
 
 namespace Celarix.Cix.Compiler.Lowering.Models
 {
-    public sealed class HardwareCallParameter
+    public sealed class HardwareMethodParameters
     {
         public string ParameterName { get; }
         public HardwareCallDataType Type { get; }
 
-        public HardwareCallParameter(string parameterName, HardwareCallDataType type)
+        public HardwareMethodParameters(string parameterName, HardwareCallDataType type)
         {
             ParameterName = parameterName;
             Type = type;

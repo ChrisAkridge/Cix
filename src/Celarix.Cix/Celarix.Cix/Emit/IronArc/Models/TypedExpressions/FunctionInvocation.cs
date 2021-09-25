@@ -36,18 +36,13 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
 
         public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
-            // Set stackargs
             // Push arguments
             logger.Trace($"Generating code for function invocation {OriginalCode}");
             
-            InstructionVertex stackArgsInstruction = null;
             var argumentFlows = Arguments.Select(a => a.Generate(context, this)).ToList();
 
             if (argumentFlows.Any())
             {
-                stackArgsInstruction = new InstructionVertex("stackargs");
-                stackArgsInstruction.ConnectTo(argumentFlows.First(), FlowEdgeType.DirectFlow);
-
                 StartEndVertices lastArgumentFlow = null;
 
                 foreach (var argumentFlow in argumentFlows)
@@ -72,7 +67,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             popCallAddress.ConnectTo(callInstruction, FlowEdgeType.DirectFlow);
 
             return new StartEndVertices(
-                argumentFlows.Any() ? stackArgsInstruction : operandFlow.ConnectionTarget,
+                argumentFlows.Any() ? argumentFlows.First().ConnectionTarget : operandFlow.ConnectionTarget,
                 callInstruction);
         }
     }
