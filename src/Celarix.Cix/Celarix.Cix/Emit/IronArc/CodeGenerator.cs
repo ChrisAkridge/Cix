@@ -12,6 +12,7 @@ using NLog;
 using static Celarix.Cix.Compiler.Emit.IronArc.EmitHelpers;
 using Block = Celarix.Cix.Compiler.Parse.Models.AST.v1.Block;
 using ConditionalStatement = Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements.ConditionalStatement;
+using Register = Celarix.Cix.Compiler.Emit.IronArc.Models.Register;
 
 namespace Celarix.Cix.Compiler.Emit.IronArc
 {
@@ -73,6 +74,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             }
 
             GenerateFunctions();
+            SetStackAfterCode();
             GenerateFinalAssembly();
 
             logger.Debug("IronArc assembly generated");
@@ -91,6 +93,17 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                 };
                 ControlFlow[function.Name] = emitFunction.Generate(emitContext, null).ControlFlow;
             }
+        }
+
+        private void SetStackAfterCode()
+        {
+            var mainFlow = ControlFlow["main"];
+            var setEBPAfterCode = new InstructionVertex("mov", OperandSize.Qword, Register(Register.EAX), Register(Register.EBP));
+            var setESPAfterCode = new InstructionVertex("mov", OperandSize.Qword, Register(Register.EAX), Register(Register.ESP));
+            
+            setEBPAfterCode.ConnectTo(setESPAfterCode.ConnectionTarget, FlowEdgeType.DirectFlow);
+            setESPAfterCode.ConnectTo(mainFlow.ConnectionTarget, FlowEdgeType.DirectFlow);
+            ControlFlow["main"] = new StartEndVertices(setEBPAfterCode, mainFlow.End);
         }
 
         private void GenerateFinalAssembly()

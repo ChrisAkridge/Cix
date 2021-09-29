@@ -235,7 +235,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         public override StartEndVertices Generate(EmitContext context, TypedExpression parent)
         {
             logger.Trace($"Generating code for {OriginalCode}");
-            
+
             var computedTypeIsFloatingPoint = ComputedType.DeclaredType is NamedTypeInfo namedType
                 && (namedType.Name == "float" || namedType.Name == "double");
             var computedTypeOperandSize = EmitHelpers.ToOperandSize(ComputedType.Size);
@@ -269,7 +269,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             // <generate right> [left right]
             operandFlows.Add(Right.Generate(context, this));
 
-            if (!Right.ComputedType.Equals(ComputedType) && !ConvertRightHandSideToResultType())
+            if (!Right.ComputedType.Equals(ComputedType) && ConvertRightHandSideToResultType())
             {
                 operandFlows.Add(EmitHelpers.ChangeWidthOfTopOfStack(context, rightOperandSize,
                     computedTypeOperandSize));
@@ -284,7 +284,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                 {
                     if (Left.ComputedType.PointerLevel > 0)
                     {
-                        computationFlow = GeneratePointerArithmetic(context, rightOperandSize, rightSize);
+                        computationFlow = GeneratePointerArithmetic(context, rightOperandSize);
                         resultEntry = GetPointerStackEntry();
                     }
                     else
@@ -690,19 +690,23 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             return computationFlow;
         }
 
-        private IConnectable[] GeneratePointerArithmetic(EmitContext context, OperandSize rightOperandSize, int rightSize)
+        private IConnectable[] GeneratePointerArithmetic(EmitContext context, OperandSize rightOperandSize)
         {
             /*
              * <convert right to DWORD>         [left (int)right]
-             * push DWORD sizeof(right)         [left (int)right sizeof(right)]
+             * push DWORD sizeof(*left)         [left (int)right sizeof(*left)]
              * mult DWORD                       [left offsetInBytes]
              * <convert offsetInBytes to QWORD> [left (long)offsetInBytes]
              * {add/sub} QWORD                  [left{+/-}offsetInBytes]
              */
+
+            var leftSize = (Left.ComputedType.PointerLevel == 1)
+                ? Left.ComputedType.DeclaredType.Size
+                : 8;
             return new IConnectable[]
             {
                 EmitHelpers.ChangeWidthOfTopOfStack(context, rightOperandSize, OperandSize.Dword),
-                new InstructionVertex("push", OperandSize.Dword, new IntegerOperand(rightSize)),
+                new InstructionVertex("push", OperandSize.Dword, new IntegerOperand(leftSize)),
                 new InstructionVertex("mult", OperandSize.Dword),
                 EmitHelpers.ChangeWidthOfTopOfStack(context, OperandSize.Dword, OperandSize.Qword),
                 new InstructionVertex((Operator == "+") ? "add" : "sub", OperandSize.Qword)
@@ -713,11 +717,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         {
             var leftIsPointer = Left.ComputedType.PointerLevel > 0;
 
-            var rightHandSideConvertedToOtherType = ((Operator == "+" || Operator == "-") && leftIsPointer)
+            var rightToDwordForPointerOrShift = ((Operator == "+" || Operator == "-") && leftIsPointer)
                 || Operator == "<<"
                 || Operator == ">>";
 
-            return !rightHandSideConvertedToOtherType;
+            return !rightToDwordForPointerOrShift;
         }
         
         private VirtualStackEntry GetPointerStackEntry() => new VirtualStackEntry("<binaryResult>", ComputedType.WithPointerLevel(ComputedType.PointerLevel + 1));

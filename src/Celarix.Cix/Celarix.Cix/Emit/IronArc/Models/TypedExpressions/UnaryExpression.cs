@@ -19,7 +19,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         {
             Operand.ComputeType(context, this);
 
-            IsAssignable = Operator == "&";
+            IsAssignable = Operator == "*";
 
             ComputedType = ExpressionHelpers.GetOperatorKind(Operator,
                     (IsPostfix) ? OperationKind.PostfixUnary : OperationKind.PrefixUnary) switch
@@ -111,6 +111,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             }
             
             var operandSize = EmitHelpers.ToOperandSize(Operand.ComputedType.Size);
+            var parentRequiresPointer = EmitHelpers.ExpressionRequiresPointer(parent);
             
             if (!IsPostfix)
             {
@@ -144,37 +145,9 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
                         });
                     case "*":
                     {
-                        context.CurrentStack.Pop();
-                        context.CurrentStack.Push(new VirtualStackEntry("<pointerDereference>", new UsageTypeInfo
-                        {
-                            DeclaredType = Operand.ComputedType.DeclaredType,
-                            PointerLevel = Operand.ComputedType.PointerLevel - 1
-                        }));
-                    
-                        if (Operand.ComputedType.PointerLevel >= 2 || EmitHelpers.IsIronArcOperandSize(Operand.ComputedType.DeclaredType.Size))
-                        {
-                            var declaredTypeOperandSize = EmitHelpers.ToOperandSize(Operand.ComputedType.DeclaredType.Size);
-                        
-                            return EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
-                            {
-                                new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)),
-                                new InstructionVertex("push", declaredTypeOperandSize, EmitHelpers.Register(Register.EAX, isPointer: true)),
-                            });
-                        }
-                        else
-                        {
-                            return EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
-                            {
-                                new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)),
-                                new InstructionVertex("movln", OperandSize.NotUsed,
-                                    EmitHelpers.Register(Register.EAX, isPointer: true),
-                                    EmitHelpers.Register(Register.ESP, isPointer: true),
-                                    new IntegerOperand(Operand.ComputedType.Size)),
-                                new InstructionVertex("addl", OperandSize.Qword, EmitHelpers.Register(Register.ESP),
-                                    new IntegerOperand(Operand.ComputedType.Size),
-                                    EmitHelpers.Register(Register.ESP))
-                            });
-                        }
+                        return !parentRequiresPointer
+                            ? GenerateFlowForPointerDereferenceForValue(context, parent)
+                            : GenerateFlowForPointerDereferenceForAssignment(context, parent);
                     }
                     case "++":
                     case "--":
@@ -252,6 +225,60 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             
             throw new InvalidOperationException("Internal compiler error: unreachable code");
         }
+
+        private StartEndVertices GenerateFlowForPointerDereferenceForValue(EmitContext context, TypedExpression parent)
+        {
+            var operandFlow = Operand.Generate(context, parent);
+            
+            context.CurrentStack.Pop();
+
+            context.CurrentStack.Push(new VirtualStackEntry("<pointerDereference>", new UsageTypeInfo
+            {
+                DeclaredType = Operand.ComputedType.DeclaredType,
+                PointerLevel = Operand.ComputedType.PointerLevel - 1
+            }));
+
+            if (Operand.ComputedType.PointerLevel < 2
+                && !EmitHelpers.IsIronArcOperandSize(Operand.ComputedType.DeclaredType.Size))
+            {
+                var getStructValueFlow = EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
+                {
+                    // <operandFlow>
+                    // pop QWORD <pointer> eax
+                    // movln eax esp <structSize>
+                    // addl QWORD esp <structSize> esp
+                    new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)),
+                    new InstructionVertex(
+                        "movln", OperandSize.NotUsed,
+                        EmitHelpers.Register(Register.EAX, isPointer: true),
+                        EmitHelpers.Register(Register.ESP, isPointer: true),
+                        new IntegerOperand(Operand.ComputedType.Size)),
+                    new InstructionVertex("addl", OperandSize.Qword, EmitHelpers.Register(Register.ESP),
+                        new IntegerOperand(Operand.ComputedType.Size),
+                        EmitHelpers.Register(Register.ESP))
+                });
+                
+                operandFlow.ConnectTo(getStructValueFlow, FlowEdgeType.DirectFlow);
+                return new StartEndVertices(operandFlow.Start, getStructValueFlow.End);
+            }
+
+            var declaredTypeOperandSize = EmitHelpers.ToOperandSize(Operand.ComputedType.DeclaredType.Size);
+            var getValueFlow = EmitHelpers.ConnectWithDirectFlow(new IConnectable[]
+            {
+                // <operandFlow>
+                // pop QWORD <pointer> eax
+                // push <valueSize> *eax
+                new InstructionVertex("pop", OperandSize.Qword, EmitHelpers.Register(Register.EAX)),
+                new InstructionVertex("push", declaredTypeOperandSize, EmitHelpers.Register(Register.EAX, isPointer: true)),
+            });
+            operandFlow.ConnectTo(getValueFlow, FlowEdgeType.DirectFlow);
+            
+            return new StartEndVertices(operandFlow.Start, getValueFlow.End);
+        }
+
+        private StartEndVertices GenerateFlowForPointerDereferenceForAssignment(EmitContext context, TypedExpression parent) =>
+            Operand.Generate(context, parent);
+
         #endregion
     }
 }

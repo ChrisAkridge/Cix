@@ -15,10 +15,14 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
         public override UsageTypeInfo ComputeType(EmitContext context, TypedExpression parent)
         {
             var operandType = Operand.ComputeType(context, this);
+            var expectedArgumentTypes = ((FuncptrTypeInfo)operandType.DeclaredType).ParameterTypes;
+            var argumentsAndExpectedTypes = Arguments.Zip(expectedArgumentTypes);
 
-            foreach (var argument in Arguments)
+            foreach (var (argument, expectedType) in argumentsAndExpectedTypes)
             {
-                argument.ComputeType(context, this);
+                var argumentExpressionType = argument.ComputeType(context, this);
+                var actualType = ExpressionHelpers.GetCommonType(argumentExpressionType, expectedType);
+                argument.ComputedType = actualType;
             }
 
             if (!(operandType.DeclaredType is FuncptrTypeInfo))
@@ -65,6 +69,22 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.TypedExpressions
             // Call EAX
             var callInstruction = new InstructionVertex("call", OperandSize.NotUsed, EmitHelpers.Register(Register.EAX));
             popCallAddress.ConnectTo(callInstruction, FlowEdgeType.DirectFlow);
+            
+            // (ensure the stack is correct)
+            var functionType = (FuncptrTypeInfo)Operand.ComputedType.DeclaredType;
+            var functionReturnsVoid = (functionType.ReturnType.DeclaredType is NamedTypeInfo namedFunctionReturnType)
+                && (namedFunctionReturnType.Name == "void")
+                && (functionType.ReturnType.PointerLevel == 0);
+
+            for (var i = 0; i < Arguments.Count; i++)
+            {
+                context.CurrentStack.Pop();
+            }
+
+            if (!functionReturnsVoid)
+            {
+                context.CurrentStack.Push(new VirtualStackEntry("<functionResult>", functionType.ReturnType));
+            }
 
             return new StartEndVertices(
                 argumentFlows.Any() ? argumentFlows.First().ConnectionTarget : operandFlow.ConnectionTarget,

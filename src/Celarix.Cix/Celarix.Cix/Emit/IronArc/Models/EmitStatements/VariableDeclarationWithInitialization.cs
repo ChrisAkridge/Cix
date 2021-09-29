@@ -12,11 +12,15 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
         public override GeneratedFlow Generate(EmitContext context, EmitStatement parent)
         {
             Initializer.ComputeType(context, null);
-            context.CurrentStack.Push(new VirtualStackEntry(Name, Type));
 
             var codeComment = new CommentPrinterVertex(OriginalCode);
             var initializationFlow = Initializer.Generate(context, null);
-            
+
+            // The initializer pushes a virtual stack element representing their
+            // result, so pop it off and replace it with our named variable
+            context.CurrentStack.Pop();
+            context.CurrentStack.Push(new VirtualStackEntry(Name, Type));
+
             codeComment.ConnectTo(initializationFlow, FlowEdgeType.DirectFlow);
 
             return new GeneratedFlow

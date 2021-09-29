@@ -19,7 +19,9 @@ namespace Celarix.Cix.Compiler.Emit.IronArc.Models.EmitStatements
         {
             if (ASTFunction.ReturnType is NamedDataType namedType && namedType.Name == "void" && ASTFunction.ReturnType.PointerLevel == 0)
             {
-                ASTFunction.Statements.Add(new Parse.Models.AST.v1.ReturnStatement());
+                ASTFunction.Statements.Add(ASTFunction.Name == "main"
+                    ? (Statement)new Parse.Models.AST.v1.InternalEndStatement()
+                    : new Parse.Models.AST.v1.ReturnStatement());
             }
             else if (!ASTFunction.Statements.Any())
             {

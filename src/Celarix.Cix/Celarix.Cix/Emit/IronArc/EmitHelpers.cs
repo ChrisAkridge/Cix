@@ -119,8 +119,11 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
             switch (expression)
             {
                 case UnaryExpression unaryExpression
-                    when (unaryExpression.Operator == "++" || unaryExpression.Operator == "--" || unaryExpression.Operator == "&"):
-                case BinaryExpression binaryExpression when (binaryExpression.Operator == "="
+                    when unaryExpression.Operator == "++"
+                    || unaryExpression.Operator == "--"
+                    || unaryExpression.Operator == "&"
+                    || unaryExpression.Operator == "*":
+                case BinaryExpression binaryExpression when binaryExpression.Operator == "="
                     || binaryExpression.Operator == "+="
                     || binaryExpression.Operator == "-="
                     || binaryExpression.Operator == "*="
@@ -132,7 +135,7 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                     || binaryExpression.Operator == "<<="
                     || binaryExpression.Operator == ">>="
                     || binaryExpression.Operator == "."
-                    || binaryExpression.Operator == "->"):
+                    || binaryExpression.Operator == "->":
                     return true;
                 default:
                     return false;

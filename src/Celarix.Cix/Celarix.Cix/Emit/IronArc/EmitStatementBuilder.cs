@@ -15,6 +15,7 @@ using ContinueStatement = Celarix.Cix.Compiler.Parse.Models.AST.v1.ContinueState
 using DoWhileStatement = Celarix.Cix.Compiler.Parse.Models.AST.v1.DoWhileStatement;
 using ExpressionStatement = Celarix.Cix.Compiler.Parse.Models.AST.v1.ExpressionStatement;
 using Function = Celarix.Cix.Compiler.Parse.Models.AST.v1.Function;
+using InternalEndStatement = Celarix.Cix.Compiler.Parse.Models.AST.v1.InternalEndStatement;
 using ReturnStatement = Celarix.Cix.Compiler.Parse.Models.AST.v1.ReturnStatement;
 using SwitchStatement = Celarix.Cix.Compiler.Parse.Models.AST.v1.SwitchStatement;
 using VariableDeclaration = Celarix.Cix.Compiler.Parse.Models.AST.v1.VariableDeclaration;
@@ -77,6 +78,10 @@ namespace Celarix.Cix.Compiler.Emit.IronArc
                 {
                     Expression = expressionBuilder.Build(expressionStatement.Expression),
                     OriginalCode = $"{expressionStatement.PrettyPrint(0)}"
+                },
+                InternalEndStatement _ => new Models.EmitStatements.InternalEndStatement
+                {
+                    OriginalCode = "/* end of program */"
                 },
                 ReturnStatement returnStatement => new Models.EmitStatements.ReturnStatement
                 {
