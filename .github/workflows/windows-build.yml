@@ -1,0 +1,145 @@
+#
+# File: %windows-build.yml
+#
+#=============================================================================#
+#
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
+#
+
+name: Windows Build
+
+
+# When To Trigger Builds
+#
+on:
+  push:
+    branches: [
+      master
+    ]
+  pull_request:
+    branches: [
+      master
+    ]
+  workflow_dispatch:  # Allows running this workflow manually from Actions tab
+
+
+# use Powershell Core (pwsh), vs. Powershell Desktop (powershell)
+#
+# Note that line continuation character is backtick, not backslash
+# Environment variables are $Env:VariableName
+#
+defaults:
+  run:
+    shell: pwsh
+
+
+# Each "Job" runs in its own VM, and a workflow run is made up of one or more
+# jobs that can run sequentially or in parallel.
+#
+# See README: Jobs
+#
+jobs:
+  windows-build:  # Name of this workflow's only job
+
+    # https://github.com/actions/virtual-environments#available-environments
+    #
+    runs-on: windows-2019  # oldest non-deprecated version
+
+
+    # See README: Build Matrix
+    #
+    strategy:
+      matrix:
+       include:
+
+         - configuration: Release
+           # add more variables here
+
+         - configuration: Debug
+           # add more variables here
+
+
+    # Environment Variables
+    #
+    env:
+
+      # Capture Matrix Variables into Environment Variables
+      # (Minimizes GitHub-Specific Syntax)
+      #
+      CONFIGURATION: ${{ matrix.configuration }}
+
+
+    # Steps are a sequence of tasks that will be executed within a single VM
+    # as part of the job.
+    #
+    steps:  # (no indentatation needed below; so indent the minimum!)
+
+
+  #====# CHECKOUT STEPS #=====================================================#
+
+
+    # GitHub CI checkout on Windows auto translates LF to CR/LF in files:
+    #
+    # https://github.com/actions/checkout/issues/135
+    #
+    - name: Disable LF to CRLF Auto Translation In Git
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
+
+
+    # https://github.com/actions/checkout
+    #
+    - name: Checkout CIX Repository
+      uses: actions/checkout@v3  # Trusted Action
+
+
+    - name: Checkout IronArc
+      run: |
+        cd ..
+        git clone https://github.com/ChrisAkridge/IronArc --depth 1
+
+   
+    # Portably Capture Git Hashes (how to do this in powershell?)
+    #
+    - name: Grab Git Hash and Short Hash Into Environment Variables
+      shell: bash
+      run: |
+        git_commit="$(git show --format="%H" --no-patch)"
+        git_commit_short="$(git show --format="%h" --no-patch)"
+        echo "GIT_COMMIT=$git_commit" >> $GITHUB_ENV
+        echo "GIT_COMMIT_SHORT=$git_commit_short" >> $GITHUB_ENV
+
+
+  #====# TOOLCHAIN INSTALLATION STEPS #=======================================#
+
+    # Assume Visual Studio and C# is already installed.
+    # Full list of preinstalled software:
+    # https://github.com/actions/runner-images/blob/main/images/win/Windows2022-Readme.md
+
+    # Show a little bit of sanity check information.
+    #
+    - name: Output System Information
+      run: |
+        dotnet --info
+
+
+  #====# BUILD STEPS #========================================================#
+
+
+    - name: Build the Cix Console
+      run: |
+        dotnet build src\Celarix.Cix\Celarix.Cix.Console\Celarix.Cix.Console.csproj `
+            --configuration $Env:CONFIGURATION
+
+
+  #====# TESTING STEPS #======================================================#
+
+
+    - name: Run StorageTest via Cix Console
+      run: |
+        cd ..\IronArc\Samples\Assembly\StorageTest
+        dotnet run `
+            --project "..\..\..\..\cix\src\Celarix.Cix\Celarix.Cix.Console\Celarix.Cix.Console.csproj" `
+            -- `
+            -i StorageTest.cix -o StorageTest.iasm -h hardware_20210923.json -t -l trace
