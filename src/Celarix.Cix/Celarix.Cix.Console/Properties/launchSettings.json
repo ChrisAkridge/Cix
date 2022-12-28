@@ -2,7 +2,8 @@
   "profiles": {
     "Celarix.Cix.Console": {
       "commandName": "Project",
-      "commandLineArgs": "-i \"D:\\Documents\\GitHub\\IronArc\\Samples\\Assembly\\StorageTest\\StorageTest.cix\" -o \"D:\\Documents\\GitHub\\IronArc\\Samples\\Assembly\\StorageTest\\StorageTest.iasm\" -h \"D:\\Documents\\GitHub\\IronArc\\Samples\\Assembly\\StorageTest\\hardware_20210923.json\" -t -l trace"
+      "workingDirectory": "..\\..\\..\\..\\IronArc\\Samples\\Assembly\\StorageTest\\",
+      "commandLineArgs": "-i \"StorageTest.cix\" -o \"StorageTest.iasm\" -h \"hardware_20210923.json\" -t -l trace"
     }
   }
 }
